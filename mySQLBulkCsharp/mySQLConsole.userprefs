@@ -1,0 +1,15 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workbench ActiveDocument="mySQLConsole/Program.cs">
+    <Files>
+      <File FileName="mySQLConsole/Program.cs" Line="65" Column="45" />
+      <File FileName="mySQLConsole/testTable.txt" Line="4" Column="23" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.mySQLConsole PreferredExecutionTarget="MonoDevelop.Default" />
+  <MultiItemStartupConfigurations />
+</Properties>
