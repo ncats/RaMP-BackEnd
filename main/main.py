@@ -2,7 +2,6 @@ import sys
 sys.path.append("../")
 from hmdbData import hmdbData
 from KeggData import KeggData
-from hmdbData import hmdbData
 from reactomeData import reactomeData
 from wikipathwaysData import wikipathwaysData
 from IDconversion import IDconversion
