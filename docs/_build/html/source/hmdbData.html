@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>hmdbData module &#8212; ramp 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-hmdbData">
+<span id="hmdbdata-module"></span><h1>hmdbData module<a class="headerlink" href="#module-hmdbData" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="hmdbData.hmdbData">
+<em class="property">class </em><code class="descclassname">hmdbData.</code><code class="descname">hmdbData</code><a class="headerlink" href="#hmdbData.hmdbData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>HMDBData&#8217;s functions work together to get all required information from the hmdb database.</p>
+<p>The hmdb database can be queried by parsing an xml file which contains all the information for the database.
+The xml file can be obtained here: <a class="reference external" href="http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip">http://www.hmdb.ca/system/downloads/current/hmdb_metabolites.zip</a></p>
+<p>This file has already been downloaded and can be found in the data folder of this package. Its location in the package 
+is hardcoded into function calls.</p>
+<p>Parsing xml files is not straight-forward if you do not have experience. 
+Here is a tutorial on xml file parsing: <a class="reference external" href="https://pymotw.com/2/xml/etree/ElementTree/parse.html">https://pymotw.com/2/xml/etree/ElementTree/parse.html</a></p>
+<p>This class contains five functions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><ol class="first arabic">
+<li>getMetaboliteOtherIDs()</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="2">
+<li>getPathwaysandSynonyms()</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="3">
+<li>getGenes()</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="4">
+<li>getBiofluidCellularLocationDisease()</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="5">
+<li>WriteToFiles()</li>
+</ol>
+</li>
+</ul>
+</div></blockquote>
+<p>In summary, the first four functions parse the xml file, while the last function takes the information acquired by parsing and writes it 
+to sql files for the RAMP database.</p>
+<p>The functions are mostly independent of each other. They do not rely on one another due to the nature of the hmdb database (xml tree).
+However, the final function <em>IS</em> dependent on the previous four functions.</p>
+<p>Due to the structure of the data in hmdb&#8217;s database (xml tree) it is often easier and quicker to get some information together (for example, pathways and synonyms) 
+and therefore a variety of information gathering is often grouped into one function. However, there has been some effort made to separate the different information gathering
+into separate functions for easier readability. The time-intensive step for hmdb information gathering is simply opening/parsing through the xml file
+so it is better to limit the number of this this occurs &#8211; this is the benefit of grouping information together in one function. The drawback is readability (the code can get messy
+and hard to follow).</p>
+<dl class="method">
+<dt id="hmdbData.hmdbData.getBiofluidCellularLocationDisease">
+<code class="descname">getBiofluidCellularLocationDisease</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getBiofluidCellularLocationDisease" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds biofluid and cellular location infromation for every metabolite and places them in:</p>
+<blockquote>
+<div>-self.cellularLocation
+-self.biofluidLocation</div></blockquote>
+<p>Additionally, a running list of all biofluid and cellular locations are kept:</p>
+<blockquote>
+<div>-self.cellular
+-self.biofluid</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="hmdbData.hmdbData.getDatabaseFiles">
+<code class="descname">getDatabaseFiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getDatabaseFiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function gets the files that make up hmdb and places them into the hmdb folder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hmdbData.hmdbData.getGenes">
+<code class="descname">getGenes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getGenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds genes linked to metabolites and places them in:</p>
+<blockquote>
+<div>-self.MetabolitesLinkedToGenes</div></blockquote>
+<p>Additionally, it links the uniprotid to the gene name and place it in:</p>
+<blockquote>
+<div>-self.geneInfoDictionary</div></blockquote>
+<p>And, finally, it finds other ids for every gene and places this in:</p>
+<blockquote>
+<div>-self.geneInfoDictionary</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="hmdbData.hmdbData.getMetaboliteOtherIDs">
+<code class="descname">getMetaboliteOtherIDs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getMetaboliteOtherIDs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This functions finds a number of alternative ids for the main metabolite identifier and places them into:</p>
+<blockquote>
+<div><ul class="simple">
+<li>self.metaboliteIDDictionary.</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="hmdbData.hmdbData.getPathwaysWithGenes">
+<code class="descname">getPathwaysWithGenes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getPathwaysWithGenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>This manipulates two other dictionaries (self.metabolitesWithPathwaysDictionary and self.metabolitesLinkedToGenes) to get self.PathwaysWithGenes.
+This is important so that all database classes can use the writeToSQL class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hmdbData.hmdbData.getPathwaysandSynonyms">
+<code class="descname">getPathwaysandSynonyms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hmdbData.hmdbData.getPathwaysandSynonyms" title="Permalink to this definition">¶</a></dt>
+<dd><p>This functions finds pathways and synonyms for the metabolites and places them in:</p>
+<blockquote>
+<div><ul class="simple">
+<li>self.metabolitesWithPathwaysDictionary</li>
+<li>self.metabolitesWithSynonymsDictionary</li>
+</ul>
+</div></blockquote>
+<p>Additionally it creates a mapping between the pathwayid and the pathway name and places it in:</p>
+<blockquote>
+<div><ul class="simple">
+<li>self.pathwayDictionary</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/hmdbData.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, liz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/source/hmdbData.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>getStatistics module &#8212; ramp 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-getStatistics">
+<span id="getstatistics-module"></span><h1>getStatistics module<a class="headerlink" href="#module-getStatistics" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="getStatistics.getStatistics">
+<em class="property">class </em><code class="descclassname">getStatistics.</code><code class="descname">getStatistics</code><a class="headerlink" href="#getStatistics.getStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The purpose the statistics class is to get an overall &#8220;feel&#8221; of the information contained in the RaMP database.
+The word &#8220;statistics&#8221; refers to the things like the number of genes in the database, the number of pathways, etc.</p>
+<dl class="method">
+<dt id="getStatistics.getStatistics.Apoptosis">
+<code class="descname">Apoptosis</code><span class="sig-paren">(</span><em>rampIdDictionary</em>, <em>pathwaysWithGenesDictionaryWiki</em>, <em>pathwaysWithGenesDictionaryKegg</em>, <em>pathwaysWithGenesDictionaryReactome</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatistics.getStatistics.Apoptosis" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The purpose of the apoptosis function is to identify the genes present in the pathway called &#8220;Apoptosis&#8221;
+in 3 of the 4 databases in ramp: &#8220;wikipathways&#8221;, &#8220;reactome&#8221;, and &#8220;hmdb&#8221; and see if there is overlap 
+among the genes. This overlap will be represent in a 3-way venn diagram.</p>
+<p>This figure is a replication of the same figure done in a published paper and is a &#8220;quality check&#8221; to 
+ensure that the various steps involved in creation of the RaMP database such as getting the data and id 
+conversion have proceeded smoothly.</p>
+<p>The paper is here: <a class="reference external" href="https://www.nature.com/nprot/journal/v11/n10/full/nprot.2016.117.html">https://www.nature.com/nprot/journal/v11/n10/full/nprot.2016.117.html</a></p>
+<p>param dict rampIdDictionary: dictionary containing genes, with the gene databaseID as the key</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>and the analyte RAMPID as the value. This dictionary is created in the writeToSQL class.</dt>
+<dd>param dict pathwaysWithGenesDictionaryWiki: pathways in wikipathways
+param dict pathwaysWithGenesDictionaryKegg: pathways in kegg
+param dict pathwaysWithGenesDictionaryReactome: pathways in reactome</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="getStatistics.getStatistics.analyteOverlaps">
+<code class="descname">analyteOverlaps</code><span class="sig-paren">(</span><em>rampIdInWhichDatabases</em>, <em>rampIdDictionary</em>, <em>analyteType</em>, <em>writeToFiles=False</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatistics.getStatistics.analyteOverlaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The purpose of the function analyteOverlaps is to compare information among the four databases that make 
+up the RaMP databases &#8211; wikipathways, reactome, kegg, hmdb. There may be overlaps between two ormore 
+of the databases. For example, one metabolite may be present in two databaase. The metabolite in  database 1
+may be identified by the same metabolite id in both databases, or they may be different. Differences in IDs are
+resolved in the ID conversion class &#8211; by the time this function is run all known ids for a metabolite are contained 
+in the rampIdDictionary dictionary, which links the RAMPID to every metabolite id.</p>
+<p>The output of the function is a four-way venn diagram showing analyte overlaps.</p>
+<p>Although the example above refers only to metabolites, this function works for either genes or metabolites. 
+However, they must be submitted separately.</p>
+<p>Analyte means gene OR metabolite. The function works on either genes OR metabolites.</p>
+<p>param dict rampIdInWhichDatabases: dictionary where the rampID is the key and a set of databases is the value. This 
+dictionary keeps track of which databases a RAMPID can be found in. For example, hmdb and kegg. This dictionary is created 
+in the writeToSQL class.
+param dict rampIdDictionary: dictionary containing either metabolites or genes, with the analyte databaseID as the key  
+and the analyte RAMPID as the value. This dictionary is created in the writeToSQL class. 
+param str analyteType: &#8220;Gene&#8221; or &#8220;Compound&#8221;
+param bool writeToFiles: A file can be created where each line is an analyte. The first column is a list of identifies
+for analyte and the second column is the databases the analyte is found in (abbreviated, k for kegg, r for reactome, etc).
+This parameter is default off since this is time-consuming.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="getStatistics.getStatistics.databaseContent">
+<code class="descname">databaseContent</code><span class="sig-paren">(</span><em>pathwayDictionary</em>, <em>pathwayCategory</em>, <em>metabolitesWithPathwaysDictionary</em>, <em>metabolitesWithSynonymsDictionary</em>, <em>metaboliteIDDictionary</em>, <em>pathwaysWithGenesDictionary</em>, <em>geneInfoDictionary</em>, <em>biofluidLocation</em>, <em>biofluid</em>, <em>cellularLocation</em>, <em>cellular</em>, <em>pathwayOntology</em>, <em>endoExoDictionary</em>, <em>database</em><span class="sig-paren">)</span><a class="headerlink" href="#getStatistics.getStatistics.databaseContent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The purpose of databaseContent is to get overall metrics for the individual databases that make up RaMP. 
+These metrics will be printed out to the screen. They are:</p>
+<ol class="arabic simple">
+<li>Number of genes</li>
+<li>Number of metabolites</li>
+<li>Number of pathways</li>
+<li>Biofluids (if applicable, only found in hmdb)</li>
+<li>Cellular location (if application, only found in hmdb)</li>
+</ol>
+<p>param dict pathwayDictionary: see class for database 
+param dict pathwayCategory: see class for database
+param dict metabolitesWithPathwaysDictionary: see class for database
+param dict metabolitesWithSynonymsDictionary: see class for database
+param dict metaboliteIDDictionary: see class for database
+param dict pathwaysWithGenesDictionary: see class for database
+param dict geneInfoDictionary: see class for database
+param dict biofluidLocation: see class for database (may be empty for some classes)
+param dict biofluid: see class for database (may be empty for some classes)
+param dict cellularLocation: see class for database (may be empty for some classes)
+param dict cellular: see class for database (may be empty for some classes)
+param dict pathwayOntology: see class for database (may be empty for some classes)
+param dict endoExoDictionary: see class for database (may be empty for some classes)
+param str  database: name of the database (e.g. &#8220;kegg&#8221;)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/getStatistics.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, liz.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/source/getStatistics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
