@@ -1,7 +1,8 @@
 import urllib.request
 import time
 from multiprocessing import Pool
-from os import listdir
+import os
+from MetabolomicsData import MetabolomicsData
 '''
 This module works to import a variety of data about metabolites from the kegg database.
 
@@ -11,7 +12,7 @@ about the api (used in this module) is available here: http://www.kegg.jp/kegg/r
 '''
 
 
-class KeggData():
+class KeggData(MetabolomicsData):
 
     '''
     KeggData's functions work together to get all required information from the kegg database. 
@@ -31,7 +32,8 @@ class KeggData():
     '''
     
     def __init__(self):
-        
+        # constructor
+        super().__init__()
         # key: kegg metabolite ID CXXXXX Value: Common Name Assume the first appeared name is the common name
         self.metaboliteCommonName = dict() 
         #key: hsaID for pathway, value: pathway name
@@ -94,8 +96,16 @@ class KeggData():
         '''
         Download file hsa.txt that has 321 pathways in it
         '''
-        urllib.request.urlretrieve("http://rest.kegg.jp/list/pathway/hsa", "../misc/data/kegg/hsa.txt")
+        pathway_dir = "../misc/data/kegg/"
+        pathway_file = "hsa.txt"
+        download_url = "http://rest.kegg.jp/list/pathway/hsa"
         
+        self.check_path(pathway_dir)
+    
+        if os.path.exists(pathway_dir) and pathway_file not in os.listdir(pathway_dir):
+            self.download_files(download_url,pathway_dir+pathway_file)
+            #urllib.request.urlretrieve(download_url, pathway_dir+pathway_file)
+            
         tempPathwayDictionary = dict()
         pathwayDictionary = dict()
         compoundDictionary = dict()
@@ -124,10 +134,15 @@ class KeggData():
                     #place it in the dictionary 
                     tempPathwayDictionary[hsaIDnumberonly] = pathway
         #FILTER PATHWAYS BETTER
-        files = listdir("../misc/data/kegg/pathways/")
+        each_pathway_dir = "../misc/data/kegg/pathways/"
+        self.check_path(each_pathway_dir) # check and create directory
+        
+        files = os.listdir(each_pathway_dir)
+        
         '''
         Get individual pathway file from hsa.txt
         '''
+        
         for key in tempPathwayDictionary:    
             url = 'http://rest.kegg.jp/get/' + "path:hsa" + key
             print("url=" +url)
@@ -145,6 +160,7 @@ class KeggData():
                         category = splitline[0]
                         #if category == "Metabolism" or category == "Human Diseases" or category == "Cellular Processes":
                     pathwayDictionary[key] = tempPathwayDictionary[key]
+                onePathwayFile.close()
             else:
                 pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
                 # dont need to download anything
@@ -165,7 +181,10 @@ class KeggData():
         Store pathway compound relations ...
         
         '''   
-        files = listdir("../misc/data/kegg/pathwaysWithCompounds/")           
+        
+        pathway_cpd_dir = "../misc/data/kegg/pathwaysWithCompounds/"
+        self.check_path(pathway_cpd_dir)
+        files = os.listdir(pathway_cpd_dir)           
         for key in pathwayDictionary:
             url = 'http://rest.kegg.jp/link/cpd/' + "map" + key
             pathToSavedFile = "../misc/data/kegg/pathwaysWithCompounds/" + "cpdmap" + key + ".txt"
@@ -173,7 +192,7 @@ class KeggData():
             
             print("download files ..." + name)
             if name not in files:
-                urllib.request.urlretrieve(url, pathToSavedFile)
+                self.download_files(url, pathToSavedFile)
                 compoundFile = open(pathToSavedFile)
             else:
                 compoundFile = open(pathToSavedFile)
@@ -194,13 +213,15 @@ class KeggData():
             
         print("Downloading additional information about compound...")    
         #GET INDIVIDUAL COMPOUND FILES
-        cfiles = listdir('../misc/data/kegg/compounds/')
+        cpd_dir = '../misc/data/kegg/compounds/'
+        self.check_path(cpd_dir)
+        cfiles = os.listdir(cpd_dir)
         for metabolite in compoundDictionary:
             url = 'http://rest.kegg.jp/get/' + metabolite
             file = metabolite +'.txt'
             pathToSavedFile = "../misc/data/kegg/compounds/" + metabolite + ".txt"
             if file not in cfiles:
-                urllib.request.urlretrieve(url, pathToSavedFile)
+                self.download_files(url, pathToSavedFile)
             print(url)
        
         
@@ -238,8 +259,9 @@ class KeggData():
              
         print("Downloading genes...")
         totalgenes = len(geneDictionary)
-        
-        files = listdir('../misc/data/kegg/genes/')
+        genes_dir = '../misc/data/kegg/genes/'
+        self.check_path(genes_dir)
+        files = os.listdir(genes_dir)
         currentgene = len(files)
         for gene in geneDictionary:
             
@@ -250,51 +272,52 @@ class KeggData():
             print("current Kegg gene download:"+file+"---" + str(currentgene) + "/" + str(totalgenes))
             currentgene = currentgene + 1
             if file not in files:
-                urllib.request.urlretrieve(url, pathToSavedFile)
+                self.download_files(url, pathToSavedFile)
                 
-    '''
-    getDatabaseFiles2(self)
-    Following getDatabaseFiles1, this function download links between pathways and genes 
-    to new Folder pathwayWithGenes...
     
-    1. call get pathwas first
-    2. Call getDatabaseFiles2 to get all pathway gene mapping file...
-    
-    '''            
-    def getDatabaseFiles2(self):
+    def getPathways_with_genes(self):
+        '''
+        getDatabaseFiles2(self)
+        Following getDatabaseFiles1, this function download links between pathways and genes 
+        to new Folder pathwayWithGenes...
+        
+        1. call get pathwas first
+        2. Call getDatabaseFiles2 to get all pathway gene mapping file...
+        
+        '''            
         path = "../misc/data/kegg/pathwaysWithGenes/"
-        dir = listdir("../misc/data/kegg/pathwaysWithGenes/")
-        for key in self.pathwayDictionary:
-            filename = "hsa"+key+".txt"
-            if filename not in dir:
-                url ="http://rest.kegg.jp/link/hsa/hsa" + key
-                print("download ... " + url)
-                urllib.request.urlretrieve(url,path + "hsa" +key+".txt")
+        if self.check_path(path):
+            dir = os.listdir(path)
+            for key in self.pathwayDictionary:
+                filename = "hsa"+key+".txt"
+                if filename not in dir:
+                    url ="http://rest.kegg.jp/link/hsa/hsa" + key
+                    print("download ... " + url)
+                    urllib.request.urlretrieve(url,path + "hsa" +key+".txt")
+                    
+            # Update genes dict
+            genedir = os.listdir("../misc/data/kegg/genes/")
+            for file in dir:
+                filepath = path + file
+                pathwayFile = open(filepath)
+                for line in pathwayFile:
+                    splitline = line.split("\t")
+                    if(len(splitline) > 1):
+                        pathway = splitline[0].replace("path:hsa","")
+                        geneid = splitline[1].replace("hsa:","")
+                        geneid = geneid.replace("\n","")
+                        geneFile = geneid +".txt"
+                        if geneFile not in genedir:
+                            url = "http://rest.kegg.jp/get/" +"hsa:" + geneFile.replace(".txt","")
+                            
                 
-        # Update genes dict
-        genedir = listdir("../misc/data/kegg/genes/")
-        for file in dir:
-            filepath = path + file
-            pathwayFile = open(filepath)
-            for line in pathwayFile:
-                splitline = line.split("\t")
-                if(len(splitline) > 1):
-                    
-                    pathway = splitline[0].replace("path:hsa","")
-                    geneid = splitline[1].replace("hsa:","")
-                    geneid = geneid.replace("\n","")
-                    geneFile = geneid +".txt"
-                    if geneFile not in genedir:
-                        url = "http://rest.kegg.jp/get/" +"hsa:" + geneFile.replace(".txt","")
+                            pathToSavedFile = "../misc/data/kegg/genes/" + geneFile
+                            
                         
-            
-                        pathToSavedFile = "../misc/data/kegg/genes/" + geneFile
+                            urllib.request.urlretrieve(url, pathToSavedFile)
                         
-                    
-                        urllib.request.urlretrieve(url, pathToSavedFile)
-                    
-            
-            
+                
+                
                    
         
     
@@ -340,7 +363,7 @@ class KeggData():
         
         #find the pathway category and only keep certain pathways: metabolism, cellular process, human disease
         # Not limited by categoires from 11/17/2017 Update
-        files = listdir("../misc/data/kegg/pathways")
+        files = os.listdir("../misc/data/kegg/pathways")
         for key in tempPathwayDictionary:    
             pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
             onePathwayFile = open(pathToSavedFile)
@@ -682,7 +705,7 @@ class KeggData():
     This function parses all files of pathwaysLinkTogenes to build up pathway-genes relations
     '''
     def getPathwayLinkedToGene(self):
-        files = listdir("../misc/data/kegg/pathwaysWithGenes/")
+        files = os.listdir("../misc/data/kegg/pathwaysWithGenes/")
         for file in files:
             pathwayFile = open("../misc/data/kegg/pathwaysWithGenes/" + file)
             
