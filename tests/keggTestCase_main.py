@@ -5,6 +5,7 @@ from getStatistics import getStatistics
 import time
 import unittest
 import csv
+
 class TestKeggMain(unittest.TestCase):
 
     def testMain(self):
@@ -14,7 +15,7 @@ class TestKeggMain(unittest.TestCase):
         idconvert = IDconversion()
         stat = getStatistics()
         # get database file
-        #kegg.getDatabaseFiles()
+        kegg.getDatabaseFiles()
         #kegg.getDatabaseFiles2()
         print('get pathways')
         kegg.getPathways()
