@@ -15,29 +15,15 @@ class TestWikipathwaysMain(unittest.TestCase):
         stat = getStatistics()
         
         wikipathways = wikipathwaysData()
-        #wikipathways.getDatabaseFiles()
+        wikipathways.getDatabaseFiles()
+        
+        
+        
+        
         wikipathways.getEverything()
         print(wikipathways.setOfType)
         wikipathways.getCommonNameForChebi()
-        file = open("../misc/output/wikiGenesID.txt","wb")
-        for key in wikipathways.geneInfoDictionary:
-            file.write(key.encode("utf-8") +b"\n")
-        file.close()
-        print(len(wikipathways.metaboliteIDDictionary))
-        print(len(wikipathways.metabolitesWithPathwaysDictionary))
-        print(len(wikipathways.geneInfoDictionary))
-        print(len(wikipathways.pathwaysWithGenesDictionary))
-        time.sleep(10)
-        '''
-        outputToFile = open("../misc/output/figure/WIKImetaWithPaths.csv","w",newline="")
-        fieldname = ["metabolites","numOfPathway"]
-        writer = csv.DictWriter(outputToFile,fieldnames = fieldname)
-        writer.writeheader()
-        for key in wikipathways.metabolitesWithPathwaysDictionary:
-            pathways = wikipathways.metabolitesWithPathwaysDictionary[key]
-            if(len(pathways) >0):
-                writer.writerow({fieldname[0]:key,fieldname[1]:len(pathways)})
-                '''
+        
         idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
         sql.checkForWithinDatabaseDuplicatesCompound(wikipathways.metaboliteIDDictionary, "wiki")
         sql.checkForWithinDatabaseDuplicatesGene(wikipathways.geneInfoDictionary, "wiki")
@@ -70,7 +56,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         print("Pathways number is " + str(len(wikipathways.pathwayDictionary)))
         print("metabolites number is " + str(len(wikipathways.metaboliteIDDictionary)))
         print('genes number is '+ str(len(wikipathways.geneInfoDictionary)))
-        '''
+        
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
@@ -82,6 +68,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
-        '''
+        
 
-
+if __name__ == "__main__":
+    unittest.main()

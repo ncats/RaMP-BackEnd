@@ -13,30 +13,23 @@ class TestReactomeMain(unittest.TestCase):
         
         sql = writeToSQL()
         reactome = reactomeData()
-        #reactome.getDatabaseFiles()
+        
+        reactome.getDatabaseFiles()
         print("Getting genes...")
         reactome.getGenes()
         print("Getting metabolites...")
         reactome.getMetabolites()
-        '''
-        file = open("../misc/output/reactomeMetabolitesId.txt","wb")
-        for key in reactome.metaboliteIDDictionary:
-            file.write(key.encode("utf-8") +b"\n")
-        file.close()
-        '''
+        
         print("Getting common names...")
         reactome.getCommonNameForChebi()
-        file = open("../misc/output/reactomeGenesId.txt","wb")
-        for key in reactome.geneInfoDictionary:
-            file.write(key.encode("utf-8") +b"\n")
-        file.close()
-        print("Update gene Uniprot files")
-        ids = reactome.getCommonNameForGenes1(hmdbdict=None,
-                                             keggdict=None,
-                                             )
-        reactome.downloadCommonNameFromUniprot(ids)
+        
+        
         print("Getting common names for genes ...")
-        reactome.getCommonNameForGenes2()
+        
+        reactome.getGenes()
+        reactome.downloadCommonNameFromUniprot()
+        reactome.getCommonNameFromUniprot()
+        
         reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", 0)
         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", 0)
         
