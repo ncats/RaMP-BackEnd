@@ -19,6 +19,7 @@ class TestKeggMain(unittest.TestCase):
         #kegg.getDatabaseFiles2()
         print('get pathways')
         kegg.getPathways()
+        kegg.getPathways_with_genes()
         print(len(kegg.pathwayDictionary))
         print('get metabolites')
         kegg.getMetabolites()

@@ -1,11 +1,13 @@
-import urllib.request
+import urllib.request as RE
 import libchebipy
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ElementTree
 import os
 import zipfile
 import time
-class wikipathwaysData():
+from MetabolomicsData import MetabolomicsData
+
+class wikipathwaysData(MetabolomicsData):
     
     '''
     The wikipathwaysData class actually gets information from wikipathways via number of xml files called gpml files. Each file represents 
@@ -29,6 +31,8 @@ class wikipathwaysData():
     '''
     
     def __init__(self):
+        
+        super().__init__()
         # key: ID for metabolites Value: Common Name (the only name in this database)
         self.metaboliteCommonName = dict()
         #key: ID for pathway, Value: pathway name
@@ -97,29 +101,45 @@ class wikipathwaysData():
         self.idSetFromProtein = dict()
     def getDatabaseFiles(self):
         
-        '''This function gets the files that make up reactome and places them into the reactome folder. 
-
+        '''
+        This function gets the files that make up wikipathways and place them to wikipathways folder.
+        
+        The data file is stored in the url: data.wikipathways.org/ in the order of published date
+        
         '''
         
-        urllib.request.urlretrieve("http://data.wikipathways.org/20170410/gpml/wikipathways-20170410-gpml-Homo_sapiens.zip", "../misc/data/wikipathways/wikipathways-20170410-gpml-Homo_sapiens.zip")
-        
-        with zipfile.ZipFile("../misc/data/wikipathways/wikipathways-20170410-gpml-Homo_sapiens.zip","r") as zip_ref:
-            zip_ref.extractall("../misc/data/wikipathways/")
+        path = "../misc/data/wikipathways/"
+        url = "http://data.wikipathways.org/20180110/gpml/wikipathways-20180110-gpml-Homo_sapiens.zip"
+        file = "wikipathways-20180110-gpml-Homo_sapiens.zip"
+        existed = os.listdir(path)
+        if self.check_path(path) and file not in existed:
+            self.download_files(url, 
+                                path+file)
+            
+            with zipfile.ZipFile(path + file,"r") as zip_ref:
+                zip_ref.extractall(path)
+        else:
+            print("Already Downloaded ....")
         
         
     def getEverything(self):
         
         ''' This function gets all the necessary information from the gpml files and places it into dictionaries. 
         Unlike in other classes, only one function is required to get all the necessary information.
-        
+        The update date needs to be hardcoded to the url.
+        Please make sure going to the website to see which one is the latest version for 
+        wikipathways data.
         '''
         
         print("Call wikipathways getEverything......")  
         pathwikipathways = "../misc/data/wikipathways/"
       
         dictionaryOfFiles = dict()
-      
+        
         for filename in os.listdir(pathwikipathways):
+            if ".zip" in filename:
+                continue  # the original downloaded file is also in same path
+                          # and not parsed to the later process
             fullpath = pathwikipathways + filename
             dictionaryOfFiles[fullpath] = "wikipathways"
           

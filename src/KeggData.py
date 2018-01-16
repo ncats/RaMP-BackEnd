@@ -133,6 +133,7 @@ class KeggData(MetabolomicsData):
                 if hsaIDnumberonly not in tempPathwayDictionary:
                     #place it in the dictionary 
                     tempPathwayDictionary[hsaIDnumberonly] = pathway
+        pathwayFile.close()
         #FILTER PATHWAYS BETTER
         each_pathway_dir = "../misc/data/kegg/pathways/"
         self.check_path(each_pathway_dir) # check and create directory
@@ -150,7 +151,7 @@ class KeggData(MetabolomicsData):
             #time.sleep(1)
             if name not in files:
                 pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
-                urllib.request.urlretrieve(url, pathToSavedFile)
+                self.download_files(url, pathToSavedFile)
                 onePathwayFile = open(pathToSavedFile)
                 # assign the name not all pathways have CLASS
                 for line in onePathwayFile:
@@ -191,6 +192,7 @@ class KeggData(MetabolomicsData):
             name = "cpdmap"+key+".txt"
             
             print("download files ..." + name)
+            compoundFile = None
             if name not in files:
                 self.download_files(url, pathToSavedFile)
                 compoundFile = open(pathToSavedFile)
@@ -281,8 +283,8 @@ class KeggData(MetabolomicsData):
         Following getDatabaseFiles1, this function download links between pathways and genes 
         to new Folder pathwayWithGenes...
         
-        1. call get pathwas first
-        2. Call getDatabaseFiles2 to get all pathway gene mapping file...
+        1. call self.getPathways() first
+        2. Call self.getPathways_with_genes() to get all pathway gene mapping file...
         
         '''            
         path = "../misc/data/kegg/pathwaysWithGenes/"
@@ -293,7 +295,7 @@ class KeggData(MetabolomicsData):
                 if filename not in dir:
                     url ="http://rest.kegg.jp/link/hsa/hsa" + key
                     print("download ... " + url)
-                    urllib.request.urlretrieve(url,path + "hsa" +key+".txt")
+                    self.download_files(url,path + "hsa" +key+".txt")
                     
             # Update genes dict
             genedir = os.listdir("../misc/data/kegg/genes/")
@@ -312,11 +314,11 @@ class KeggData(MetabolomicsData):
                             
                 
                             pathToSavedFile = "../misc/data/kegg/genes/" + geneFile
-                            
+                         
                         
-                            urllib.request.urlretrieve(url, pathToSavedFile)
+                            self.download_files(url, pathToSavedFile)
                         
-                
+                pathwayFile.close()   
                 
                    
         
@@ -514,7 +516,7 @@ class KeggData(MetabolomicsData):
                     continue
             
             self.metabolitesWithSynonymsDictionary[metabolite] = compoundList
-            
+           
             ####CHEBI####
             
             listOfChebi = []
@@ -566,7 +568,7 @@ class KeggData(MetabolomicsData):
                 
             metaboliteMapping["kegg_id"] = metabolite
             self.metaboliteIDDictionary[metabolite] = metaboliteMapping
-
+            compound.close()
                          
                         
                          
@@ -727,7 +729,8 @@ class KeggData(MetabolomicsData):
                         print("Add gene " + geneid)
                         print(self.pathwaysWithGenesDictionary)
                         self.pathwaysWithGenesDictionary[pathway] = [geneid]
-                    
+            
+            pathwayFile.close()        
                 #time.sleep(3)
             
     def getGeneInfo(self):
@@ -800,20 +803,7 @@ class KeggData(MetabolomicsData):
             
             self.geneInfoDictionary[gene] = mapping
             geneFile.close()
-        outputKeggIdmapping = open("../misc/output/keggGeneInfo.txt","wb")
-        
-        for key in self.geneInfoDictionary:
-            map = self.geneInfoDictionary[key]
-            for key2 in map:
-                id = map[key2]
-                if id != "NA" and type(id) is not list:
-                    outputKeggIdmapping.write(key.encode("utf-8") +b"\t"+ key2.encode("utf-8") +b"\t" + id.encode("utf-8") +b"\n")
-                elif type(id) is list and len(id)>0:
-                    
-                    for item in id:
-                        outputKeggIdmapping.write(key.encode("utf-8") +b"\t"+ key2.encode("utf-8") +b"\t" + item.encode("utf-8") +b"\n") 
-                               
-        outputKeggIdmapping.close()            
+             
 
             
 #This line exists for sphinx to work properly (documentation): http://autoapi.readthedocs.io/                

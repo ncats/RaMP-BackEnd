@@ -2,9 +2,15 @@ import urllib.request
 import urllib.error as ER
 import libchebipy
 import time
-from os import listdir
+import os
 import xml.etree.ElementTree as ET
-class reactomeData():
+from MetabolomicsData import MetabolomicsData
+from multiprocessing.dummy import Pool
+class reactomeData(MetabolomicsData):
+    '''
+    This class contains all dict stored and distributed from Reactome Official websites.
+    
+    '''
         
     def __init__(self):
         # key: Chebi ID from reactome Value: common Name by querying Chebi Database
@@ -62,23 +68,44 @@ class reactomeData():
         '''This function gets the files that make up reactome and places them into the reactome folder. 
 
         '''
+        url_proteins,dir_proteins,file_proteins = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
+                                                            "../misc/data/reactome/",
+                                                            "UniProt2Reactome_All_Levels.txt")
+        url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
+                                                              "../misc/data/reactome/",
+                                                              "ChEBI2Reactome_All_Levels.txt")
         
-        urllib.request.urlretrieve("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt", "../misc/data/reactome/UniProt2Reactome_All_Levels.txt")
-        urllib.request.urlretrieve("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt", "../misc/data/reactome/ChEBI2Reactome_All_Levels.txt")
-
+        if self.check_path(dir_proteins) :  
+            
+            if file_metabolites not in existed or file_proteins not in existed:                                                
+                self.download_files(url_proteins,dir_proteins+file_proteins)
+                self.download_files(url_metabolites, dir_metabolites+file_metabolites)
+            else:
+                print("Already downloaded ...")
+        else:
+            existed = os.listdir(dir_proteins) 
+            if file_metabolites not in existed or file_proteins not in existed:                                                
+                self.download_files(url_proteins,dir_proteins+file_proteins)
+                self.download_files(url_metabolites, dir_metabolites+file_metabolites)
+            else:
+                print("Already downloaded ...")
+            
+        time.sleep(1)
     def getGenes(self): 
             
         reactomeFile = open("../misc/data/reactome/UniProt2Reactome_All_Levels.txt", encoding="utf-8")
         
         for line in reactomeFile:
+            
             splitline = line.split("\t")       
+            print(splitline)
             if len(splitline) > 2:
-                 if "Homo sapiens" in splitline[5]:
-                     gene = splitline[0]
-                     pathwayID = splitline[1]
-                     pathwayName = splitline[3]
+                if "Homo sapiens" in splitline[5]:
+                    gene = splitline[0]
+                    pathwayID = splitline[1]
+                    pathwayName = splitline[3]
                     
-                     mapping = { 'kegg': 'NA',
+                    mapping = { 'kegg': 'NA',
                                 'common_name': 'NA',
                                 'Ensembl': 'NA', 
                                 'HGNC': 'NA', 
@@ -93,17 +120,17 @@ class reactomeData():
                                 'Entrez': 'NA',
                                 'Enzyme Nomenclature': 'NA'}
 
-                     if pathwayID not in self.pathwaysWithGenesDictionary:
-                         self.pathwaysWithGenesDictionary[pathwayID] = [gene]
-                         self.pathwayDictionary[pathwayID] = pathwayName
-                         self.pathwayCategory[pathwayID] = "NA"
-                         self.geneInfoDictionary[gene] = mapping
+                    if pathwayID not in self.pathwaysWithGenesDictionary:
+                        self.pathwaysWithGenesDictionary[pathwayID] = [gene]
+                        self.pathwayDictionary[pathwayID] = pathwayName
+                        self.pathwayCategory[pathwayID] = "NA"
+                        self.geneInfoDictionary[gene] = mapping
                          
-                     else: 
-                         listOfGenes = self.pathwaysWithGenesDictionary[pathwayID]
-                         listOfGenes.append(gene)
-                         self.geneInfoDictionary[gene] = mapping
-                         self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
+                    else: 
+                        listOfGenes = self.pathwaysWithGenesDictionary[pathwayID]
+                        listOfGenes.append(gene)
+                        self.geneInfoDictionary[gene] = mapping
+                        self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
                  
     
     
@@ -114,14 +141,14 @@ class reactomeData():
         for line in reactomeFile:
             splitline = line.split("\t")
             if len(splitline) > 2:
-                 if "Homo sapiens" in splitline[5]:
-                     metabolite = splitline[0]
-                     pathwayID = splitline[1]
-                     pathwayName = splitline[3]
-                     if metabolite not in self.metabolitesWithPathwaysDictionary:
-                         self.metabolitesWithPathwaysDictionary[metabolite] = [pathwayID]
+                if "Homo sapiens" in splitline[5]:
+                    metabolite = splitline[0]
+                    pathwayID = splitline[1]
+                    pathwayName = splitline[3]
+                    if metabolite not in self.metabolitesWithPathwaysDictionary:
+                        self.metabolitesWithPathwaysDictionary[metabolite] = [pathwayID]
 
-                         mapping = {"chebi_id": [metabolite], 
+                        mapping = {"chebi_id": [metabolite], 
                                      "drugbank_id": "NA", 
                                      "drugbank_metabolite_id": "NA", 
                                      "phenol_explorer_compound_id": "NA", 
@@ -146,14 +173,14 @@ class reactomeData():
                          
                          
                          
-                         self.metaboliteIDDictionary[metabolite] = mapping
-                     else: 
-                         listOfPathways = self.metabolitesWithPathwaysDictionary[metabolite]
-                         listOfPathways.append(pathwayID)
-                         self.metabolitesWithPathwaysDictionary[metabolite] = listOfPathways
-                     if pathwayID not in self.pathwayDictionary:
-                         self.pathwayDictionary[pathwayID] = pathwayName
-                         self.pathwayCategory[pathwayID] = "NA"
+                        self.metaboliteIDDictionary[metabolite] = mapping
+                    else: 
+                        listOfPathways = self.metabolitesWithPathwaysDictionary[metabolite]
+                        listOfPathways.append(pathwayID)
+                        self.metabolitesWithPathwaysDictionary[metabolite] = listOfPathways
+                    if pathwayID not in self.pathwayDictionary:
+                        self.pathwayDictionary[pathwayID] = pathwayName
+                        self.pathwayCategory[pathwayID] = "NA"
                          
     
     def getCommonNameForChebi(self):
@@ -185,11 +212,21 @@ class reactomeData():
             else:
                 self.metaboliteCommonName[key] = "NA" 
     '''
-    Find Common Name from all other datasbase geneInforDict
-    And return the Uniprot IDs that does not have common name 
+    Query Uniprot database to download all files to fill common name of 
+    genes by using their RESTFUL APT
+    - hmdbdict gene information from HMDB database
+    - keggdict gene information from KEGG database
+    - wikidict gene information from wikipathways database
+    If attributes != None, it will find common name from existed dictionary 
+    to fill the Reactome.
     
+    By default, all the synonyms are found by querying Uniprot API.
+    
+    The function should be called:
+     1) self.downloadCommonNameFromUniprot()
+     2) self.getCommonNameFromUniprot()
     '''
-    def getCommonNameForGenes1(self,hmdbdict = None,keggdict = None,wikidict = None):
+    def downloadCommonNameFromUniprot(self,hmdbdict=None,keggdict=None,wikidict = None):
         reactGeneIds = list()
         otherdatabase = {
             "hmdb": hmdbdict,
@@ -220,34 +257,35 @@ class reactomeData():
                 self.geneInfoDictionary[id] = mapping
                 reactGeneIds.remove(id)
         
-        print("Unfound genes for name are " + str(len(reactGeneIds)))        
-        return(reactGeneIds)
-    '''
-    Query Uniprot database to download all files to fill common name of 
-    genes
-    
-    '''
-    def downloadCommonNameFromUniprot(self,Ids):
+        print("Unfound genes for name are " + str(len(reactGeneIds))) 
+        
+        Ids = reactGeneIds
         url ="http://www.uniprot.org/uniprot/"
-        files = listdir("../misc/data/Uniprot/")
+        dir = "../misc/data/Uniprot/"
+        self.check_path(dir)
+        files = os.listdir(dir)
         num = len(files)
+        query = []
+        file_dir = []
+        files_name = []
         for id in Ids:
             print("Downloading ..." + id)
             if id + ".xml" not in files:
-                query = url + id +".xml"
-                try:
-                    urllib.request.urlretrieve(query,"../misc/data/Uniprot/" +id +".xml")
-                except ER.HTTPError:
-                    print(id + " Not Found ...")
-                    continue
+                query.append(url + id +".xml")
+                file_dir.append(dir)
+                files_name.append(id+".xml")
+                #self.download_files(query, dir + id + ".xml")
                 print( str(num) +"/" +str(len(Ids)))
                 num = num + 1
+        with Pool(50) as p:
+            p.starmap(self.download_files,
+                  zip(query,file_dir,files_name))
     '''
     Parse XML files of Uniprot to get common name of genes.
     Fill self.geneInfoDict['common_name']
     '''
-    def getCommonNameForGenes2(self):
-        files = listdir("../misc/data/Uniprot/")
+    def getCommonNameFromUniprot(self):
+        files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
         for f in files:
             print(path+f)

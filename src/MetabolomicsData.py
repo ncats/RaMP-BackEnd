@@ -33,12 +33,25 @@ class MetabolomicsData():
 		Download file from given url to given directory with all handled errors
 		- url The string that represents correct url that has the file
 		- dir a local directory that exists 
+		- file name of the file you want to downloaded. 
+			if not None: need to be concatenated with directory {dir}
 		'''
 		#if file is not None:
-			
-		try:
-			urllib.request.urlretrieve(url,dir)
-		except URLError as e:
-			print("Invalid URL: " + e.reason)
-		except HTTPError as e:
-			print("HTTP ERROR:" + e.code)
+		if file is None:	
+			try:
+				urllib.request.urlretrieve(url,dir)
+			except URLError as e:
+				print("Invalid URL: " + e.reason)
+			except HTTPError as e:
+				print("HTTP ERROR:" + e.code)
+		elif isinstance(file,str):
+			if file not in os.listdir(dir):
+				print("{}. Downloading {} ".format(str(len(os.listdir(dir))),file))
+				try:
+					urllib.request.urlretrieve(url,dir+file)
+				except URLError as e:
+					print("Invalid URL: " + e.reason)
+				except HTTPError as e:
+					print("HTTP ERROR:" + e.code)
+		else:
+			raise TypeError("Expect a string for the file name")	
