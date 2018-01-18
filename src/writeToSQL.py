@@ -1,5 +1,6 @@
 import time
-class writeToSQL():
+from MetabolomicsData import MetabolomicsData
+class writeToSQL(MetabolomicsData):
     
     '''This class takes the information gathered in database classes (such as hmdbData, keggData) and formats it
     properly for writing to .sql, which are used to create the mySQL database. 
@@ -8,7 +9,7 @@ class writeToSQL():
     
     
     def __init__(self):
-        
+        super().__init__()
         #key: compound ID, value: rampID
         self.rampCompoundIDdictionary = dict()
 
@@ -484,7 +485,7 @@ class writeToSQL():
                         
         finalRAMPIDnumbers = [rampPathwayIDnumber, rampOntologyLocationID]
         
-        
+        self.check_path("../misc/sql/")
         analyteOutFile = open("../misc/sql/" + str(database) + "analyte.sql", 'wb')
         analyteSynonymOutFile = open("../misc/sql/" + str(database) + "analyteSynonym.sql", 'wb')                
         analyteHasPathwayOutFile = open("../misc/sql/" + str(database) + "analyteHasPathway.sql", 'wb')

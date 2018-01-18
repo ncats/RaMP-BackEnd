@@ -60,4 +60,5 @@ class TestReactomeMain(unittest.TestCase):
         print("metabolites number is " + str(len(reactome.metaboliteIDDictionary)))
         print('genes number is '+ str(len(reactome.geneInfoDictionary)))
         
-        
+if __name__ == "__main__":
+    unittest.main()  
