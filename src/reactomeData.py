@@ -13,6 +13,7 @@ class reactomeData(MetabolomicsData):
     '''
         
     def __init__(self):
+        super().__init__()
         # key: Chebi ID from reactome Value: common Name by querying Chebi Database
         self.metaboliteCommonName = dict()
         #key: ID for pathway, Value: pathway name
@@ -98,7 +99,7 @@ class reactomeData(MetabolomicsData):
         for line in reactomeFile:
             
             splitline = line.split("\t")       
-            print(splitline)
+            
             if len(splitline) > 2:
                 if "Homo sapiens" in splitline[5]:
                     gene = splitline[0]
@@ -197,8 +198,8 @@ class reactomeData(MetabolomicsData):
                     chebiToSearch2 = libchebipy.ChebiEntity(chebiToSearch)
                     name = chebiToSearch2.get_name()
                     commonName = name
-                    print("Getting ..." + each)
-                    print(name)
+                    
+                    
                     #time.sleep(1)
                     if commonName is not None:
                         self.metaboliteCommonName[each] = commonName
@@ -269,8 +270,9 @@ class reactomeData(MetabolomicsData):
         file_dir = []
         files_name = []
         for id in Ids:
-            print("Downloading ..." + id)
+           
             if id + ".xml" not in files:
+                print("Downloading ..." + id)
                 query.append(url + id +".xml")
                 file_dir.append(dir)
                 files_name.append(id+".xml")
@@ -289,25 +291,28 @@ class reactomeData(MetabolomicsData):
         path = "../misc/data/Uniprot/"   
         for f in files:
             print(path+f)
-            tree = ET.parse(path + f)
-            geneid = f.replace(".xml","")
-            root = tree.getroot()
-            childs = root.iter("{http://uniprot.org/uniprot}entry")
-            
-            for child in childs:
-                for child2 in child:
-                    childtag = child2.tag.replace("{http://uniprot.org/uniprot}","")
-                    if childtag == "gene":
-                        for name in child2:
-                            type = name.get("type")
-                            if type == "primary":
-                                #print(geneid+":"+name.text)
-                                try:
-                                    mapping = self.geneInfoDictionary[geneid]
-                                    mapping["common_name"] = name.text
-                                except KeyError:
-                                    print("Raw data does not have this ID ...")
-                                    print(geneid)
-                                #time.sleep(0.1)
+            try:
+                tree = ET.parse(path + f)
+                geneid = f.replace(".xml","")
+                root = tree.getroot()
+                childs = root.iter("{http://uniprot.org/uniprot}entry")
+                
+                for child in childs:
+                    for child2 in child:
+                        childtag = child2.tag.replace("{http://uniprot.org/uniprot}","")
+                        if childtag == "gene":
+                            for name in child2:
+                                type = name.get("type")
+                                if type == "primary":
+                                    #print(geneid+":"+name.text)
+                                    try:
+                                        mapping = self.geneInfoDictionary[geneid]
+                                        mapping["common_name"] = name.text
+                                    except KeyError:
+                                        print("Raw data does not have this ID ...")
+                                        print(geneid)
+            except ET.ParseError:
+                print("Skip this ...")
+                pass
              
           
