@@ -619,87 +619,102 @@ class writeToSQL(MetabolomicsData):
                         #there are multiple chebi for every compound so you cannot 
             #just call mapping["chebi_id"]
             commonName = metaboliteCommonName[key]
+            if commonName is None:
+                commonName = "NA"
+            id_to_write = {'chebi_id':'chebi','hmdb_id':'hmdb',
+                           'kegg_id':'kegg','CAS':'CAS',
+                           'pubchem_compound_id':'pubchem',
+                           'chemspider_id':'chemspider',
+                           'LIPIDMAPS':'LIPIDMAPS'}
+            for id_key in id_to_write:
+                if mapping[id_key] is not 'NA':
+                    self.write_source(sourceOutFile, 
+                                      mapping[id_key], 
+                                      self.rampCompoundIDdictionary[key], 
+                                      id_to_write[id_key], 
+                                      'compound', 
+                                      commonName)
+                    '''
             chebiid = mapping["chebi_id"]
             hmdbid = mapping["hmdb_id"]
             keggid = mapping["kegg_id"]
             cas = mapping["CAS"]
             pubchem_compound_id = mapping["pubchem_compound_id"]
             chemspider_id = mapping["chemspider_id"]
-            if commonName is None:
-                commonName = "NA"
+            
             if chebiid is not "NA":
                 self.write_source(sourceOutFile, 
                                   chebiid, 
                                   self.rampCompoundIDdictionary[key], 
                                   'chebi', 'compound', commonName)
-                '''
+                
                 for eachid in chebiid:
                     if eachid is not "NA":
                         sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
                                             self.rampCompoundIDdictionary[key].encode('utf-8') + 
                                             b"\t" + b"chebi" + b"\t" + b"compound" 
                                             +b"\t" + commonName.encode("utf-8")+ b"\n")
-                 '''  
+                  
             if hmdbid is not "NA":
                 self.write_source(sourceOutFile, 
                                   hmdbid, 
                                   self.rampCompoundIDdictionary[key], 
                                   'hmdb', 'compound', commonName)
-                '''
+                
                 for eachid in hmdbid:
                     if eachid is not "NA":
                         sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
                                             self.rampCompoundIDdictionary[key].encode('utf-8')
                                              + b"\t" + b"hmdb" + b"\t"
                                               + b"compound" +b"\t" + commonName.encode("utf-8")+ b"\n")
-          '''
+          
             if keggid is not "NA":
                 self.write_source(sourceOutFile, 
                                   keggid, 
                                   self.rampCompoundIDdictionary[key], 
                                   'kegg', 'compound', commonName)
-                '''
+                
                 sourceOutFile.write(keggid.encode('utf-8') + b"\t" 
                                     + self.rampCompoundIDdictionary[key].encode('utf-8') +
                                      b"\t" + b"kegg" + b"\t" + b"compound"
                                      +b"\t" + commonName.encode("utf-8") + b"\n")
-            '''
+            
 
             if cas is not "NA":
                 self.write_source(sourceOutFile, 
                                   cas, 
                                   self.rampCompoundIDdictionary[key], 
                                   'CAS', 'compound', commonName)
-                '''
+                
                 sourceOutFile.write(cas.encode('utf-8') + b"\t" + 
                                     self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
                                     + b"cas" + b"\t" + b"compound"
                                     +b"\t" + commonName.encode("utf-8")+ b"\n")
-            '''
+            
             if pubchem_compound_id is not "NA":
                 self.write_source(sourceOutFile, 
                                   pubchem_compound_id, 
                                   self.rampCompoundIDdictionary[key], 
                                   'pubchem', 'compound', commonName)
-                '''
+                
                 sourceOutFile.write(pubchem_compound_id.encode('utf-8') + b"\t"
                                      + self.rampCompoundIDdictionary[key].encode('utf-8')
                                       + b"\t" + b"pubchem" + b"\t" + b"compound"
                                       +b"\t" + commonName.encode("utf-8")+ b"\n")
-                                      '''
+                                      
             
             if chemspider_id is not "NA":
                 self.write_source(sourceOutFile, 
                                   chemspider_id, 
                                   self.rampCompoundIDdictionary[key], 
                                   'chemspider', 'compound', commonName)
-                '''
+                
                 sourceOutFile.write(chemspider_id.encode('utf-8') + b"\t" + 
                                     self.rampCompoundIDdictionary[key].encode('utf-8')
                                      + b"\t" + b"chemspider" + b"\t" + b"compound"
                                      +b"\t" + commonName.encode("utf-8")+ b"\n")
-'''
-            
+
+        '''       
         #GENE
         #Source
         for key in geneInfoDictionary:
@@ -780,10 +795,9 @@ class writeToSQL(MetabolomicsData):
                                              + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
                                              + b"\t" + b"kegg" + b"\t" + b"gene"
                                               + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                        print("KEGG ID OUTPUT:" + kegggeneid)
+                       
             else:
-                print("This gene does not have Ramp Gene Id ????")
-                print(key)            
+                print("The kegg gene {} does not have Ramp Gene Id".format(key))            
                 #time.sleep(0.1)
         #METABOLITE
         #metabolite with synonym (synonyms for the common name)

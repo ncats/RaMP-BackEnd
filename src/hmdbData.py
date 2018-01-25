@@ -146,16 +146,23 @@ class hmdbData(MetabolomicsData):
         os.remove(dir+file_proteins)
                             
         
-    def getMetaboliteOtherIDs(self,dir = "hmdb_metabolites.xml"):     
+    def getMetaboliteOtherIDs(self,tree = None,dir = 'hmdb_metabolites.xml'):     
         '''
         This functions finds a number of alternative ids for the main metabolite identifier and places them into: 
             
             - self.metaboliteIDDictionary. 
             - self.metaboliteCommonName
-            '''
+            
+        param elementTree tree A parsed XML HMDB file
+        param str dir a string that specifies which XML file this function parses.
+            
+        return:
+            the tree object it parsed initially. Reuse large object to save memory
+        '''
         print("Start parsing ...")
         now = time.time()
-        tree = ET.parse('../misc/data/hmdb/' + dir)
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/' + dir)
         root = tree.getroot()
         print("Finish parsing ..." + str(time.time() - now))   
         metabohmdbid = "not yet found"
@@ -189,7 +196,8 @@ class hmdbData(MetabolomicsData):
                            "pubchem_compound_id": "NA",
                            "het_id": "NA",
                            "hmdb_id": "NA",
-                           "CAS": "NA"}
+                           "CAS": "NA",
+                           'LIPIDMAPS':'NA'}
                 # Store target tag and key value in another dictionary
                 idtag = {"chebi_id":'chebi_id',
                          "kegg_id":'kegg_id',
@@ -203,21 +211,21 @@ class hmdbData(MetabolomicsData):
                 
                 commonName = None
                 
-                print(metabohmdbid)
+                #print(metabohmdbid)
                 #find other ids for metabolite 
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
                     
-                    print(childtag)
+                    #print(childtag)
                     if childtag == "name":
                         commonName = child.text
                     if childtag == "accession":
-                       metabohmdbid = child.text 
+                        metabohmdbid = child.text 
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
                         source = idtag[childtag]
-                        print(child.text)
-                        time.sleep(0.5)
+                        #print(child.text)
+                        #time.sleep(0.5)
                         # if has id in the tag, append it to the list 
                         if type(mapping[source]) is not list and child.text is not None:
                             mapping[source] = [child.text]
@@ -231,14 +239,14 @@ class hmdbData(MetabolomicsData):
                 else:
                     self.metaboliteCommonName[metabohmdbid] = "NA"        
                         
-                 
+        return tree 
              
                         
                     
                 
 
     
-    def getPathwaysandSynonyms(self):
+    def getPathwaysandSynonyms(self,tree = None,dir = 'hmdb_metabolites.xml'):
         '''
         This functions finds pathways and synonyms for the metabolites and places them in:
             
@@ -251,7 +259,8 @@ class hmdbData(MetabolomicsData):
             
         
         '''
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/'+dir)
         root = tree.getroot()
         metabohmdbid = "not yet found"
         #we will need to iterate through the xml tree to find the information we are looking for
@@ -273,7 +282,7 @@ class hmdbData(MetabolomicsData):
                     #THIS WILL BE THE KEY
                     if childtag == "accession":
                         metabohmdbid = child.text 
-                        print("Getting ..." + metabohmdbid)    
+                        #print("Getting ..." + metabohmdbid)    
                     #find the pathways 
                     
                     listOfPathways = []
@@ -307,16 +316,8 @@ class hmdbData(MetabolomicsData):
                                         # map kegg id with smpid
                                         if smpid not in self.SMPToKegg and smpid is not None:
                                             self.SMPToKegg[smpid] = keggid
-                                '''            
-                            
-                            
-                            #time.sleep(3)
-                                        # map kegg id with name
-                                        #if keggid not in self.pathwayDictionary:
-                                        #    self.pathwayDictionary[keggid] = pathwayName 
-                        
-                                              
-                                    
+                                '''
+                                                         
                         if len(listOfPathways) >0 :           
                             self.metabolitesWithPathwaysDictionary[metabohmdbid] = listOfPathways
 
@@ -331,10 +332,10 @@ class hmdbData(MetabolomicsData):
                         #place all synonyms in a dictionary 
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] = listOfSynonyms
         
-                             
+        return tree                     
                            
              
-    def getGenes(self):
+    def getGenes(self,tree = None,dir = 'hmdb_metabolites.xml'):
         '''
         This function finds genes linked to metabolites and places them in:
         
@@ -347,18 +348,15 @@ class hmdbData(MetabolomicsData):
         And, finally, it finds other ids for every gene and places this in:
         
             -self.geneInfoDictionary
-        
+            
+        param elementTree tree parsed XML file from HMDB source file
         '''
-        
         #key: metabolite id, value: list of gene ids
         self.metabolitesLinkedToGenes = dict()
-        
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/'+ dir)
         root = tree.getroot()
-  
         metabohmdbid = "not yet found"
-        
-        
         #we will need to iterate through the xml tree to find the information we are looking for
         for metabolite in root:
           
@@ -366,16 +364,8 @@ class hmdbData(MetabolomicsData):
             #That's the point of the find and replace. We are removing the namespace string "{http://www.hmdb.ca}"
 
             metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
-
-            
             listofgenes = []
-            
-            
-            
-             
             if metabolitetag == "metabolite":
-                
-  
                 #find other ids for metabolite 
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
@@ -384,7 +374,6 @@ class hmdbData(MetabolomicsData):
                     if childtag == "accession":
                         metabohmdbid = child.text 
                         
-                    
                     if childtag == "protein_associations":
                         
                         for protein in child:
@@ -404,56 +393,33 @@ class hmdbData(MetabolomicsData):
                                        'Entrez': 'NA',
                                        'Enzyme Nomenclature': 'NA'}
                             
+                            idtag = {"uniprot_id":'Uniprot',
+                                     "protein_accession":'HMDB_protein_accession',
+                                     "accession":'hmdb_id',
+                                     "gene_name":'common_name',
+                            }
+                            for key in idtag:
+                                # Find all target tag in idtag.keys()
+                                sourceid = protein.findall('{http://www.hmdb.ca}' + key)
+                                for item in sourceid:
+                                    # replace the name space
+                                    id_tag_key = item.tag.replace('{http://www.hmdb.ca}','')
+                                    mapping_key = idtag[id_tag_key]
+                                    mapping[mapping_key] = item.text
+                                    
                             
-                            
-                            
-                            for proteininfo in protein:
-                                proteininfotag = proteininfo.tag.replace("{http://www.hmdb.ca}", "")
-                                #print(proteininfotag)
-                                #print(proteininfo.text)
-                                #time.sleep(1)
-                                if proteininfotag == "uniprot_id":
-                                    uniprotid = proteininfo.text
-                                    mapping["UniProt"] = [uniprotid]
-                                    
-                                    
-                                if proteininfotag == "protein_accession":
-                                    proteinacc = proteininfo.text
-                                    
-                                    if proteinacc is None:
-                                        proteinacc = "NA" # if the protein accession number is none assign it to 'NA'
-                                    mapping["HMDB_protein_accession"] = proteinacc
-                                    #self.geneInfoDictionary[proteinacc] = mapping 
-                                    
-                                    listofgenes.append(proteinacc)
-                                    
-                                    
-                                if proteininfotag == "gene_name":
-                                    genename = proteininfo.text
-                                    if genename is None:
-                                        genename = "NA"
-                                        
-                                    mapping["common_name"] = genename
+                            proteinacc = mapping['HMDB_protein_accession']
+                            listofgenes.append(proteinacc)
                             self.geneInfoDictionary[proteinacc] = mapping
-                                
-                                    
-                                
-                         
                         #using the uniprot id as the gene id 
-            
-             
-            self.metabolitesLinkedToGenes[metabohmdbid] = listofgenes
-   
-                
-        
-        
-        
-        
-        
-    def getBiofluidCellularLocationDisease(self):
+            self.metabolitesLinkedToGenes[metabohmdbid] = listofgenes  
+        print("Length of geneInfoDict is {}".format(str(len(self.geneInfoDictionary))))
+        print('Length of metabolite-gene is {}'.format(len(self.metabolitesLinkedToGenes)))
+                            
+              
+    def getBiofluidCellularLocationDisease(self,tree = None,dir = 'hmdb_metabolites.xml'):
         
         '''This function finds biofluid and cellular location infromation for every metabolite and places them in:
-        
             -self.cellularLocation
             -self.biofluidLocation
             
@@ -462,11 +428,12 @@ class hmdbData(MetabolomicsData):
             -self.cellular
             -self.biofluid
         
+        param elementTree tree parsed XML file from HMDB source file
         
         
         '''
-        
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/' + dir)
         root = tree.getroot()
   
         metabohmdbid = "not yet found"
@@ -482,15 +449,13 @@ class hmdbData(MetabolomicsData):
 
             #find the accession number (metabolite id)
             if metabolitetag == "metabolite":
-               
                 #find other ids for metabolite 
-                 for child in metabolite:
+                for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
 
                     #THIS WILL BE THE KEY
                     if childtag == "accession":
                         metabohmdbid = child.text 
-                    
                     if childtag == "ontology":
                         for cellularlocations in child:
                             cellularlocationstag = cellularlocations.tag.replace("{http://www.hmdb.ca}", "")
@@ -504,7 +469,6 @@ class hmdbData(MetabolomicsData):
                                     
                                     listOfInfo.append(cellularlocationtext)
                                 self.cellularLocation[metabohmdbid] = listOfInfo
-                            
                             if cellularlocationstag == "origins":
                                 listOfInfo = []
                                 for origin in cellularlocations:
@@ -517,13 +481,13 @@ class hmdbData(MetabolomicsData):
                                 
                     biofluidList = []
                     if childtag == "biofluid_locations":
-                         for biofluid in child: 
-                             biofluidtext = biofluid.text
-                             biofluidList.append(biofluidtext)   
-                             if biofluidtext not in self.biofluid:
-                                 self.biofluid[biofluidtext] = "placeholder"
+                        for biofluid in child: 
+                            biofluidtext = biofluid.text
+                            biofluidList.append(biofluidtext)   
+                            if biofluidtext not in self.biofluid:
+                                self.biofluid[biofluidtext] = "placeholder"
                                                        
-                         self.biofluidLocation[metabohmdbid] = biofluidList
+                        self.biofluidLocation[metabohmdbid] = biofluidList
                     tissueList = []
                     if childtag == "tissue_locations":
                         for tissuelocation in child:
@@ -531,31 +495,23 @@ class hmdbData(MetabolomicsData):
                             tissueList.append(tissuetext)
                             if tissuetext not in self.tissue:
                                 self.tissue[tissuetext] = "placeholder"
-                        self.tissueLocation[metabohmdbid] = tissueList
-    def getAllId(self):
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
-        root = tree.getroot()
-        for metabolite in root: 
-            metatag = metabolite.tag.replace("{http://www.hmdb.ca}","")
-            if metatag == "metabolite":
-                for child in metabolite:
-                    childtag = child.tag.replace("{http://www.hmdb.ca}", "")
-                    if "_id" in childtag and child.text is not None and childtag not in self.idDictForMetabolite:
-                        self.idDictForMetabolite[childtag] = []
-                        self.idDictForMetabolite[childtag].append(child.text)
-                    elif "_id" in childtag and child.text is not None and childtag in self.idDictForMetabolite:
-                        self.idDictForMetabolite[childtag].append(child.text)                      
+                        self.tissueLocation[metabohmdbid] = tissueList                   
     '''
-    Found protein file at 11/1/2017 From HMDB
-    Initially leave this dict empty
-    Try to link hmdb gene to pathways in this case
+    Try to link hmdb gene to pathways in this case. Note: This part uses different 
+    XML file parsed compared to previous functions.
     Key: pathway id SMP_NUM Value: Geneid HMDBP_NUM
     This function fills dictionary:
         self.PathwayLinkedToGene key: pathway id Value: HMDBP ID
         self.pathwayDictionary key pathway id Value: Name
+        self.metabolitesLinkedToGenes key: HMDB ID Value: List of HMDBPID
+        
+    param elementTree tree parsed XML file from HMDB source file
+    return:
+        elementTree tree reused large object to save memory
     '''
-    def getPathwaysLinkedToGene(self):
-        tree = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
+    def getPathwaysLinkedToGene(self,tree = None):
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
         keggnum = 0
         root = tree.getroot() 
         for protein in root:
@@ -564,7 +520,6 @@ class hmdbData(MetabolomicsData):
             for pathways in protein.iter('{http://www.hmdb.ca}pathways'):
                 for pathway in pathways:
                     pathwaytag = pathway.tag.replace('{http://www.hmdb.ca}','')
-                    print(pathwaytag)
                     pathwayName = pathway.find('{http://www.hmdb.ca}name').text
                     smpid = pathway.find('{http://www.hmdb.ca}smpdb_id').text
                     if smpid is not None:
@@ -572,22 +527,15 @@ class hmdbData(MetabolomicsData):
                             self.pathwayDictionary[smpid] = pathwayName
                             self.pathwayCategory[smpid] = 'NA'
                     keggid = None
-                    #print(pathwayName)
-                    #print(smpid)
-                    #time.sleep(3)
-
+                    # Pathway ID now have the kegg id
+                    # Considering incorporate KEGG pathway in the future
                     for info in pathway:
-                        print(pathwayName)
-                        print(smpid)
-                        #time.sleep(1)
                         infotag = info.tag.replace('{http://www.hmdb.ca}','')
                         if infotag == "name":
                             pathwayName = info.text
                         if infotag == 'smpdb_id':
                             if info.text is not None:
                                 smpid = info.text
-                                print(smpid)
-                                print(pathwayName)
                                 if smpid not in self.pathwayDictionary and smpid is not None:
                                     self.pathwayDictionary[smpid] = pathwayName
                                 if smpid not in self.pathwaysWithGenesDictionary:
@@ -596,16 +544,15 @@ class hmdbData(MetabolomicsData):
                                 else:
                                     if accession.text not in self.pathwaysWithGenesDictionary[smpid]:
                                         self.pathwaysWithGenesDictionary[smpid].append(accession.text)
-                    
-                    #time.sleep(3)                    
-
-  
-    def findMetabolitesWithPathways(self):
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
-        root = tree.getroot()
-
-        for metabolite in root:
-            metaboliteid = metabolite.find('{http://www.hmdb.ca}accession')
-            print(metaboliteid.text)
-
-            time.sleep(3)
+            for metabolite in protein.find('{http://www.hmdb.ca}metabolite_associations'):
+                hmdb_id = metabolite.find('{http://www.hmdb.ca}accession').text # find the metabolite id under this node
+                # Use protein file to add more information to metablite-gene relations
+                if hmdb_id not in self.metabolitesLinkedToGenes:
+                    self.metabolitesLinkedToGenes[hmdb_id] = [accession.text]
+                else:
+                    if accession.text not in self.metabolitesLinkedToGenes[hmdb_id]:
+                        self.metabolitesLinkedToGenes[hmdb_id].append(accession.text)
+                
+        print('After parsing protein file, geneInfo has {} items'.format(len(self.geneInfoDictionary)))
+        print('After parsing protein file, metabolites-gene has {} items'.format(len(self.metabolitesLinkedToGenes)))
+        return tree            
