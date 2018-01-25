@@ -23,28 +23,29 @@ class TestHMDBMain(unittest.TestCase):
         #print(hmdb.pathwaysWithGenesDictionary['00240'])
         #print(len(hmdb.pathwaysWithGenesDictionary['00240']))
         
-        # hmdb.getAllId()
+        
         
         print("Getting HMDB Metabolites...")
-        hmdb.getMetaboliteOtherIDs()
+    
+        tree = hmdb.getMetaboliteOtherIDs()
         print(len(hmdb.metaboliteIDDictionary))
         print(hmdb.metaboliteIDDictionary["HMDB0000538"])
         print(hmdb.metaboliteIDDictionary["HMDB0000122"])
        
-        '''
+        
         print("Getting HMDB pathways and synonyms...")
-        hmdb.getPathwaysandSynonyms()
-        print('Has pathways ...')
+        hmdb.getPathwaysandSynonyms(tree)
+        
         
         print('How many pathways relationship ...')
         #print(str(len(hmdb.metabolitesWithPathwaysDictionary)))
         print("Getting HMDB genes...")
         
         
-        hmdb.getGenes()
+        hmdb.getGenes(tree)
 
         print("Getting HMDB biofluid and cellular locations...")
-        hmdb.getBiofluidCellularLocationDisease()
+        hmdb.getBiofluidCellularLocationDisease(tree)
         
         hmdb.getPathwaysLinkedToGene()
         print("Writing to files...")
@@ -110,6 +111,6 @@ class TestHMDBMain(unittest.TestCase):
         #         hmdb.pathwayOntology,
         #         hmdb.exoEndoDictionary,
         #         "hmdb")
-   '''
+        
 if __name__ == "__main__":
     unittest.main()

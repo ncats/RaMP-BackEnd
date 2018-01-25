@@ -167,7 +167,8 @@ class reactomeData(MetabolomicsData):
                                      "pubchem_compound_id": "NA",
                                      "het_id": "NA",
                                      "hmdb_id": "NA",
-                                     "CAS": "NA"}
+                                     "CAS": "NA",
+                                     'LIPIDMAPS':'NA'}
             
                          
                          

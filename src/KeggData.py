@@ -146,10 +146,11 @@ class KeggData(MetabolomicsData):
         
         for key in tempPathwayDictionary:    
             url = 'http://rest.kegg.jp/get/' + "path:hsa" + key
-            print("url=" +url)
+            
             name = "pathwayhsa"+key+".txt"
             #time.sleep(1)
             if name not in files:
+                print("url=" +url)
                 pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
                 self.download_files(url, pathToSavedFile)
                 onePathwayFile = open(pathToSavedFile)
@@ -191,9 +192,10 @@ class KeggData(MetabolomicsData):
             pathToSavedFile = "../misc/data/kegg/pathwaysWithCompounds/" + "cpdmap" + key + ".txt"
             name = "cpdmap"+key+".txt"
             
-            print("download files ..." + name)
+            
             compoundFile = None
             if name not in files:
+                print("download files ..." + name)
                 self.download_files(url, pathToSavedFile)
                 compoundFile = open(pathToSavedFile)
             else:
@@ -224,7 +226,7 @@ class KeggData(MetabolomicsData):
             pathToSavedFile = "../misc/data/kegg/compounds/" + metabolite + ".txt"
             if file not in cfiles:
                 self.download_files(url, pathToSavedFile)
-            print(url)
+                print(url)
        
         
         #GET DICTIONARY OF GENES (no new download)
@@ -233,15 +235,15 @@ class KeggData(MetabolomicsData):
             pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
             onePathwayFile = open(pathToSavedFile)
 
-                 #There are two cases of what we are looking for:
-                 #1) It is a gene that is also on the line marked gene
-                 #2) It is a gene that is not on the line marked gene
+                #There are two cases of what we are looking for:
+                #1) It is a gene that is also on the line marked gene
+                #2) It is a gene that is not on the line marked gene
             for line in onePathwayFile:
-                 #A list of things that will signal the end of the genes 
+                #A list of things that will signal the end of the genes 
                 if "COMPOUND" in line or "REFERENCE" in line or "KO_PATHWAY" in line:
                     found = False
                     break
-                 #on line marked gene
+                #on line marked gene
                 if "GENE" in line:
                     found = True
                     splitline = line.split("  ")
@@ -249,13 +251,13 @@ class KeggData(MetabolomicsData):
                     if geneid not in geneDictionary:
                         geneDictionary[geneid] = "gene"
                     continue
-                 #not on line marked gene (but gene HAS BEEN found)
+                #not on line marked gene (but gene HAS BEEN found)
                 if found:
                     splitline = line.split("  ")
                     geneid = splitline[6]
                     if geneid not in geneDictionary:
                         geneDictionary[geneid] =  "gene"
-                     #add geneid to list for this pathway
+                    #add geneid to list for this pathway
                     continue
             onePathwayFile.close()
              
@@ -271,9 +273,11 @@ class KeggData(MetabolomicsData):
             file = gene + '.txt'
             
             pathToSavedFile = "../misc/data/kegg/genes/" + gene + ".txt"
-            print("current Kegg gene download:"+file+"---" + str(currentgene) + "/" + str(totalgenes))
-            currentgene = currentgene + 1
+            
+            
             if file not in files:
+                print("current Kegg gene download:"+file+"---" + str(currentgene) + "/" + str(totalgenes))
+                currentgene = currentgene + 1
                 self.download_files(url, pathToSavedFile)
                 
     
@@ -390,7 +394,7 @@ class KeggData(MetabolomicsData):
             
             
             onePathwayFile.close()
-       
+        hsaFile.close()
                          
                         
     def getMetabolites(self):
@@ -411,7 +415,7 @@ class KeggData(MetabolomicsData):
                 line = line.rstrip('\n')
                 #split into columns via the tab character
                 splitline = line.split("\t")
-                print(splitline)
+                
                 #time.sleep(3)
                 if len(splitline) > 1:
                     #remove the "path" prefix and "cpd:" prefix
@@ -471,12 +475,13 @@ class KeggData(MetabolomicsData):
         
         
         found = False
+        count = 0
         for metabolite in self.metabolitesWithPathwaysDictionary: 
             pathToSavedFile = "../misc/data/kegg/compounds/" + metabolite + ".txt"
             compound = open(pathToSavedFile)
             compoundList = []
             #for every line
-            print(metabolite)
+            
             for line in compound:
                 line = line.rstrip('\n')          
                 #check if the loop should end for this file because it onto the next section
@@ -513,7 +518,6 @@ class KeggData(MetabolomicsData):
            
             ####CHEBI####
             
-            listOfChebi = []
             
             metaboliteMapping = {"chebi_id": "NA", 
                     "drugbank_id": "NA", 
@@ -533,38 +537,28 @@ class KeggData(MetabolomicsData):
                     "pubchem_compound_id": "NA",
                     "het_id": "NA",
                     "hmdb_id": "NA",
-                    "CAS": "NA"}
-            
+                    "CAS": "NA",
+                    'LIPIDMAPS':'NA'}
+            # Find chebi, CAS, pubchem, LIPIDMAPS ID from KEGG
             for line in compound:
                 line = line.rstrip('\n')
                 if "ChEBI" in line:
                     metaboliteMapping['chebi_id'] = line[line.find(':') + 2:].split(' ')
-                    '''
-                    splitline = line.split(" ")
-                    length = len(splitline)
-
-                    #first chebi id
-                    #(There may be more than one chebi id)
-                    start = 13
-                    
-                    while start < length:
-                        chebiid = splitline[start]
-                        start = start +    1
-                        listOfChebi.append(chebiid)
-                    '''    
                 if "CAS" in line:
-                    casid = line[line.find(":")+2:]
-                    casid = casid.split(" ")
-                    metaboliteMapping["CAS"] = casid
+                    metaboliteMapping["CAS"] = line[line.find(':') + 2:].split(' ')
                 if "PubChem" in line:
-                    pubchem = line[line.find(":")+2:]
-                    pubchem = pubchem.split(" ")
-                    metaboliteMapping["pubchem_compound_id"] = pubchem    
+                    metaboliteMapping["pubchem_compound_id"] = line[line.find(':') + 2 :].split(' ')
+                if "LIPIDMAPS:" in line:
+                    metaboliteMapping['LIPDMAPS'] = line[line.find(':') + 2: ].split(' ')  
+                    count = count + 1  
                 # metaboliteMapping["chebi_id"] = listOfChebi
                 
             metaboliteMapping["kegg_id"] = metabolite
             self.metaboliteIDDictionary[metabolite] = metaboliteMapping
             compound.close()
+        print("Total {} items in metabolite ID dict".format(len(self.metaboliteIDDictionary)))
+        print("Total {} items have LIPIDMAPS ID".format(count))
+        time.sleep(3)
                          
                         
                          
@@ -586,8 +580,6 @@ class KeggData(MetabolomicsData):
             #keeping track of number of genes 
      
             pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
-             
-             
              
              
             onePathwayFile = open(pathToSavedFile)
@@ -639,7 +631,7 @@ class KeggData(MetabolomicsData):
                     mapping['kegg'] = geneid   
                     kegg_id.append(geneid)    
                     if geneid not in self.geneInfoDictionary:
-                        print(geneid)
+                        
                         #time.sleep(3)
                         self.geneInfoDictionary[geneid] = mapping
                      
@@ -650,7 +642,6 @@ class KeggData(MetabolomicsData):
                     continue
                 #not on line marked gene (but gene HAS BEEN found)
                 if found:
-                    print(splitline)
                     #time.sleep(3)
                     mapping = {'kegg': 'NA',
                          'common_name': 'NA',
@@ -669,8 +660,6 @@ class KeggData(MetabolomicsData):
                      
                     splitline = line.split("  ")
                     geneid = splitline[6]
-                    #print(splitline)
-                    print(geneid)
                     #time.sleep(3)
                     genefullname = splitline[7]
                     #remove [KO:K05757]-like attachment to the full name -- unsure what the point of it is 
@@ -689,13 +678,9 @@ class KeggData(MetabolomicsData):
                         geneList.append(geneid)
                      
                     continue
-
+            onePathwayFile.close()
             if key not in self.pathwaysWithGenesDictionary:
                 self.pathwaysWithGenesDictionary[key] = geneList
-                
-        
-        print(kegg_id)
-        print(len(kegg_id))
         
     '''
     self.getGenes + self.getGeneInfo are not enough to map all genes to pathways
@@ -710,7 +695,7 @@ class KeggData(MetabolomicsData):
             for line in pathwayFile:
                 splitline = line.split("\t")
                 if(len(splitline) >1):
-                    print(splitline)
+                    
                     pathway = splitline[0].replace("path:hsa","")
                     geneid = splitline[1].replace("hsa:","")
                     geneid = geneid.replace("\n","")
@@ -748,15 +733,15 @@ class KeggData(MetabolomicsData):
             for line in geneFile:
                 line = line.rstrip('\n')
                 if "NAME" in line:
-                    print(line)
+                    
                     splitline = line.split("   ")
                     names = splitline[len(splitline) - 1]
                     names = names.split(",")
-                    print(names)
+                    
                     mapping = self.geneInfoDictionary[gene]
                     for name in names:
                         name = name.replace(" ","")
-                        print(name)
+                        
                         mapping["common_name"].append(name)
                         self.geneInfoDictionary[gene] = mapping 
                         #print(splitline)
@@ -771,7 +756,7 @@ class KeggData(MetabolomicsData):
                     #chop off last character (a colon)
                     key = key[:-1]
                     value = splitline[6]
-                    print(key+":"+value)
+                   
                     #time.sleep(3)
                     if key in keywords:
                         if key in ['Ensembl', 'UniProt']:
@@ -785,7 +770,7 @@ class KeggData(MetabolomicsData):
                     #chop off last character (a colon)
                     key = key[:-1]
                     value = splitline[13]
-                    print(key+":"+value)
+                    
                     #time.sleep(3)
                      
                      
