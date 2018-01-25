@@ -59,33 +59,6 @@ class writeToSQL(MetabolomicsData):
                     else:
                         listOfIds.add(ids)
                         
-            '''
-            chebiid = mapping["chebi_id"]
-            hmdbid = mapping["hmdb_id"]
-            keggid = mapping["kegg_id"]
-            cas = mapping["CAS"]
-            pubchem_compound_id = mapping["pubchem_compound_id"]
-            chemspider_id = mapping["chemspider_id"]
-            
-            
-            listOfIDs = set()
-            if chebiid is not "NA":
-                for eachid in chebiid:
-                    if eachid is not "NA":
-                        listOfIDs.add(eachid)
-            if hmdbid is not "NA":
-                for eachid in hmdbid:
-                    if eachid is not "NA":
-                        listOfIDs.add(eachid)
-            if keggid is not "NA":
-                listOfIDs.add(keggid)
-            if cas is not "NA":
-                listOfIDs.add(cas)
-            if pubchem_compound_id is not "NA":
-                listOfIDs.add(pubchem_compound_id)
-            if chemspider_id is not "NA":
-                listOfIDs.add(chemspider_id)
-            '''
             isnewCompound = False
             
             for each in listOfIds:
@@ -205,44 +178,20 @@ class writeToSQL(MetabolomicsData):
             isThisNewCompound = False   
             listOfIDs = []
             mapping = metaboliteIDDictionary[key]
+            print(mapping)
+            time.sleep(10)
             for source in mapping:
+                
                 ids = mapping[source]
+                if source is 'LIPIDMAPS' and ids is not 'NA':
+                    print(ids)
+                    time.sleep(1)
                 if ids != 'NA':
                     if type(ids) is list:
                         for id in ids:
                             listOfIDs.append(id)
                     else:
                         listOfIDs.append(ids)
-                     
-            '''   
-            mapping = metaboliteIDDictionary[key]
-            chebiid = mapping["chebi_id"]
-            hmdbid = mapping["hmdb_id"]
-            keggid = mapping["kegg_id"]
-            cas = mapping["CAS"]
-            pubchem_compound_id = mapping["pubchem_compound_id"]
-            chemspider_id = mapping["chemspider_id"]
-            
-            
-            listOfIDs = []
-            if chebiid is not "NA":
-                for eachid in chebiid:
-                    if eachid is not "NA":
-                        listOfIDs.append(eachid)
-            if hmdbid is not "NA":
-                for eachid in hmdbid:
-              
-                    if eachid is not "NA":
-                        listOfIDs.append(eachid)
-            if keggid is not "NA":
-                listOfIDs.append(keggid)
-            if cas is not "NA":
-                listOfIDs.append(cas)
-            if pubchem_compound_id is not "NA":
-                listOfIDs.append(pubchem_compound_id)
-            if chemspider_id is not "NA":
-                listOfIDs.append(chemspider_id)
-            '''    
                 
                 
             # each id is from id mapping     
@@ -277,13 +226,13 @@ class writeToSQL(MetabolomicsData):
                     
                 # if the id is arealdy in dict        
                 else:
-                     OLDrampCompoundIDToFile = self.rampCompoundIDdictionary[eachid]
+                    OLDrampCompoundIDToFile = self.rampCompoundIDdictionary[eachid]
                      
-                     setOfCurrentDatabases = self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile]
-                     # if the database is not in the set, this rampId are paired with changed set
-                     if database not in setOfCurrentDatabases:
-                         setOfCurrentDatabases.add(database)
-                         self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile] = setOfCurrentDatabases  
+                    setOfCurrentDatabases = self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile]
+                    # if the database is not in the set, this rampId are paired with changed set
+                    if database not in setOfCurrentDatabases:
+                        setOfCurrentDatabases.add(database)
+                        self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile] = setOfCurrentDatabases  
                 
                 
                    
@@ -368,11 +317,11 @@ class writeToSQL(MetabolomicsData):
                         self.rampGeneIDdictionary[eachid] = rampGeneIDToFile
                       
                 else:
-                     OLDrampGeneIDToFile = self.rampGeneIDdictionary[eachid]
-                     setOfCurrentDatabases = self.rampGeneIdInWhichDatabases[OLDrampGeneIDToFile]
-                     if database not in setOfCurrentDatabases:
-                         setOfCurrentDatabases.add(database)
-                         self.rampGeneIdInWhichDatabases[OLDrampGeneIDToFile] = setOfCurrentDatabases  
+                    OLDrampGeneIDToFile = self.rampGeneIDdictionary[eachid]
+                    setOfCurrentDatabases = self.rampGeneIdInWhichDatabases[OLDrampGeneIDToFile]
+                    if database not in setOfCurrentDatabases:
+                        setOfCurrentDatabases.add(database)
+                        self.rampGeneIdInWhichDatabases[OLDrampGeneIDToFile] = setOfCurrentDatabases  
                 
                 
                    
@@ -491,8 +440,7 @@ class writeToSQL(MetabolomicsData):
             prefix = lengthOfID - lengthOfIndex
             rampPathwayIDToFile = str(rampPathwayID[:prefix]) + str(rampPathwayIDnumber) 
             rampPathwayIDdictionary[key] = rampPathwayIDToFile
-            print(key)
-            print(rampPathwayIDToFile)
+            
             #time.sleep(1)
             
         # output pathway id to see..
@@ -578,23 +526,15 @@ class writeToSQL(MetabolomicsData):
         #analytehaspathway 
         print("Im analytehaspathway + Gene")                                                                                
         for key in pathwaysWithGenesDictionary:
-            #print(key)
-            #time.sleep(3)
             value = pathwaysWithGenesDictionary[key]
             for listItem in value:
-                #print(listItem)
-                #print(key+":"+listItem)
-                #time.sleep(1)
+
                 try:
                     analyteHasPathwayOutFile.write(str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\t" +  str(rampPathwayIDdictionary[key]).encode('utf-8') + b"\t" + str(database).encode('utf-8') + b"\n")
-                    print("Key right!!!")
-                    #print('Protein:' + listItem)
-                    #print('Pathway:' +key)
+
                 except KeyError:
                     print(str(KeyError) + " when writing genes has pathways ..." +listItem)
-                    #print('Protein:' + listItem)
-                    #print('Pathway:' +key)
-                    #time.sleep(0.1)
+
                     
         #GENE
         #analyte
@@ -634,87 +574,6 @@ class writeToSQL(MetabolomicsData):
                                       id_to_write[id_key], 
                                       'compound', 
                                       commonName)
-                    '''
-            chebiid = mapping["chebi_id"]
-            hmdbid = mapping["hmdb_id"]
-            keggid = mapping["kegg_id"]
-            cas = mapping["CAS"]
-            pubchem_compound_id = mapping["pubchem_compound_id"]
-            chemspider_id = mapping["chemspider_id"]
-            
-            if chebiid is not "NA":
-                self.write_source(sourceOutFile, 
-                                  chebiid, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'chebi', 'compound', commonName)
-                
-                for eachid in chebiid:
-                    if eachid is not "NA":
-                        sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
-                                            self.rampCompoundIDdictionary[key].encode('utf-8') + 
-                                            b"\t" + b"chebi" + b"\t" + b"compound" 
-                                            +b"\t" + commonName.encode("utf-8")+ b"\n")
-                  
-            if hmdbid is not "NA":
-                self.write_source(sourceOutFile, 
-                                  hmdbid, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'hmdb', 'compound', commonName)
-                
-                for eachid in hmdbid:
-                    if eachid is not "NA":
-                        sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
-                                            self.rampCompoundIDdictionary[key].encode('utf-8')
-                                             + b"\t" + b"hmdb" + b"\t"
-                                              + b"compound" +b"\t" + commonName.encode("utf-8")+ b"\n")
-          
-            if keggid is not "NA":
-                self.write_source(sourceOutFile, 
-                                  keggid, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'kegg', 'compound', commonName)
-                
-                sourceOutFile.write(keggid.encode('utf-8') + b"\t" 
-                                    + self.rampCompoundIDdictionary[key].encode('utf-8') +
-                                     b"\t" + b"kegg" + b"\t" + b"compound"
-                                     +b"\t" + commonName.encode("utf-8") + b"\n")
-            
-
-            if cas is not "NA":
-                self.write_source(sourceOutFile, 
-                                  cas, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'CAS', 'compound', commonName)
-                
-                sourceOutFile.write(cas.encode('utf-8') + b"\t" + 
-                                    self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
-                                    + b"cas" + b"\t" + b"compound"
-                                    +b"\t" + commonName.encode("utf-8")+ b"\n")
-            
-            if pubchem_compound_id is not "NA":
-                self.write_source(sourceOutFile, 
-                                  pubchem_compound_id, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'pubchem', 'compound', commonName)
-                
-                sourceOutFile.write(pubchem_compound_id.encode('utf-8') + b"\t"
-                                     + self.rampCompoundIDdictionary[key].encode('utf-8')
-                                      + b"\t" + b"pubchem" + b"\t" + b"compound"
-                                      +b"\t" + commonName.encode("utf-8")+ b"\n")
-                                      
-            
-            if chemspider_id is not "NA":
-                self.write_source(sourceOutFile, 
-                                  chemspider_id, 
-                                  self.rampCompoundIDdictionary[key], 
-                                  'chemspider', 'compound', commonName)
-                
-                sourceOutFile.write(chemspider_id.encode('utf-8') + b"\t" + 
-                                    self.rampCompoundIDdictionary[key].encode('utf-8')
-                                     + b"\t" + b"chemspider" + b"\t" + b"compound"
-                                     +b"\t" + commonName.encode("utf-8")+ b"\n")
-
-        '''       
         #GENE
         #Source
         for key in geneInfoDictionary:
@@ -763,15 +622,11 @@ class writeToSQL(MetabolomicsData):
                                           b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                 if entrez is not "NA":
-                    equvalent_kegg = "hsa:" + str(entrez)
                     sourceOutFile.write(str(entrez).encode('utf-8') + b"\t" + 
                                         self.rampGeneIDdictionary[key].encode('utf-8')
                                          + b"\t" + b"entrez" + b"\t" + b"gene"
                                          + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                    sourceOutFile.write(equvalent_kegg.encode('utf-8') + b"\t"
-                                         + self.rampGeneIDdictionary[key].encode('utf-8')
-                                          + b"\t" + b"kegg" + b"\t" + b"gene"
-                                          +  b"\t" + NameForSource.encode("utf-8") + b"\n")
+                    
                     
                     
                 if enzymeNomenclature is not "NA":
