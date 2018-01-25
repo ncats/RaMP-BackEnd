@@ -279,11 +279,10 @@ class KeggData(MetabolomicsData):
     
     def getPathways_with_genes(self):
         '''
-        getDatabaseFiles2(self)
-        Following getDatabaseFiles1, this function download links between pathways and genes 
-        to new Folder pathwayWithGenes...
+        Following self.getDatabaseFiles(), this function download links between pathways and genes 
+        to new Folder pathwayWithGenes
         
-        1. call self.getPathways() first
+        1. call self.getPathways() first, which defines only human pathways
         2. Call self.getPathways_with_genes() to get all pathway gene mapping file...
         
         '''            
@@ -391,9 +390,7 @@ class KeggData(MetabolomicsData):
             
             
             onePathwayFile.close()
-        list1 = self.pathwayDictionary.keys()
-        list2 = tempPathwayDictionary.keys()
-        print(set(list2) - set(list1))
+       
                          
                         
     def getMetabolites(self):
@@ -435,12 +432,10 @@ class KeggData(MetabolomicsData):
                     
                     #If the compound has been seen before:
                     else:
-                        #bring up that compound in a map
-                        currentPathwaysForCompound = self.metabolitesWithPathwaysDictionary[compound]
-                        #add it to the list of pathways
-                        if key not in currentPathwaysForCompound:
-                            currentPathwaysForCompound.append(key)
-                            self.metabolitesWithPathwaysDictionary[compound] = currentPathwaysForCompound
+                        # bring up that compound in a map
+                        # add it to the list of pathways
+                        if key not in self.metabolitesWithPathwaysDictionary[compound]:
+                            self.metabolitesWithPathwaysDictionary[compound].append(key)
             onePathwayFile.close()
         
                 
@@ -477,16 +472,11 @@ class KeggData(MetabolomicsData):
         
         found = False
         for metabolite in self.metabolitesWithPathwaysDictionary: 
-            
-            
-            
-            
-            
-            
             pathToSavedFile = "../misc/data/kegg/compounds/" + metabolite + ".txt"
             compound = open(pathToSavedFile)
             compoundList = []
             #for every line
+            print(metabolite)
             for line in compound:
                 line = line.rstrip('\n')          
                 #check if the loop should end for this file because it onto the next section
@@ -507,12 +497,16 @@ class KeggData(MetabolomicsData):
                     else:
                         self.metaboliteCommonName[metabolite] = "NA"
                     
+                    #print(line)
+                    #time.sleep(1)
                     #get next line
                     continue            
                 #continue placing the lines into the list as long as found is true 
                 if found:
                     line = line.replace(" ", "")
                     compoundList.append(line)
+                    #print(line)
+                    #time.sleep(1)
                     continue
             
             self.metabolitesWithSynonymsDictionary[metabolite] = compoundList
@@ -544,6 +538,8 @@ class KeggData(MetabolomicsData):
             for line in compound:
                 line = line.rstrip('\n')
                 if "ChEBI" in line:
+                    metaboliteMapping['chebi_id'] = line[line.find(':') + 2:].split(' ')
+                    '''
                     splitline = line.split(" ")
                     length = len(splitline)
 
@@ -555,16 +551,16 @@ class KeggData(MetabolomicsData):
                         chebiid = splitline[start]
                         start = start +    1
                         listOfChebi.append(chebiid)
-                        
+                    '''    
                 if "CAS" in line:
-                    casid = line[line.find(":")+1:]
-                    casid = casid.replace(" ","")
+                    casid = line[line.find(":")+2:]
+                    casid = casid.split(" ")
                     metaboliteMapping["CAS"] = casid
                 if "PubChem" in line:
-                    pubchem = line[line.find(":")+1:]
-                    pubchem = pubchem.replace(" ","")
+                    pubchem = line[line.find(":")+2:]
+                    pubchem = pubchem.split(" ")
                     metaboliteMapping["pubchem_compound_id"] = pubchem    
-                metaboliteMapping["chebi_id"] = listOfChebi
+                # metaboliteMapping["chebi_id"] = listOfChebi
                 
             metaboliteMapping["kegg_id"] = metabolite
             self.metaboliteIDDictionary[metabolite] = metaboliteMapping

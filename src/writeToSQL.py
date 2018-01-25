@@ -1,5 +1,8 @@
 import time
 from MetabolomicsData import MetabolomicsData
+from _ast import arg
+from numpy import source
+from numpy.ma.core import ids
 class writeToSQL(MetabolomicsData):
     
     '''This class takes the information gathered in database classes (such as hmdbData, keggData) and formats it
@@ -42,8 +45,21 @@ class writeToSQL(MetabolomicsData):
         listToPop = set()
          
         for key in metaboliteIDDictionary:
-            mapping = metaboliteIDDictionary[key]
             
+            
+            mapping = metaboliteIDDictionary[key]
+            listOfIds = set()
+            for source in mapping:
+                ids = mapping[source]
+                if ids != 'NA':
+                    if type(ids) is list:
+                        for id in ids:
+                            if id !='NA':
+                                listOfIds.add(id)
+                    else:
+                        listOfIds.add(ids)
+                        
+            '''
             chebiid = mapping["chebi_id"]
             hmdbid = mapping["hmdb_id"]
             keggid = mapping["kegg_id"]
@@ -69,10 +85,10 @@ class writeToSQL(MetabolomicsData):
                 listOfIDs.add(pubchem_compound_id)
             if chemspider_id is not "NA":
                 listOfIDs.add(chemspider_id)
-            
+            '''
             isnewCompound = False
             
-            for each in listOfIDs:
+            for each in listOfIds:
                 if each not in IDsDict:
                     isnewCompound = True
                     
@@ -82,7 +98,7 @@ class writeToSQL(MetabolomicsData):
                 print(key)
             
             if isnewCompound:
-                for each in listOfIDs:   
+                for each in listOfIds:   
                     IDsDict[each] = key  
         duplicates = len(listToPop)
         print("There are "+ str(duplicates) +"items in " + database)            
@@ -186,7 +202,19 @@ class writeToSQL(MetabolomicsData):
         # key source Id for that database
         # value: dictionary that contains all id from different sources
         for key in metaboliteIDDictionary:  
-            isThisNewCompound = False      
+            isThisNewCompound = False   
+            listOfIDs = []
+            mapping = metaboliteIDDictionary[key]
+            for source in mapping:
+                ids = mapping[source]
+                if ids != 'NA':
+                    if type(ids) is list:
+                        for id in ids:
+                            listOfIDs.append(id)
+                    else:
+                        listOfIDs.append(ids)
+                     
+            '''   
             mapping = metaboliteIDDictionary[key]
             chebiid = mapping["chebi_id"]
             hmdbid = mapping["hmdb_id"]
@@ -214,7 +242,7 @@ class writeToSQL(MetabolomicsData):
                 listOfIDs.append(pubchem_compound_id)
             if chemspider_id is not "NA":
                 listOfIDs.append(chemspider_id)
-                
+            '''    
                 
                 
             # each id is from id mapping     
@@ -360,28 +388,59 @@ class writeToSQL(MetabolomicsData):
         
         return rampGeneIDnumber
     
+    def write_source(self,file,source_id,rampId,database,geneOrCompound,commonName):
+        '''
+        This functions write the input to the designated source file
+        param _io.BufferedWriter file the file-like object that open the designated file
+        param list|str source_id the source id of the analyte from original database (could be list or str)
+        param str rampId rampId that is mapped with this source id
+        param str database database name where the id is from
+        param str geneOrCompound if this id is gene or compound
+        param str commonName the common name that analyte has  
+        
+        '''
+        assert geneOrCompound == "gene" or geneOrCompound == "compound","Wrong type of analytes"
+        
+        if type(source_id) is list:
+            for id in source_id:
+                file.write(id.encode("utf-8") +
+                           b'\t'+rampId.encode('utf-8')+
+                           b'\t'+database.encode('utf-8') +b'\t' + geneOrCompound.encode('utf-8') +
+                           b'\t' + commonName.encode('utf-8') + b'\n')
+        else:
+            file.write(source_id.encode("utf-8") +
+                       b'\t'+rampId.encode('utf-8')+
+                       b'\t'+database.encode('utf-8') +b'\t' + 
+                       geneOrCompound.encode('utf-8') +
+                       b'\t' + commonName.encode('utf-8') + b'\n')        
+        
+            
+        
+        
+    
+    
     def write(self,
               metaboliteCommonName, 
               pathwayDictionary, 
               pathwayCategory,
               metabolitesWithPathwaysDictionary,
-                     metabolitesWithSynonymsDictionary,
-                     metaboliteIDDictionary,
-                     pathwaysWithGenesDictionary,
-                     metabolitesLinkedToGenes,
-                     geneInfoDictionary,
-                     biofluidLocation,
-                     biofluid,
-                     cellularLocation,
-                     cellular,
-                     pathwayOntology,
-                     exoEndoDictionary,
-                     exoEndo,
-                     tissueLocation,
-                     tissue,
-                     database, 
-                     rampPathwayIDnumber = 0,
-                     rampOntologyLocationIDnumber = 0):
+              metabolitesWithSynonymsDictionary,
+              metaboliteIDDictionary,
+              pathwaysWithGenesDictionary,
+              metabolitesLinkedToGenes,
+              geneInfoDictionary,
+              biofluidLocation,
+              biofluid,
+              cellularLocation,
+              cellular,
+              pathwayOntology,
+              exoEndoDictionary,
+              exoEndo,
+              tissueLocation,
+              tissue,
+              database, 
+              rampPathwayIDnumber = 0,
+              rampOntologyLocationIDnumber = 0):
         '''
         The function writeToFiles takes all the information gathered in the database and writes the required information to files.
         
@@ -569,46 +628,77 @@ class writeToSQL(MetabolomicsData):
             if commonName is None:
                 commonName = "NA"
             if chebiid is not "NA":
+                self.write_source(sourceOutFile, 
+                                  chebiid, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'chebi', 'compound', commonName)
+                '''
                 for eachid in chebiid:
                     if eachid is not "NA":
                         sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
                                             self.rampCompoundIDdictionary[key].encode('utf-8') + 
                                             b"\t" + b"chebi" + b"\t" + b"compound" 
                                             +b"\t" + commonName.encode("utf-8")+ b"\n")
-                   
+                 '''  
             if hmdbid is not "NA":
+                self.write_source(sourceOutFile, 
+                                  hmdbid, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'hmdb', 'compound', commonName)
+                '''
                 for eachid in hmdbid:
                     if eachid is not "NA":
                         sourceOutFile.write(eachid.encode('utf-8') + b"\t" + 
                                             self.rampCompoundIDdictionary[key].encode('utf-8')
                                              + b"\t" + b"hmdb" + b"\t"
                                               + b"compound" +b"\t" + commonName.encode("utf-8")+ b"\n")
-          
+          '''
             if keggid is not "NA":
+                self.write_source(sourceOutFile, 
+                                  keggid, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'kegg', 'compound', commonName)
+                '''
                 sourceOutFile.write(keggid.encode('utf-8') + b"\t" 
                                     + self.rampCompoundIDdictionary[key].encode('utf-8') +
                                      b"\t" + b"kegg" + b"\t" + b"compound"
                                      +b"\t" + commonName.encode("utf-8") + b"\n")
-            
+            '''
 
             if cas is not "NA":
+                self.write_source(sourceOutFile, 
+                                  cas, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'CAS', 'compound', commonName)
+                '''
                 sourceOutFile.write(cas.encode('utf-8') + b"\t" + 
                                     self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
                                     + b"cas" + b"\t" + b"compound"
                                     +b"\t" + commonName.encode("utf-8")+ b"\n")
-            
-            if mapping["pubchem_compound_id"] is not "NA":
+            '''
+            if pubchem_compound_id is not "NA":
+                self.write_source(sourceOutFile, 
+                                  pubchem_compound_id, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'pubchem', 'compound', commonName)
+                '''
                 sourceOutFile.write(pubchem_compound_id.encode('utf-8') + b"\t"
                                      + self.rampCompoundIDdictionary[key].encode('utf-8')
                                       + b"\t" + b"pubchem" + b"\t" + b"compound"
                                       +b"\t" + commonName.encode("utf-8")+ b"\n")
+                                      '''
             
             if chemspider_id is not "NA":
+                self.write_source(sourceOutFile, 
+                                  chemspider_id, 
+                                  self.rampCompoundIDdictionary[key], 
+                                  'chemspider', 'compound', commonName)
+                '''
                 sourceOutFile.write(chemspider_id.encode('utf-8') + b"\t" + 
                                     self.rampCompoundIDdictionary[key].encode('utf-8')
                                      + b"\t" + b"chemspider" + b"\t" + b"compound"
                                      +b"\t" + commonName.encode("utf-8")+ b"\n")
-
+'''
             
         #GENE
         #Source
@@ -761,6 +851,8 @@ class writeToSQL(MetabolomicsData):
                     catalyzedOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t" + str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\n")
                 except:
                     pass 
+       # Crosslink file         
+        '''
         for key in metaboliteIDDictionary:
             mapping = metaboliteIDDictionary[key]
             
@@ -818,7 +910,7 @@ class writeToSQL(MetabolomicsData):
                 uniprotJoined = ":".join(mapping["UniProt"])
                 if uniprotJoined == "":
                     uniprotJoined = "NA"
-            #key2 = key.replace("HMDBP","HMDB")
+            
             if key in self.rampGeneIDdictionary:
                 if type(mapping["common_name"]) is not list:
                     geneCrossLinksOutFile.write(self.rampGeneIDdictionary[key].encode('utf-8') + b"\t"
@@ -855,13 +947,15 @@ class writeToSQL(MetabolomicsData):
                                                 + str(mapping['Entrez']).encode('utf-8') + b"\t" 
                                                 + mapping['Enzyme Nomenclature'].encode('utf-8')
                                                 + b"\n")
+        '''
         # construct sql file that has rampOLId/CommonName/BiofluidORCellular
         # key is biofluid location (string) 
         # Total : biofluid, cellular, exo/endo , tissue
+    
         for key in biofluidLocation:
             value = biofluidLocation[key]
             for listItem in value:
-                 analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
+                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
                                                                                                     + rampBiofluidIDdictionary[listItem].encode('utf-8') + b"\n")
         
         for key in biofluid:

@@ -12,7 +12,7 @@ class TestHMDBMain(unittest.TestCase):
     def testMain(self):
         sql = writeToSQL()
         hmdb = hmdbData()
-        print(hmdb.day)
+        
         # If does not have database file
         hmdb.getDatabaseFiles()
         idconvert = IDconversion()
@@ -31,7 +31,7 @@ class TestHMDBMain(unittest.TestCase):
         print(hmdb.metaboliteIDDictionary["HMDB0000538"])
         print(hmdb.metaboliteIDDictionary["HMDB0000122"])
        
-        
+        '''
         print("Getting HMDB pathways and synonyms...")
         hmdb.getPathwaysandSynonyms()
         print('Has pathways ...')
@@ -44,7 +44,7 @@ class TestHMDBMain(unittest.TestCase):
         hmdb.getGenes()
 
         print("Getting HMDB biofluid and cellular locations...")
-        #hmdb.getBiofluidCellularLocationDisease()
+        hmdb.getBiofluidCellularLocationDisease()
         
         hmdb.getPathwaysLinkedToGene()
         print("Writing to files...")
@@ -110,6 +110,6 @@ class TestHMDBMain(unittest.TestCase):
         #         hmdb.pathwayOntology,
         #         hmdb.exoEndoDictionary,
         #         "hmdb")
-   
+   '''
 if __name__ == "__main__":
     unittest.main()

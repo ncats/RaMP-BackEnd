@@ -1,6 +1,7 @@
-import xml.etree.ElementTree as ET
+#import xml.etree.ElementTree as ET
 import urllib.request
-from xml.etree.ElementTree import ElementTree
+#from xml.etree.ElementTree import ElementTree
+from lxml import etree as ET
 import codecs
 from test.test_iterlen import NoneLengthHint
 import zipfile
@@ -118,8 +119,8 @@ class hmdbData(MetabolomicsData):
 		
         '''
         
-        file_metabolites = "hmdb_metabolites.zip"
-        file_proteins = "hmdb_proteins.zip"
+        file_metabolites = "hmdb_metabolites.xml"
+        file_proteins = "hmdb_proteins.xml"
         download_url = "http://www.hmdb.ca/system/downloads/current/"
         dir = "../misc/data/hmdb/"
         if not os.path.exists(dir):
@@ -145,7 +146,7 @@ class hmdbData(MetabolomicsData):
         os.remove(dir+file_proteins)
                             
         
-    def getMetaboliteOtherIDs(self):     
+    def getMetaboliteOtherIDs(self,dir = "hmdb_metabolites.xml"):     
         '''
         This functions finds a number of alternative ids for the main metabolite identifier and places them into: 
             
@@ -154,7 +155,7 @@ class hmdbData(MetabolomicsData):
             '''
         print("Start parsing ...")
         now = time.time()
-        tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
+        tree = ET.parse('../misc/data/hmdb/' + dir)
         root = tree.getroot()
         print("Finish parsing ..." + str(time.time() - now))   
         metabohmdbid = "not yet found"
@@ -169,9 +170,7 @@ class hmdbData(MetabolomicsData):
             
             #find the accession number (metabolite id)
             if metabolitetag == "metabolite":
-                
-                
-            ##here are some of the things we will be looking for in the xml tree
+                ##here are some of the things we will be looking for in the xml tree
                 mapping = {"chebi_id": "NA", 
                            "drugbank_id": "NA", 
                            "drugbank_metabolite_id": "NA", 
@@ -191,142 +190,52 @@ class hmdbData(MetabolomicsData):
                            "het_id": "NA",
                            "hmdb_id": "NA",
                            "CAS": "NA"}
+                # Store target tag and key value in another dictionary
+                idtag = {"chebi_id":'chebi_id',
+                         "kegg_id":'kegg_id',
+                         "accession":'hmdb_id',
+                         "chemspider_id":'chemspider_id',
+                         "biocyc_id":'biocyc_id',
+                         "cas_registry_number":"CAS",
+                         "metlin_id":"metlin_id",
+                         "pubchem_compound_id":"pubchem_compound_id"
+                         }
+                
                 commonName = None
+                
+                print(metabohmdbid)
                 #find other ids for metabolite 
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
+                    
+                    print(childtag)
                     if childtag == "name":
                         commonName = child.text
-                        #print(metabohmdbid)
-                        #print(commonName)
-                        #time.sleep(0.5)
-                    #THIS WILL BE THE KEY
                     if childtag == "accession":
-                        metabohmdbid = child.text 
-                        mapping["hmdb_id"] = [metabohmdbid]
-                        
-                    if childtag == "chebi_id":
-                        chebiid = child.text  
-                        if chebiid == None:
-                            chebiid = "NA"   
-                        mapping["chebi_id"] = [chebiid]
-                       
-                    if childtag == "drugbank_id":
-                        drugbankid = child.text
-                        if drugbankid == None:
-                            drugbankid = "NA"
-                        mapping["drugbank_id"] = drugbankid
-                    
-                    if childtag == "drugbank_metabolite_id":
-                        drugbankmetaboliteid = child.text
-                        if drugbankmetaboliteid == None:
-                            drugbankmetaboliteid = "NA"
-                        mapping["drugbank_metabolite_id"] = drugbankmetaboliteid
-                     
-                    if childtag == "phenol_explorer_compound_id":
-                        drugbankmetaboliteid = child.text
-                        if drugbankmetaboliteid == None:
-                            drugbankmetaboliteid = "NA" 
-                        mapping["phenol_explorer_compound_id"] = drugbankmetaboliteid                      
-                        
-                    if childtag == "phenol_explorer_metabolite_id":
-                        phenolexplorermetaboliteid = child.text
-                        if phenolexplorermetaboliteid == None:
-                            phenolexplorermetaboliteid = "NA"
-                        mapping["phenol_explorer_metabolite_id"] = phenolexplorermetaboliteid
-                   
-                    if childtag == "foodb_id":
-                        fooddbid = child.text
-                        if fooddbid == None:
-                            fooddbid = "NA"
-                        mapping["foodb_id"] = fooddbid
-                    
-                    if childtag == "knapsack_id":
-                        knapsackid = child.text
-                        if knapsackid == None:
-                            knapsackid= "NA"
-                        mapping["knapsack_id"] = knapsackid
-                       
-                    if childtag == "chemspider_id":
-                        chemspiderid = child.text
-                        if chemspiderid == None:
-                            chemspiderid = "NA"
-                        mapping["chemspider_id"] = chemspiderid
-                        
-                    if childtag == "kegg_id":
-                        keggid = child.text
-                        if keggid == None:
-                            keggid = "NA"
-                        mapping["kegg_id"] = keggid
-                        
-                    if childtag == "biocyc_id":
-                        biocycid = child.text
-                        if biocycid == None:
-                            biocycid = "NA"
-                        mapping["biocyc_id"] = biocycid
-                    
-                    if childtag == "bigg_id":
-                        biggid = child.text
-                        if biggid == None:
-                            biggid = "NA"
-                        mapping["bigg_id"] = biggid
-                       
-                    if childtag == "wikipidia":
-                        wikipedia = child.text
-                        if wikipedia == None:
-                            wikipedia = "NA"
-                        mapping["wikipidia"] = wikipedia
-                 
-                    if childtag == "nugowiki":
-                        nugowiki = child.text
-                        if nugowiki == None:
-                            nugowiki = "NA"
-                        mapping["nugowiki"] = nugowiki
-                       
-                    if childtag == "metagene":
-                        metagene = child.text
-                        if metagene == None:
-                            metagene = "NA"
-                        mapping["metagene"] = metagene                   
-                        
-                    if childtag == "metlin_id":
-                        metlin_id = child.text
-                        if metlin_id == None:
-                            metlin_id = "NA"
-                        mapping["metlin_id"] = metlin_id     
-                        
-                    if childtag == "pubchem_compound_id":
-                        pubchem_compound_id = child.text
-                        if pubchem_compound_id == None:
-                            pubchem_compound_id = "NA"
-                        mapping["pubchem_compound_id"] = pubchem_compound_id
-                           
-                    if childtag == "het_id":
-                        het_id = child.text
-                        if het_id == None:
-                            het_id = "NA"
-                        mapping["het_id"] = het_id
-                    
-                    if childtag == "cas_registry_number":
-                        cas_id = child.text
-                        if cas_id == None:
-                            cas_id = "NA"
-                        mapping["CAS"] = cas_id
-                        #time.sleep(3)
-                    
-
-                 
-                                    
-             
-                        
-                    
+                       metabohmdbid = child.text 
+                    # if this tag is in the id we are looking for
+                    elif childtag in idtag:
+                        source = idtag[childtag]
+                        print(child.text)
+                        time.sleep(0.5)
+                        # if has id in the tag, append it to the list 
+                        if type(mapping[source]) is not list and child.text is not None:
+                            mapping[source] = [child.text]
+                        elif type(mapping[source]) is list and child.text is not None:
+                            mapping[source].append(child.text)
                 #place all id information in this mapping        
                 if metabohmdbid not in self.metaboliteIDDictionary:
                     self.metaboliteIDDictionary[metabohmdbid] = mapping
                 if commonName is not None:
                     self.metaboliteCommonName[metabohmdbid] = commonName
                 else:
-                    self.metaboliteCommonName[metabohmdbid] = "NA"
+                    self.metaboliteCommonName[metabohmdbid] = "NA"        
+                        
+                 
+             
+                        
+                    
+                
 
     
     def getPathwaysandSynonyms(self):
@@ -342,18 +251,9 @@ class hmdbData(MetabolomicsData):
             
         
         '''
-        
-  
         tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
         root = tree.getroot()
-        
-        
-        
-        
-        
         metabohmdbid = "not yet found"
-        
-        
         #we will need to iterate through the xml tree to find the information we are looking for
         for metabolite in root:
           
@@ -367,14 +267,14 @@ class hmdbData(MetabolomicsData):
             if metabolitetag == "metabolite":
                 
                 #find other ids for metabolite 
-                 for child in metabolite:
+                for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
                     
                     #THIS WILL BE THE KEY
                     if childtag == "accession":
                         metabohmdbid = child.text 
                         print("Getting ..." + metabohmdbid)    
-                   #find the pathways 
+                    #find the pathways 
                     
                     listOfPathways = []
                     if childtag =="pathways":
@@ -394,7 +294,7 @@ class hmdbData(MetabolomicsData):
                                     if info.text is not None:
                                         smpid = info.text
                                         listOfPathways.append(smpid)
-                                     #place all pathways in a dictionary with the pathwayid as the key and the common name as the value
+                                        #place all pathways in a dictionary with the pathwayid as the key and the common name as the value
                                         if smpid not in self.pathwayDictionary:
                                             self.pathwayDictionary[smpid] = pathwayName
                                             self.pathwayCategory[smpid] = "NA"
@@ -521,7 +421,7 @@ class hmdbData(MetabolomicsData):
                                     proteinacc = proteininfo.text
                                     
                                     if proteinacc is None:
-                                        proteinacc = "NA"
+                                        proteinacc = "NA" # if the protein accession number is none assign it to 'NA'
                                     mapping["HMDB_protein_accession"] = proteinacc
                                     #self.geneInfoDictionary[proteinacc] = mapping 
                                     
