@@ -16,7 +16,7 @@ class TestKeggMain(unittest.TestCase):
         stat = getStatistics()
         # get database file
         kegg.getDatabaseFiles()
-        #kegg.getDatabaseFiles2()
+        
         print('get pathways')
         kegg.getPathways()
         kegg.getPathways_with_genes()
