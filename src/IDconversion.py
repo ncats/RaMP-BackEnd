@@ -150,7 +150,7 @@ class IDconversion():
         mapIDtoKey = {}
         
         for key in GeneInfoDictionaryToConvert:
-            print('convert HMDBP ID ' + key )
+            #print('convert HMDBP ID ' + key )
             value = GeneInfoDictionaryToConvert[key]
             entrez = value["Entrez"]
             uniprot = value["UniProt"]

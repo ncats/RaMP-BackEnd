@@ -47,13 +47,11 @@ class TestKeggMain(unittest.TestCase):
         file.close()
                 
         idconvert.GeneConvert(kegg.geneInfoDictionary, "kegg")
-        keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", 0)
-        kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", 0)
+        
 
         # Check duplicates
         sql.checkForWithinDatabaseDuplicatesCompound(kegg.metaboliteIDDictionary,"kegg")
         sql.checkForWithinDatabaseDuplicatesGene(kegg.geneInfoDictionary,"kegg")
-        # create ramp id
         keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", 0)
         kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", 0)
 

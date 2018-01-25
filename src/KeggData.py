@@ -550,7 +550,8 @@ class KeggData(MetabolomicsData):
                     metaboliteMapping["pubchem_compound_id"] = line[line.find(':') + 2 :].split(' ')
                 if "LIPIDMAPS:" in line:
                     metaboliteMapping['LIPDMAPS'] = line[line.find(':') + 2: ].split(' ')  
-                    count = count + 1  
+                    count = count + 1 
+                   
                 # metaboliteMapping["chebi_id"] = listOfChebi
                 
             metaboliteMapping["kegg_id"] = metabolite
