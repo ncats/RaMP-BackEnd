@@ -118,32 +118,28 @@ class hmdbData(MetabolomicsData):
 		This function gets the files that make up hmdb and places them into the hmdb folder. 
 		
         '''
-        
-        file_metabolites = "hmdb_metabolites.xml"
-        file_proteins = "hmdb_proteins.xml"
+        # Define file name and url for downloading file
+        file_metabolites = "hmdb_metabolites.zip"
+        file_proteins = "hmdb_proteins.zip"
         download_url = "http://www.hmdb.ca/system/downloads/current/"
         dir = "../misc/data/hmdb/"
-        if not os.path.exists(dir):
-            try:
-                os.makedirs(dir) # check if the directory exists, create one if not
-            except OSError as e: # Trap the OS error and show the embedded error code
-                if e.errno != errno.EEXIST:
-                    raise				
+        # check if this path exists
+        self.check_path(dir)
+        if file_metabolites.replace('.zip', '.xml') not in os.listdir(dir) or file_proteins.replace('.zip', '.xml') not in os.listdir(dir):
+            # Download files from given url and path
+            print('####### Downloading HMDB source file #######')
+            self.download_files(download_url+file_metabolites, dir+file_metabolites)
+            self.download_files(download_url+file_proteins, dir+file_proteins)
+            # Open zip file if file are downloaded.
+            with zipfile.ZipFile(dir+file_metabolites,"r") as zip_ref:
+                zip_ref.extractall(dir)
+                
+            with zipfile.ZipFile(dir+file_proteins,"r") as zip_ref:
+                zip_ref.extractall(dir)
         else:
-            if file_metabolites in os.listdir(dir) and file_proteins in os.listdir(dir):
-                print("Files are already downloaded ...")
-                return
- 
-        self.download_files(download_url+file_metabolites, dir+file_metabolites)
-        self.download_files(download_url+file_proteins, dir+file_proteins)
-        with zipfile.ZipFile(dir+file_metabolites,"r") as zip_ref:
-            zip_ref.extractall(dir)
+            print('HMDB source files are ready ...')
             
-        with zipfile.ZipFile(dir+file_proteins,"r") as zip_ref:
-            zip_ref.extractall(dir)
         
-        os.remove(dir+file_metabolites)
-        os.remove(dir+file_proteins)
                             
         
     def getMetaboliteOtherIDs(self,tree = None,dir = 'hmdb_metabolites.xml'):     
@@ -166,7 +162,7 @@ class hmdbData(MetabolomicsData):
         root = tree.getroot()
         print("Finish parsing ..." + str(time.time() - now))   
         metabohmdbid = "not yet found"
-               
+            
         #we will need to iterate through the xml tree to find the information we are looking for
         for metabolite in root:
         #XML trees sometimes have namespace prefixes on the nodes. They need to be removed for parsing.
@@ -189,16 +185,16 @@ class hmdbData(MetabolomicsData):
                            "kegg_id": "NA",
                            "biocyc_id": "NA",
                            "bigg_id": "NA",
-                           "wikipidia": "NA",
+                           "wikipedia": "NA",
                            "nugowiki": "NA",
                            "metagene": "NA",
                            "metlin_id": "NA",
                            "pubchem_compound_id": "NA",
                            "het_id": "NA",
-                           "hmdb_id": "NA",
+                           "hmdb_id": 'NA',
                            "CAS": "NA",
                            'LIPIDMAPS':'NA'}
-                # Store target tag and key value in another dictionary
+                # Store target tag and key value for mapping dictionary
                 idtag = {"chebi_id":'chebi_id',
                          "kegg_id":'kegg_id',
                          "accession":'hmdb_id',
@@ -209,7 +205,7 @@ class hmdbData(MetabolomicsData):
                          "pubchem_compound_id":"pubchem_compound_id"
                          }
                 
-                commonName = None
+                commonName = metabolite.find('{http://www.hmdb.ca}name').text
                 
                 #print(metabohmdbid)
                 #find other ids for metabolite 
@@ -217,10 +213,9 @@ class hmdbData(MetabolomicsData):
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
                     
                     #print(childtag)
-                    if childtag == "name":
-                        commonName = child.text
                     if childtag == "accession":
-                        metabohmdbid = child.text 
+                        metabohmdbid = child.text
+                        mapping['hmdb_id']  = metabohmdbid
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
                         source = idtag[childtag]
@@ -331,7 +326,8 @@ class hmdbData(MetabolomicsData):
                     
                         #place all synonyms in a dictionary 
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] = listOfSynonyms
-        
+        print('######### Finished for metaboliteIDDict ###########')
+        print('{} items in metaboliteIDDict.'.format(len(self.metaboliteIDDictionary)))
         return tree                     
                            
              

@@ -1,8 +1,8 @@
 import time
 from MetabolomicsData import MetabolomicsData
-from _ast import arg
-from numpy import source
-from numpy.ma.core import ids
+
+from builtins import str
+
 class writeToSQL(MetabolomicsData):
     
     '''This class takes the information gathered in database classes (such as hmdbData, keggData) and formats it
@@ -144,9 +144,67 @@ class writeToSQL(MetabolomicsData):
             geneInfoDictionary.pop(each2)
         
         
-        
+    def find_source_from_id(self,id,idmapping):
+        for key,value in idmapping.items():
+            if type(value) is list and id in value:
+                return key
+            else:
+                if id == value:
+                    return key
+        return None        
              
-    
+    def connect_id_mapping(self,metaboliteIDdictionary,
+                           entry_metabolite,overlap,
+                           root_of_idmapping):
+        '''
+        if overlap between entry metabolites and ramp c id is found, these ids are considered same
+        metabolites. This function looks for the ids that should have same ramp id
+        param dict metaboliteIDdictionary metabolites ID mapping that has {source id: {source:other ids}} pair
+        param dict entry_metabolite a id mapping that has {source:other ids} id pair
+        param set overlap a set that contains overlapping ids
+        param dict root_of_idmapping track which original id in original database this id is from
+        return:
+            set of ramp ids that should be changed their ramp cpd mapping
+        '''
+        # First compare both id and source
+        rampid = set()
+        filter_overlap =set()
+        for id in overlap:
+            origin = root_of_idmapping[id]
+            if type(origin) is not list:
+                mapping = metaboliteIDdictionary[origin]
+                # find the source type from given overlap id
+                source_of_entry = self.find_source_from_id(id, entry_metabolite)
+                # Remove this id from overlap set becasue source is not same
+                if source_of_entry is not None and mapping[source_of_entry] != id:
+                    print('source of {} is not overlapped with previous entry'.format(id))
+                elif source_of_entry is None:
+                    raise ValueError('This id {} is not found from overlap id mapping'.format(id))
+                else:
+                    rampid.add(self.rampCompoundIDdictionary[id])
+        
+        
+        
+        return rampid
+        
+        
+    def assign_rampC_id(self,list_of_mapping,rampid):
+        '''
+        code for assigning id if mapping is a list or mapping is a dict
+        '''
+        assert type(list_of_mapping) is list,'The mapping should be a list of metabolitesIDdict[key]'
+        for mapping in list_of_mapping:
+            if type(mapping) is not dict:
+                raise TypeError('mapping should be one metabolitesIDdict') 
+            for key,value in mapping.items():
+                if value != 'NA':
+                    if type(value) is str:
+                        self.rampCompoundIDdictionary[value] = rampid
+                    elif type(value) is list:
+                        self.rampCompoundIDdictionary.update(dict.fromkeys(value, rampid))
+        
+        return
+                
     def createRampCompoundID(self, metaboliteIDDictionary, database, rampCompoundIDnumber = 0):
         
         '''
@@ -163,80 +221,129 @@ class writeToSQL(MetabolomicsData):
         return string: returns the number of the last compound run through the function
         
         '''
-        
-        
+        assert database in ['hmdb','kegg','reactome','wiki'],'database name should be exactly matched, please see createRampCompoundID function'
         rampCompoundID = "RAMP_C_000000000"
         lengthOfID = len(rampCompoundID)
         lengthOfIndex = len(str(rampCompoundIDnumber))
         prefix = lengthOfID - lengthOfIndex
         rampCompoundIDToFile = str(rampCompoundID[:prefix]) + str(rampCompoundIDnumber) 
-        
-        
-        # key source Id for that database
-        # value: dictionary that contains all id from different sources
+    
+        # key: source Id from {value} of metaboliteIDDict
+        # value: dictionary that has {source database name : root id from the metabolites ID dictionary } 
+        root_of_idmapping = dict()
+        database_to_root ={'hmdb':'hmdb_id',
+                           'kegg':'kegg_id',
+                           'reactome':'chebi_id',
+                           'wiki':['chebi_id','hmdb_id','kegg_id','CAS','pubchem_compound_id','chemspider_id']}
         for key in metaboliteIDDictionary:  
-            isThisNewCompound = False   
-            listOfIDs = []
+            # isThisNewCompound = False   
+            listOfIDs = dict()
             mapping = metaboliteIDDictionary[key]
-            print(mapping)
-            time.sleep(10)
-            for source in mapping:
-                
-                ids = mapping[source]
-                if source is 'LIPIDMAPS' and ids is not 'NA':
-                    print(ids)
-                    time.sleep(1)
+            
+            # for each id != 'NA' in id mapping
+            # they are added to the list
+            for source,ids in mapping.items():
                 if ids != 'NA':
                     if type(ids) is list:
                         for id in ids:
-                            listOfIDs.append(id)
+                            listOfIDs[id] = source
+                    elif type(ids) is str:
+                        listOfIDs[ids] = source
                     else:
-                        listOfIDs.append(ids)
-                
-                
+                        raise TypeError('Wrong data type for the source id.')
+            print('Creating ramp id for {}'.format(list(listOfIDs.keys())))  
+            
             # each id is from id mapping     
             # This links each compoundID to a rampID but ONLY one rampID 
             # no matter if there is all three: chebi/hmdb/kegg
             # every id is the list
             # For relational database: unique item here is each id [source]
-            for eachid in listOfIDs:
-                # if the id is already in the ramp c id
-                if eachid not in self.rampCompoundIDdictionary:
-                    # for all each id, this part assign same ramp Id for them
-                    if not isThisNewCompound:
-                        isThisNewCompound = True
-                        
-                        rampCompoundIDnumber = rampCompoundIDnumber + 1
+            
+            # check if the set of ids overlaps with the previous entry
+            # if not overlapping with any entry, this metabolite is considered a new metabolite
+            # a new ramp compound id is therefore generated
+            # set intersection gives shared ids
+            overlap = set(listOfIDs.keys()) & set(self.rampCompoundIDdictionary.keys())
+            
+                
+            
+            if len(overlap) == 0 :
+                # if there is no overlap, then it is a new compound
+                rampCompoundIDnumber = rampCompoundIDnumber + 1
+                for id in listOfIDs:
+                    # keep record for all ids' root id
+                    # root id is the key for original metabolite ID dict
+                    lengthOfID = len(rampCompoundID)
+                    lengthOfIndex = len(str(rampCompoundIDnumber))
+                    prefix = lengthOfID - lengthOfIndex
+                    rampCompoundIDToFile = str(rampCompoundID[:prefix]) + str(rampCompoundIDnumber)
+                
+                    self.rampCompoundIDdictionary[id] = rampCompoundIDToFile
+                    
+                #print('Assign this new compound {} ramp id {}'.format(key,rampCompoundIDnumber))    
+                    
+            else:
+                print()
+                notRealOverlap = set()   
+                for id in overlap:
+                    source = listOfIDs[id]
+                    root_id_of_overlap_entry = root_of_idmapping[id]
+                    for each in root_id_of_overlap_entry:
+                        otherIDmapping = metaboliteIDDictionary[each]
+                        if type(otherIDmapping[source]) is list and id not in otherIDmapping[source]:
+                            notRealOverlap.add(id)
+                        elif type(otherIDmapping[source]) is str and id is not otherIDmapping[source]:
+                            notRealOverlap.add(id)
+                
+                # Remove the set of ids that are not really overlaped with previous entry
+                overlap = overlap - notRealOverlap
+                         
+                # Find all ramp ID that are overlapped
+                # inside this function, the overlap set will be checked both by id and source
+                #print('Overlap is {} for {}'.format(overlap,key))
+
+                # use the smallest ramp ID for all overlapping items
+                # get all old and new ids that should be mapped together
+                if len(overlap) == 0:
+                    rampCompoundIDnumber = rampCompoundIDnumber + 1
+                    #print('After source comparison, {} is a new compound'.format(list(listOfIDs.keys())))
+                    for id in listOfIDs:
+                        # keep record for all ids' root id
+                        # root id is the key for original metabolite ID dict
                         lengthOfID = len(rampCompoundID)
                         lengthOfIndex = len(str(rampCompoundIDnumber))
                         prefix = lengthOfID - lengthOfIndex
                         rampCompoundIDToFile = str(rampCompoundID[:prefix]) + str(rampCompoundIDnumber)
-                        # pair source to a ramp id
-                        self.rampCompoundIDdictionary[eachid] = rampCompoundIDToFile
-                        # pair ramp id to a database
-                        setOfDatabases = set()
-                        setOfDatabases.add(database)
-                        self.rampCompoundIdInWhichDatabases[rampCompoundIDToFile] = setOfDatabases
-                        
-                    else:
-                        isThisNewCompound = True
-                        # pair another source id to same ramp id
-                        self.rampCompoundIDdictionary[eachid] = rampCompoundIDToFile
-                        
+                        if id not in self.rampCompoundIDdictionary:
+                            self.rampCompoundIDdictionary[id] = rampCompoundIDToFile
+                        else:
+                            self.rampCompoundIDdictionary[listOfIDs[id]+':'+id] = rampCompoundIDToFile
+                    #print('Assign this new compound {} ramp id {}'.format(key,rampCompoundIDnumber))
                     
-                # if the id is arealdy in dict        
+                elif len(overlap) > 0:
+                    ramp_id = set()
+                    for each in overlap:
+                        ramp_id.add(self.rampCompoundIDdictionary[each])
+                    
+                    # note string comparison here
+                    #print('After source comparison, assign {} old ramp id {}'.format(key,ramp_id))
+                    if len(ramp_id) == 1:
+                        #time.sleep(1)
+                        ramp_id = list(ramp_id)[0]
+                        print('Old ramp id {} is assigned to {}'.format(ramp_id,key))
+                        for id in listOfIDs:
+                            if id not in self.rampCompoundIDdictionary:
+                                self.rampCompoundIDdictionary[id] = ramp_id
+                            else:
+                                self.rampCompoundIDdictionary[listOfIDs[id]+':'+id] = ramp_id    
+                    else:
+                        print('Rare cases, this metabolite {} overlaps with more than two previous entry {}'.format(key,ramp_id))
+                        time.sleep(10)
+            for id in listOfIDs:
+                if id not in root_of_idmapping:
+                    root_of_idmapping[id] = [key]
                 else:
-                    OLDrampCompoundIDToFile = self.rampCompoundIDdictionary[eachid]
-                     
-                    setOfCurrentDatabases = self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile]
-                    # if the database is not in the set, this rampId are paired with changed set
-                    if database not in setOfCurrentDatabases:
-                        setOfCurrentDatabases.add(database)
-                        self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile] = setOfCurrentDatabases  
-                
-                
-                   
-         
+                    root_of_idmapping[id].append(key)
            
            
     

@@ -30,28 +30,19 @@ class TestKeggMain(unittest.TestCase):
         print(len(kegg.metaboliteIDDictionary))
         print(kegg.metaboliteIDDictionary["C00002"])
         print(kegg.metaboliteIDDictionary["C00001"])
-        '''
-        file = open("../misc/output/keggMetabolitesID.txt","wb")
-        for key in kegg.metaboliteIDDictionary:
-            file.write(key.encode("utf-8") +b"\n")
-        file.close()
-        '''
+
         print('get genes')
         kegg.getGenes()
         print(len(kegg.geneInfoDictionary))
         kegg.getGeneInfo()
         kegg.getPathwayLinkedToGene()
-        file = open("../misc/output/keggGenesID.txt","wb")
-        for key in kegg.geneInfoDictionary:
-            file.write(key.encode("utf-8") +b"\n")
-        file.close()
+
                 
         idconvert.GeneConvert(kegg.geneInfoDictionary, "kegg")
         
 
         # Check duplicates
-        sql.checkForWithinDatabaseDuplicatesCompound(kegg.metaboliteIDDictionary,"kegg")
-        sql.checkForWithinDatabaseDuplicatesGene(kegg.geneInfoDictionary,"kegg")
+        kegg.write_myself_files('kegg')
         keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", 0)
         kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", 0)
 
@@ -81,12 +72,13 @@ class TestKeggMain(unittest.TestCase):
         print('PathwayDict number is ' + str(len(kegg.pathwayDictionary)))
         print('MetabolitesWithPath is ' + str(len(kegg.metabolitesWithPathwaysDictionary)))
         
+        '''
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
-
+        '''
 
 
 if __name__ == "__main__":

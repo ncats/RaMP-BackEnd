@@ -542,14 +542,14 @@ class KeggData(MetabolomicsData):
             # Find chebi, CAS, pubchem, LIPIDMAPS ID from KEGG
             for line in compound:
                 line = line.rstrip('\n')
-                if "ChEBI" in line:
+                if "ChEBI:" in line:
                     metaboliteMapping['chebi_id'] = line[line.find(':') + 2:].split(' ')
-                if "CAS" in line:
+                if "CAS:" in line:
                     metaboliteMapping["CAS"] = line[line.find(':') + 2:].split(' ')
-                if "PubChem" in line:
+                if "PubChem:" in line:
                     metaboliteMapping["pubchem_compound_id"] = line[line.find(':') + 2 :].split(' ')
                 if "LIPIDMAPS:" in line:
-                    metaboliteMapping['LIPDMAPS'] = line[line.find(':') + 2: ].split(' ')  
+                    metaboliteMapping['LIPIDMAPS'] = line[line.find(':') + 2: ].split(' ')  
                     count = count + 1 
                    
                 # metaboliteMapping["chebi_id"] = listOfChebi

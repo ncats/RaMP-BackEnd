@@ -1,11 +1,7 @@
 import mygene
 
 class IDconversion():
-
-    
-    
     def MetaboliteChebiToHMDB(self, otherMetaboliteIDDictionary, hmdbMetaboliteIDDictionary, database):
-        
         '''
         The purpose of this function is find HMDBids for the metabolites that do not have them, but could. This is done by looking through 
         all the compounds in a dictionary and looking to see if there is a chebi that are the same in both hmdb and the "other" database 
@@ -25,7 +21,6 @@ class IDconversion():
         :param str database: a string to identify the output files containing the converted IDs
           
         '''
-        
         #open outfile
         metaboliteIDConversionOutFile = open("../misc/output/" + str(database) + "MetaboliteIDConversionChebiToHMDB.txt", 'wb')
         
@@ -87,16 +82,16 @@ class IDconversion():
             keggkeggid = keggmapping["kegg_id"]
             
             for hmdbkey in hmdbMetaboliteIDDictionary:
-               hmdbmapping = hmdbMetaboliteIDDictionary[hmdbkey]
-               hmdbkeggid = hmdbmapping["kegg_id"]
-               if keggkeggid == hmdbkeggid and keggmapping["chebi_id"] is not "NA":
-                   hmdbmapping["chebi_id"] = keggmapping["chebi_id"]
+                hmdbmapping = hmdbMetaboliteIDDictionary[hmdbkey]
+                hmdbkeggid = hmdbmapping["kegg_id"]
+                if keggkeggid == hmdbkeggid and keggmapping["chebi_id"] is not "NA":
+                    hmdbmapping["chebi_id"] = keggmapping["chebi_id"]
                    
-                   #the found chebi is placed in mapping here
-                   hmdbMetaboliteIDDictionary[hmdbkey] = hmdbmapping
+                    #the found chebi is placed in mapping here
+                    hmdbMetaboliteIDDictionary[hmdbkey] = hmdbmapping
                    
-                   #write to file listing converted IDs
-                   metaboliteIDConversionOutFileKeggToChebi.write(keggkeggid.encode('utf-8') + b":" + ":".join(keggmapping["chebi_id"]).encode('utf-8') + b"\n")
+                    #write to file listing converted IDs
+                    metaboliteIDConversionOutFileKeggToChebi.write(keggkeggid.encode('utf-8') + b":" + ":".join(keggmapping["chebi_id"]).encode('utf-8') + b"\n")
                    
             
             
