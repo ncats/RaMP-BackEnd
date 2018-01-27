@@ -29,7 +29,7 @@ class TestReactomeMain(unittest.TestCase):
         reactome.getGenes()
         reactome.downloadCommonNameFromUniprot()
         reactome.getCommonNameFromUniprot()
-        
+        reactome.write_myself_files('reactome')
         reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", 0)
         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", 0)
         

@@ -3,6 +3,8 @@ import os
 from urllib.error import URLError,HTTPError
 import time
 import datetime 
+from django.core.checks import database
+from builtins import str
 class MetabolomicsData():
 	'''
 	This class is a super class for hmdb, kegg, wiki, Reactome database,
@@ -55,3 +57,43 @@ class MetabolomicsData():
 					print("HTTP ERROR:" + e.code)
 		else:
 			raise TypeError("Expect a string for the file name")	
+		
+	def write_myself_files(self,database,dir = '../misc/output/'):
+		path = dir + database +'/'
+		self.check_path(path)
+		attrs = vars(self)
+		for key in attrs:
+			if type(attrs[key]) is dict and len(attrs[key]) > 0:
+				with open(path+database+key+".txt",'wb') as f:
+					for id, value in attrs[key].items():
+					
+						if type(value) is not dict and type(value) is not list:
+							
+							f.write(id.encode('utf-8') +b'\t'
+									+ value.encode('utf-8') +b'\n')
+						elif type(value) is list:
+							for item in value:
+								if item is not None and item is not 'NA':
+									f.write(id.encode('utf-8') +b'\t'
+											+ item.encode('utf-8') +b'\n')
+						elif type(value) is dict:
+							for source,sourceid in value.items():
+								if type(sourceid) is list:
+									for each in sourceid:
+										if each is not None and each is not 'NA':
+											f.write(id.encode('utf-8') +b'\t'
+											+ source.encode('utf-8')+b'\t'
+											+ each.encode('utf-8') +b'\n')
+								else:
+									if sourceid is not None and sourceid is not 'NA':
+										f.write(id.encode('utf-8') +b'\t'
+											+ source.encode('utf-8')+b'\t'
+											+ str(sourceid).encode('utf-8') +b'\n')
+									
+					
+				
+				
+	
+
+		
+		

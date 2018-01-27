@@ -77,13 +77,20 @@ class TestHMDBMain(unittest.TestCase):
         
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
         reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", hmdbcompoundnum)
-        
-        Out = open("../misc/output/TestingHMDB.txt", 'w')
-        
-
-        
-        print("Compound:") 
-        stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
-        print("\n")
-        print("Gene:") 
-        stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
+        print(list(sql.rampCompoundIDdictionary.values()))      
+    
+    def testMain2(self):
+        hmdb = hmdbData()
+        sql = writeToSQL()
+        hmdb.getMetaboliteOtherIDs()
+        num = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, 'hmdb', 0)
+        hmdb.check_path('../misc/test/hmdb/')
+        with open('../misc/test/hmdb/rampIDToHMDBIDs.txt','wb') as f:
+            for key,value in sql.rampCompoundIDdictionary.items():
+                f.write(key.encode('utf-8') +b'\t' + value.encode('utf-8') +b'\n')
+            
+            
+if __name__ == '__main__':
+    test =TestHMDBMain().testMain2()
+    
+    

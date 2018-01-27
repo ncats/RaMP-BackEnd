@@ -86,7 +86,7 @@ class wikipathwaysData(MetabolomicsData):
         self.tissueLocation = dict()
         # show how id distributes
         # key database value: frequency
-        
+        '''
         self.metaboliteFromWhichDB = {
                                       "kegg_id":0,
                                       "hmdb_id":0,
@@ -99,6 +99,8 @@ class wikipathwaysData(MetabolomicsData):
         self.setOfType = set()
         self.idSetFromGeneProducts = dict()
         self.idSetFromProtein = dict()
+        '''
+        
     def getDatabaseFiles(self):
         
         '''
@@ -139,7 +141,7 @@ class wikipathwaysData(MetabolomicsData):
         for filename in os.listdir(pathwikipathways):
             if ".zip" in filename:
                 continue  # the original downloaded file is also in same path
-                          # and not parsed to the later process
+            # and not parsed to the later process
             fullpath = pathwikipathways + filename
             dictionaryOfFiles[fullpath] = "wikipathways"
           
@@ -187,8 +189,8 @@ class wikipathwaysData(MetabolomicsData):
                 if childtag == "DataNode":
                     metaboliteorgene = child.get("TextLabel")
                     Attributetype = child.get("Type")
-                  # child = DataNode
-                  # child2 = Graphics or Xref
+                    # child = DataNode
+                    # child2 = Graphics or Xref
                     
                     for child2 in child:
                       
@@ -197,8 +199,7 @@ class wikipathwaysData(MetabolomicsData):
                         if childtag == "Xref":
                             database = child2.get("Database")
                             databaseID = child2.get("ID")
-                            if Attributetype not in self.setOfType:
-                                self.setOfType.add(Attributetype)
+                            
                             if Attributetype == "Protein":
                                 geneMapping = {"kegg": "NA",
                                              "common_name": "NA",
@@ -242,10 +243,7 @@ class wikipathwaysData(MetabolomicsData):
                                 
                                 self.geneInfoDictionary[databaseID] = geneMapping
                             if Attributetype == "GeneProduct":
-                                if database not in self.idSetFromGeneProducts:
-                                    self.idSetFromGeneProducts[database] = set()
-                                  
-                                    self.idSetFromGeneProducts[database].add(databaseID)
+                                
                                 geneMapping = {"kegg": "NA",
                                              "common_name": "NA",
                                              "Ensembl": "NA", 
@@ -327,7 +325,7 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["hmdb_id"] +=1
+                                        
                                 
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
@@ -338,7 +336,7 @@ class wikipathwaysData(MetabolomicsData):
                                   
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["CAS"] +=1
+                                        #self.metaboliteFromWhichDB["CAS"] +=1
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
 
@@ -354,7 +352,7 @@ class wikipathwaysData(MetabolomicsData):
 
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["chebi_id"] += 1
+                                        #self.metaboliteFromWhichDB["chebi_id"] += 1
                                       
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
@@ -365,7 +363,7 @@ class wikipathwaysData(MetabolomicsData):
 
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["kegg_id"] += 1
+                                        #self.metaboliteFromWhichDB["kegg_id"] += 1
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
                                 if database == "PubChem-compound":
@@ -375,7 +373,7 @@ class wikipathwaysData(MetabolomicsData):
 
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["pubchem_compound_id"] += 1
+                                        #self.metaboliteFromWhichDB["pubchem_compound_id"] += 1
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
                                 if databaseID is not "" and database == "Chemspider": 
@@ -385,7 +383,7 @@ class wikipathwaysData(MetabolomicsData):
 
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["chemspider_id"] += 1
+                                        #self.metaboliteFromWhichDB["chemspider_id"] += 1
                                       
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                       
@@ -393,11 +391,11 @@ class wikipathwaysData(MetabolomicsData):
                                     metaboliteMapping["pubchem_compound_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
-
+                                    '''
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
                                         self.metaboliteFromWhichDB["pubchem_compound_id"] +=1
-                                      
+                                      '''                                
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                               
                               

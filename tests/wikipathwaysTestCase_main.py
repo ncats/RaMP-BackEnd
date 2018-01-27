@@ -21,12 +21,11 @@ class TestWikipathwaysMain(unittest.TestCase):
         
         
         wikipathways.getEverything()
-        print(wikipathways.setOfType)
+
         wikipathways.getCommonNameForChebi()
         
         idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
-        sql.checkForWithinDatabaseDuplicatesCompound(wikipathways.metaboliteIDDictionary, "wiki")
-        sql.checkForWithinDatabaseDuplicatesGene(wikipathways.geneInfoDictionary, "wiki")
+        wikipathways.write_myself_files('wiki')
         wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
         wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", 0)
         
@@ -56,7 +55,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         print("Pathways number is " + str(len(wikipathways.pathwayDictionary)))
         print("metabolites number is " + str(len(wikipathways.metaboliteIDDictionary)))
         print('genes number is '+ str(len(wikipathways.geneInfoDictionary)))
-        
+        '''
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
@@ -68,7 +67,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
-        
+        '''
 
 if __name__ == "__main__":
     unittest.main()

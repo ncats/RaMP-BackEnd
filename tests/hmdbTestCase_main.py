@@ -26,13 +26,7 @@ class TestHMDBMain(unittest.TestCase):
         
         
         print("Getting HMDB Metabolites...")
-    
         tree = hmdb.getMetaboliteOtherIDs()
-        print(len(hmdb.metaboliteIDDictionary))
-        print(hmdb.metaboliteIDDictionary["HMDB0000538"])
-        print(hmdb.metaboliteIDDictionary["HMDB0000122"])
-       
-        
         print("Getting HMDB pathways and synonyms...")
         hmdb.getPathwaysandSynonyms(tree)
         
@@ -55,15 +49,15 @@ class TestHMDBMain(unittest.TestCase):
         #idconvert.GeneConvert(hmdb.geneInfoDictionary, "hmdb")
 
         print("hmdb compounds...")
-        sql.checkForWithinDatabaseDuplicatesCompound(hmdb.metaboliteIDDictionary, "hmdb")
+        #sql.checkForWithinDatabaseDuplicatesCompound(hmdb.metaboliteIDDictionary, "hmdb")
         print("hmdb genes...")
-        sql.checkForWithinDatabaseDuplicatesGene(hmdb.geneInfoDictionary, "hmdb")
-        
+        #sql.checkForWithinDatabaseDuplicatesGene(hmdb.geneInfoDictionary, "hmdb")
+        hmdb.write_myself_files('hmdb')
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
         hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
         
         
-                
+           
         sql.write(hmdb.metaboliteCommonName,
                   hmdb.pathwayDictionary,
                   hmdb.pathwayCategory,
@@ -84,6 +78,7 @@ class TestHMDBMain(unittest.TestCase):
                   hmdb.tissue,
                   "hmdb",
                   0, 0)
+        
         print('Compound number is ' + str(len(hmdb.metaboliteIDDictionary)))
         print('Gene number is ' + str(len(hmdb.geneInfoDictionary)))
         print('Pathway number is ' + str(len(hmdb.pathwayDictionary)))
