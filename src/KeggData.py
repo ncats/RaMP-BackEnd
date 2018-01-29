@@ -544,17 +544,20 @@ class KeggData(MetabolomicsData):
                 line = line.rstrip('\n')
                 if "ChEBI:" in line:
                     metaboliteMapping['chebi_id'] = line[line.find(':') + 2:].split(' ')
+                    metaboliteMapping["chebi_id"] = list(map(lambda x: 'chebi:'+x,metaboliteMapping["chebi_id"]))
                 if "CAS:" in line:
                     metaboliteMapping["CAS"] = line[line.find(':') + 2:].split(' ')
                 if "PubChem:" in line:
                     metaboliteMapping["pubchem_compound_id"] = line[line.find(':') + 2 :].split(' ')
+                    metaboliteMapping["pubchem_compound_id"] = list(map(lambda x: 'pubchem:'+x,metaboliteMapping["pubchem_compound_id"]))
+                    
                 if "LIPIDMAPS:" in line:
                     metaboliteMapping['LIPIDMAPS'] = line[line.find(':') + 2: ].split(' ')  
                     count = count + 1 
                    
                 # metaboliteMapping["chebi_id"] = listOfChebi
                 
-            metaboliteMapping["kegg_id"] = metabolite
+            metaboliteMapping["kegg_id"] = [metabolite]
             self.metaboliteIDDictionary[metabolite] = metaboliteMapping
             compound.close()
         print("Total {} items in metabolite ID dict".format(len(self.metaboliteIDDictionary)))

@@ -6,14 +6,17 @@ from IDconversion import IDconversion
 import time
 import csv
 import unittest
-
+import os
 
 class TestHMDBMain(unittest.TestCase):
     def testMain(self):
         sql = writeToSQL()
         hmdb = hmdbData()
-        
+        print(os.getcwd())
         # If does not have database file
+        a= hmdb.getSMPDB_Category()
+        print(a[0:5])
+        print(len(a))
         hmdb.getDatabaseFiles()
         idconvert = IDconversion()
         stat = getStatistics()
@@ -24,7 +27,7 @@ class TestHMDBMain(unittest.TestCase):
         #print(len(hmdb.pathwaysWithGenesDictionary['00240']))
         
         
-        
+       
         print("Getting HMDB Metabolites...")
         tree = hmdb.getMetaboliteOtherIDs()
         print("Getting HMDB pathways and synonyms...")

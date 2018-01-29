@@ -219,11 +219,16 @@ class hmdbData(MetabolomicsData):
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
                         source = idtag[childtag]
-                        #print(child.text)
-                        #time.sleep(0.5)
                         # if has id in the tag, append it to the list 
                         if type(mapping[source]) is not list and child.text is not None:
-                            mapping[source] = [child.text]
+                            if childtag == 'chemspider_id':
+                                mapping[source] = ['chemspider:'+child.text]
+                            elif childtag == 'pubchem_compound_id':
+                                mapping[source] =['pubchem:' + child.text]
+                            elif childtag == 'chebi_id':
+                                mapping[source] =['chebi:'+child.text]
+                            else:
+                                mapping[source] =[child.text]
                         elif type(mapping[source]) is list and child.text is not None:
                             mapping[source].append(child.text)
                 #place all id information in this mapping        
@@ -259,14 +264,17 @@ class hmdbData(MetabolomicsData):
         root = tree.getroot()
         metabohmdbid = "not yet found"
         #we will need to iterate through the xml tree to find the information we are looking for
+        print('####### Get pathway #######')
+        smpdb2 = self.getSMPDB_Category()
         for metabolite in root:
           
             #XML trees sometimes have namespace prefixes on the nodes. They need to be removed for parsing.
             #That's the point of the find and replace. We are removing the namespace string "{http://www.hmdb.ca}"
-
+            
             metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
             # Check if this metabolite has pathway
             haspathway = False
+            
             #find the accession number (metabolite id)
             if metabolitetag == "metabolite":
                 
@@ -301,17 +309,8 @@ class hmdbData(MetabolomicsData):
                                         #place all pathways in a dictionary with the pathwayid as the key and the common name as the value
                                         if smpid not in self.pathwayDictionary:
                                             self.pathwayDictionary[smpid] = pathwayName
-                                            self.pathwayCategory[smpid] = "NA"
-                                '''       
-                                if infotag == "kegg_map_id":
-                                    keggid = info.text
-                                    if keggid is not None:
-                                        keggid = keggid.replace("map","")
-                                        listOfPathways.append(keggid)
-                                        # map kegg id with smpid
-                                        if smpid not in self.SMPToKegg and smpid is not None:
-                                            self.SMPToKegg[smpid] = keggid
-                                '''
+                                            self.pathwayCategory[smpid] = 'NA'
+                                            
                                                          
                         if len(listOfPathways) >0 :           
                             self.metabolitesWithPathwaysDictionary[metabohmdbid] = listOfPathways
@@ -326,6 +325,11 @@ class hmdbData(MetabolomicsData):
                     
                         #place all synonyms in a dictionary 
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] = listOfSynonyms
+        for key in self.pathwayCategory:
+            if key in smpdb2:
+                self.pathwayCategory[key] = 'smpdb2'
+            else:
+                self.pathwayCategory[key] = 'smpdb3'
         print('######### Finished for metaboliteIDDict ###########')
         print('{} items in metaboliteIDDict.'.format(len(self.metaboliteIDDictionary)))
         return tree                     
@@ -552,3 +556,9 @@ class hmdbData(MetabolomicsData):
         print('After parsing protein file, geneInfo has {} items'.format(len(self.geneInfoDictionary)))
         print('After parsing protein file, metabolites-gene has {} items'.format(len(self.metabolitesLinkedToGenes)))
         return tree            
+    def getSMPDB_Category(self):
+        SMPDB2 = []
+        with open('../misc/data/hmdb/SMPDB.txt','r') as f:
+            for line in f:
+                SMPDB2.append(line.rstrip('\n'))
+        return SMPDB2
