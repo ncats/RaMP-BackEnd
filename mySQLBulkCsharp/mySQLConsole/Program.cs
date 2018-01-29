@@ -7,7 +7,7 @@ namespace mysqlBatch
 {
 	public class Program
 	{
-        public String sqlFilesLocation = "/Users/81963/Documents/workspace/RaMP2/misc/sql/";
+        public String sqlFilesLocation = "/Users/81963/Documents/workspace/RaMP/misc/sql/";
 
 		static void Main(string[] args)
 		{

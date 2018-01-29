@@ -199,7 +199,7 @@ class wikipathwaysData(MetabolomicsData):
                         if childtag == "Xref":
                             database = child2.get("Database")
                             databaseID = child2.get("ID")
-                            
+                            databaseID = databaseID.replace(' ','')
                             if Attributetype == "Protein":
                                 geneMapping = {"kegg": "NA",
                                              "common_name": "NA",
@@ -215,33 +215,35 @@ class wikipathwaysData(MetabolomicsData):
                                              "HMDB_protein_accession": "NA",
                                              "Entrez" : "NA",
                                              "Enzyme Nomenclature": "NA"}
-                                for key in geneMapping:
-                                    geneMapping["common_name"] = metaboliteorgene
+                            
+                                geneMapping["common_name"] = metaboliteorgene
+                              
+                                if databaseID is not "" and database == "Entrez Gene":
+                                    databaseID = 'entrez:' + databaseID.replace(' ','') 
+                                    geneMapping["Entrez"] = databaseID
+                                if databaseID not in listOfGenes:
+                                    listOfGenes.append(databaseID)
                                   
-                                    if databaseID is not "" and database == "Entrez Gene": 
-                                        geneMapping["Entrez"] = databaseID
+                                  
+                                if databaseID is not "" and database == "Enzyme Nomenclature": 
+                                    geneMapping["Enzyme Nomenclature"] = databaseID
                                     if databaseID not in listOfGenes:
                                         listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                        geneMapping["Enzyme Nomenclature"] = databaseID
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                        geneMapping["Ensembl"] = [databaseID]
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Uniprot-TrEMBL": 
-                                        geneMapping["UniProt"] = [databaseID]
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
+                                  
+                                  
+                                if databaseID is not "" and database == "Ensembl": 
+                                    geneMapping["Ensembl"] = [databaseID]
+                                    if databaseID not in listOfGenes:
+                                        listOfGenes.append(databaseID)
+                                  
+                                  
+                                if databaseID is not "" and database == "Uniprot-TrEMBL": 
+                                    geneMapping["UniProt"] = [databaseID]
+                                    if databaseID not in listOfGenes:
+                                        listOfGenes.append(databaseID)
                                 
                                 self.geneInfoDictionary[databaseID] = geneMapping
+                                
                             if Attributetype == "GeneProduct":
                                 
                                 geneMapping = {"kegg": "NA",
@@ -258,31 +260,33 @@ class wikipathwaysData(MetabolomicsData):
                                              "HMDB_protein_accession": "NA",
                                              "Entrez" : "NA",
                                              "Enzyme Nomenclature": "NA"}
-                                for key in geneMapping:
-                                    geneMapping["common_name"] = metaboliteorgene
+                                
+                                geneMapping["common_name"] = metaboliteorgene
+                              
+                                if databaseID is not "" and database == "Entrez Gene": 
+                                    databaseID = 'entrez:' + databaseID.replace(' ','')
+                                    geneMapping["Entrez"] = databaseID
+                                    
+                                if databaseID not in listOfGenes:
+                                    listOfGenes.append(databaseID)
                                   
-                                    if databaseID is not "" and database == "Entrez Gene": 
-                                        geneMapping["Entrez"] = databaseID
+                                  
+                                if databaseID is not "" and database == "Enzyme Nomenclature": 
+                                    geneMapping["Enzyme Nomenclature"] = databaseID
                                     if databaseID not in listOfGenes:
                                         listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                        geneMapping["Enzyme Nomenclature"] = databaseID
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                        geneMapping["Ensembl"] = [databaseID]
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
-                                      
-                                      
-                                    if databaseID is not "" and database == "Uniprot-TrEMBL": 
-                                        geneMapping["UniProt"] = [databaseID]
-                                        if databaseID not in listOfGenes:
-                                            listOfGenes.append(databaseID)
+                                  
+                                  
+                                if databaseID is not "" and database == "Ensembl": 
+                                    geneMapping["Ensembl"] = [databaseID]
+                                    if databaseID not in listOfGenes:
+                                        listOfGenes.append(databaseID)
+                                  
+                                  
+                                if databaseID is not "" and database == "Uniprot-TrEMBL": 
+                                    geneMapping["UniProt"] = [databaseID]
+                                    if databaseID not in listOfGenes:
+                                        listOfGenes.append(databaseID)
                                 self.geneInfoDictionary[databaseID] = geneMapping
                                       
                               
@@ -343,7 +347,11 @@ class wikipathwaysData(MetabolomicsData):
                                   
                                 if database == "ChEBI":
                                     #remove prefix
-                                    databaseID = databaseID.replace("CHEBI:", "")
+                                    if 'CHEBI' in databaseID:
+                                        databaseID = databaseID.replace("CHEBI:", "chebi:")
+                                    else:
+                                        databaseID = 'chebi:' +databaseID
+            
                                     #kegg makes a list of chebi ids since there are more than one. For consistency, and so both databases
                                     #can use the ID conversion class, we will also make a list of chebi ids here
                                     metaboliteMapping["chebi_id"] = [databaseID]
@@ -367,6 +375,7 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
                                 if database == "PubChem-compound":
+                                    databaseID = 'pubchem:'+databaseID
                                     metaboliteMapping["pubchem_compound_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
@@ -377,6 +386,7 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
                                 if databaseID is not "" and database == "Chemspider": 
+                                    databaseID = 'chemspider:' + databaseID
                                     metaboliteMapping["chemspider_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
@@ -388,6 +398,7 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                       
                                 if database == "PubChem-substance":
+                                    databaseID = 'pubchem:'+databaseID
                                     metaboliteMapping["pubchem_compound_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
@@ -398,17 +409,11 @@ class wikipathwaysData(MetabolomicsData):
                                       '''                                
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                               
-                              
-                            
-                              
-                              
-                              
-                              
                                 if databaseID not in self.metabolitesWithPathwaysDictionary:
                                     listOfPathways = []
                                     listOfPathways.append(pathwayID)
                                     if database in ["HMDB", "CAS", "ChEBI", "KEGG Compound", "PubChem-compound", "Chemspider", "PubChem-substance"]:
-                                        if database == "HMDB":
+                                        if database == "HMDB" and len(databaseID) < 11:
                                             databaseID = databaseID.replace("HMDB","HMDB00")
                                         self.metabolitesWithPathwaysDictionary[databaseID] = listOfPathways
                                         currentpathway = pathwayID
@@ -443,8 +448,8 @@ class wikipathwaysData(MetabolomicsData):
                     chebiToSearch = str(each)
                     chebiToSearch2 = libchebipy.ChebiEntity(chebiToSearch)
                     name = chebiToSearch2.get_name()
-                    print(chebiToSearch)
-                    print(name)
+                    #print(chebiToSearch)
+                    #print(name)
                     #time.sleep(3)
                 except:
                     pass

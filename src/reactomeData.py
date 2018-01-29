@@ -146,6 +146,7 @@ class reactomeData(MetabolomicsData):
                     metabolite = splitline[0]
                     pathwayID = splitline[1]
                     pathwayName = splitline[3]
+                    metabolite = 'chebi:'+metabolite
                     if metabolite not in self.metabolitesWithPathwaysDictionary:
                         self.metabolitesWithPathwaysDictionary[metabolite] = [pathwayID]
 

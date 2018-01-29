@@ -37,7 +37,7 @@ class TestKeggMain(unittest.TestCase):
         kegg.getGeneInfo()
         kegg.getPathwayLinkedToGene()
 
-                
+        kegg.write_myself_files(database='kegg')        
         idconvert.GeneConvert(kegg.geneInfoDictionary, "kegg")
         
 

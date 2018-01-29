@@ -64,26 +64,26 @@ class RaMPDatabase():
                                    cursorclass = pymysql.cursors.DictCursor)
         return conn
         def create_new_db(self,database):
-        '''
-        This function will create a new database on MySQL
-        if the database already existed, it will drop the previous one 
-        '''
-        conn = self.connectToRaMP(dbname = None)
-        
-        with conn.cursor() as cur:
-            query = "create database "+database + ";"
-            try:
-                cur.execute(query)
-                conn.commit()
-            except pymysql.err.ProgrammingError:
-                query2 = "drop database mathelabramp2;"
-                cur.execute(query2)
-                conn.commit()
-                cur.execute(query)
-                conn.commit()  
-                
-            finally:
-                conn.close()           
+            '''
+            This function will create a new database on MySQL
+            if the database already existed, it will drop the previous one 
+            '''
+            conn = self.connectToRaMP(dbname = None)
+            
+            with conn.cursor() as cur:
+                query = "create database "+database + ";"
+                try:
+                    cur.execute(query)
+                    conn.commit()
+                except pymysql.err.ProgrammingError:
+                    query2 = "drop database mathelabramp2;"
+                    cur.execute(query2)
+                    conn.commit()
+                    cur.execute(query)
+                    conn.commit()  
+                    
+                finally:
+                    conn.close()           
         
     def create_tbs(self,database):
         '''

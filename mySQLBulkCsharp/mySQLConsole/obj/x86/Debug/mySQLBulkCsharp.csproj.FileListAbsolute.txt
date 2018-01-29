@@ -11,3 +11,10 @@ C:\Users\81963\Documents\workspace\RaMP2\mySQLBulkCsharp\mySQLConsole\bin\Debug\
 C:\Users\81963\Documents\workspace\RaMP2\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLBulkCsharp.csprojResolveAssemblyReference.cache
 C:\Users\81963\Documents\workspace\RaMP2\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLConsole.exe
 C:\Users\81963\Documents\workspace\RaMP2\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLConsole.pdb
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\bin\Debug\mySQLConsole.exe
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\bin\Debug\mySQLConsole.pdb
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\bin\Debug\MySql.Data.dll
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\bin\Debug\MySql.Data.xml
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLBulkCsharp.csprojResolveAssemblyReference.cache
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLConsole.exe
+C:\Users\81963\Documents\workspace\RaMP\mySQLBulkCsharp\mySQLConsole\obj\x86\Debug\mySQLConsole.pdb

@@ -173,23 +173,21 @@ class writeToSQL(MetabolomicsData):
         # key source Id for that database
         # value: dictionary that contains all id from different sources
         for key in metaboliteIDDictionary:  
-            isThisNewCompound = False   
+            isThisNewCompound = True   
             listOfIDs = []
             mapping = metaboliteIDDictionary[key]
-            print(mapping)
-            time.sleep(10)
+            #print(mapping)
+            #time.sleep(10)
             for source in mapping:
-                
                 ids = mapping[source]
-                if source is 'LIPIDMAPS' and ids is not 'NA':
-                    print(ids)
-                    time.sleep(1)
                 if ids != 'NA':
                     if type(ids) is list:
                         for id in ids:
-                            listOfIDs.append(id)
+                            if id not in ['',' ','pubchem:0']:
+                                listOfIDs.append(id)
                     else:
-                        listOfIDs.append(ids)
+                        if ids not in ['',' ','0']:
+                            listOfIDs.append(ids)
                 
                 
             # each id is from id mapping     
@@ -197,8 +195,34 @@ class writeToSQL(MetabolomicsData):
             # no matter if there is all three: chebi/hmdb/kegg
             # every id is the list
             # For relational database: unique item here is each id [source]
+            overlap = set()
             for eachid in listOfIDs:
                 # if the id is already in the ramp c id
+                if eachid in self.rampCompoundIDdictionary:
+                    isThisNewCompound = False
+                    overlap.add(eachid)
+                
+            if isThisNewCompound:
+                rampCompoundIDnumber = rampCompoundIDnumber + 1
+                lengthOfID = len(rampCompoundID)
+                lengthOfIndex = len(str(rampCompoundIDnumber))
+                prefix = lengthOfID - lengthOfIndex
+                rampCompoundIDToFile = str(rampCompoundID[:prefix]) + str(rampCompoundIDnumber)
+                # pair source to a ramp id
+                for eachid in listOfIDs:
+                    self.rampCompoundIDdictionary[eachid] = rampCompoundIDToFile
+                # pair ramp id to a database
+                setOfDatabases = set()
+                setOfDatabases.add(database)
+                self.rampCompoundIdInWhichDatabases[rampCompoundIDToFile] = setOfDatabases
+            else:
+                # assume the entry will only overlap with another entry
+                overlap_id = list(overlap)[0]
+                ramp_id = self.rampCompoundIDdictionary[overlap_id]
+                for eachid in listOfIDs:
+                    self.rampCompoundIDdictionary[eachid] = ramp_id
+                
+                '''
                 if eachid not in self.rampCompoundIDdictionary:
                     # for all each id, this part assign same ramp Id for them
                     if not isThisNewCompound:
@@ -231,13 +255,7 @@ class writeToSQL(MetabolomicsData):
                     if database not in setOfCurrentDatabases:
                         setOfCurrentDatabases.add(database)
                         self.rampCompoundIdInWhichDatabases[OLDrampCompoundIDToFile] = setOfCurrentDatabases  
-                
-                
-                   
-         
-           
-           
-    
+        '''        
         return rampCompoundIDnumber
     
     def createRampGeneID(self, geneInfoDictionary, database, rampGeneIDnumber = 0):
@@ -291,9 +309,10 @@ class writeToSQL(MetabolomicsData):
                     if uniprotid is not "NA":
                         listOfIDs.append(eachid)
             if kegggeneid is not "NA":
-                listOfIDs.append("hsa:"+kegggeneid)
+                listOfIDs.append(kegggeneid)
             
-            
+            print('{} has id mapping {}'.format(key,listOfIDs))
+            #time.sleep(3)
             for eachid in listOfIDs:
                 if eachid not in self.rampGeneIDdictionary:
                     if not isThisNewGene:
@@ -305,13 +324,14 @@ class writeToSQL(MetabolomicsData):
                         prefix = lengthOfID - lengthOfIndex
                         rampGeneIDToFile = str(rampGeneID[:prefix]) + str(rampGeneIDnumber)
                         self.rampGeneIDdictionary[eachid] = rampGeneIDToFile
-                        
+                        print('{} is mapped with {}'.format(eachid,rampGeneIDToFile))
                         setOfDatabases = set()
                         setOfDatabases.add(database)
                         self.rampGeneIdInWhichDatabases[rampGeneIDToFile] = setOfDatabases 
                         
                     else:
                         isThisNewGene = True
+                        print('{} is mapped with {}'.format(eachid,rampGeneIDToFile))
                         self.rampGeneIDdictionary[eachid] = rampGeneIDToFile
                       
                 else:
@@ -585,6 +605,8 @@ class writeToSQL(MetabolomicsData):
             kegggeneid = mapping["kegg"]
             commonName = mapping["common_name"]
             NameForSource = None
+            if commonName is None:
+                commonName = 'NA'
             if type(commonName) is not list:
                 commonName = commonName.replace("\n", "")
                 commonName = commonName.replace("\"", "")
@@ -650,7 +672,7 @@ class writeToSQL(MetabolomicsData):
                                               + b"\t" + NameForSource.encode("utf-8") + b"\n")
                        
             else:
-                print("The kegg gene {} does not have Ramp Gene Id".format(key))            
+                print("This gene id {} does not have Ramp Gene Id".format(key))            
                 #time.sleep(0.1)
         #METABOLITE
         #metabolite with synonym (synonyms for the common name)
@@ -676,6 +698,9 @@ class writeToSQL(MetabolomicsData):
                 
                 mapping = geneInfoDictionary[key]
                 commonName = mapping['common_name']
+                if commonName is None:
+                    commonName = 'NA'
+                
                 if type(commonName) is not list:
                     commonName = commonName.replace("\n", "")
                     commonName = commonName.replace("\"", "")

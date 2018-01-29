@@ -5,7 +5,8 @@ from getStatistics import getStatistics
 import time
 import csv
 import unittest
-
+import random
+import time
 class TestWikipathwaysMain(unittest.TestCase):
 
     def testMain(self):
@@ -21,10 +22,19 @@ class TestWikipathwaysMain(unittest.TestCase):
         
         
         wikipathways.getEverything()
-
+        r1 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
+        r2 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
+        r3 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
+        print(wikipathways.geneInfoDictionary[r1])
+        print(wikipathways.geneInfoDictionary[r2])
+        print(wikipathways.geneInfoDictionary[r3])
+        print(wikipathways.geneInfoDictionary['ENSG00000139977'])
+        print(wikipathways.geneInfoDictionary["path:hsa04530"])
+        #time.sleep(10)
+        #time.sleep(30)
         wikipathways.getCommonNameForChebi()
         
-        idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
+        #idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
         wikipathways.write_myself_files('wiki')
         wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
         wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", 0)

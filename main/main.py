@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../")
+
 from hmdbData import hmdbData
 from KeggData import KeggData
 from reactomeData import reactomeData
@@ -8,7 +8,7 @@ from IDconversion import IDconversion
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
 import os
-os.chdir("../RaMP/main/")
+import time
 
 class Main():
 
@@ -20,23 +20,19 @@ class Main():
         wikipathways = wikipathwaysData()
         reactome = reactomeData()
         kegg = KeggData()
-        print(os.getcwd())
-        #pulls needed files from each database if true. Otherwise, assumes files already present. Default false.
-        if getDatabaseFiles:
-            kegg.getDatabaseFiles()
-            wikipathways.getDatabaseFiles()
-            reactome.getDatabaseFiles()
-            hmdb.getDatabaseFiles()
-            
+        # works based on your computer, setup working directory
+        os.chdir('C:/Users/81963/Documents/workspace/RaMP/main')
 
+        hmdb.getDatabaseFiles()
         print("Getting HMDB Metabolites...")
-        hmdb.getMetaboliteOtherIDs()
+        tree = hmdb.getMetaboliteOtherIDs()
         print("Getting HMDB pathways and synonyms...")
-        hmdb.getPathwaysandSynonyms()
+        hmdb.getPathwaysandSynonyms(tree)
         print("Getting HMDB genes...")
-        hmdb.getGenes()
+        hmdb.getGenes(tree)
         print("Getting HMDB biofluid and cellular locations...")
-        hmdb.getBiofluidCellularLocationDisease()
+        hmdb.getBiofluidCellularLocationDisease(tree)
+        del tree
         print("Getting HMDB pathways links to genes ...")
         hmdb.getPathwaysLinkedToGene()
         
@@ -46,27 +42,31 @@ class Main():
         
         
 
-        
+        reactome.getDatabaseFiles()
         print("Getting reactome genes...")
         reactome.getGenes()
         print("Getting reactome metabolites...")
         reactome.getMetabolites()
         reactome.getCommonNameForChebi()
-        reactome.getCommonNameForGenes()
+        reactome.downloadCommonNameFromUniprot()
+        reactome.getCommonNameFromUniprot()
+        kegg.getDatabaseFiles()
         print("Getting kegg pathways...")
         kegg.getPathways()
+        kegg.getPathways_with_genes()
         print("Getting kegg genes and metabolites...")
         kegg.getMetabolites()
         kegg.getSynonymsAndCHEBI()
         kegg.getGenes()
         kegg.getGeneInfo()
-        
+        kegg.getPathwayLinkedToGene()
         print("Converting gene ids...")
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
         #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)
         #hmdb: HMDB-protien-accession (mainID), 'Uniprot'
         #reactome:Uniprot (mainID)
+        '''
         idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wikipathways")
         idconvert.GeneConvert(hmdb.geneInfoDictionary, "hmdb")
         idconvert.GeneConvert(reactome.geneInfoDictionary, "reactome")
@@ -99,7 +99,7 @@ class Main():
         sql.checkForWithinDatabaseDuplicatesCompound(hmdb.metaboliteIDDictionary, "hmdb")
         print("hmdb genes...")
         sql.checkForWithinDatabaseDuplicatesGene(hmdb.geneInfoDictionary, "hmdb")
-        
+        '''
         print('Generate compound id')
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
         wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", hmdbcompoundnum)

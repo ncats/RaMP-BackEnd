@@ -1,5 +1,6 @@
 from update.RaMPDatabase import RaMPDatabase
 from update.RaMPFixer import RaMPFixer
+from hmdbData import hmdbData
 import unittest
 import timeit
 class RaMPDatabaseTest(unittest.TestCase):
@@ -7,15 +8,10 @@ class RaMPDatabaseTest(unittest.TestCase):
         ramp = RaMPDatabase()
         
         fixer = RaMPFixer()
-        '''
-        fixer.drop_database("mathelabramp2")
-        fixer.create_new_db()
-        fixer.create_tbs()
-        '''
-        df = fixer.remove_wrong_items_from_tb("source")
-        
-        print(df)
-        print(df[df["commonName"] == "NA"])
+    
+        hmdb=hmdbData()
+        hmdb.getPathwaysandSynonyms(dir = 'sweat_metabolites.xml')
+        print(hmdb.pathwayCategory)
         #print(df.loc[13,"rampId"])
         #print(type(df.loc[13,"rampId"]))
 
