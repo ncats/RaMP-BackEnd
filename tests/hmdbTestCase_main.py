@@ -14,24 +14,15 @@ class TestHMDBMain(unittest.TestCase):
         hmdb = hmdbData()
         print(os.getcwd())
         # If does not have database file
-        a= hmdb.getSMPDB_Category()
-        print(a[0:5])
-        print(len(a))
         hmdb.getDatabaseFiles()
         idconvert = IDconversion()
         stat = getStatistics()
         
-        #print(hmdb.pathwaysWithGenesDictionary['SMP00172'])
-        #print(len(hmdb.pathwaysWithGenesDictionary['SMP00172']))
-        #print(hmdb.pathwaysWithGenesDictionary['00240'])
-        #print(len(hmdb.pathwaysWithGenesDictionary['00240']))
         
-        
-       
         print("Getting HMDB Metabolites...")
-        tree = hmdb.getMetaboliteOtherIDs()
+        #tree = hmdb.getMetaboliteOtherIDs()
         print("Getting HMDB pathways and synonyms...")
-        hmdb.getPathwaysandSynonyms(tree)
+        hmdb.getPathwaysandSynonyms()
         
         
         print('How many pathways relationship ...')
@@ -56,6 +47,7 @@ class TestHMDBMain(unittest.TestCase):
         print("hmdb genes...")
         #sql.checkForWithinDatabaseDuplicatesGene(hmdb.geneInfoDictionary, "hmdb")
         hmdb.write_myself_files('hmdb')
+        
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
         hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
         
@@ -89,7 +81,6 @@ class TestHMDBMain(unittest.TestCase):
         #sql.writeIdInWhichdatabase()
         # print("Compound:")
         # stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
-
 
         # print("\n")
         # print("Gene:")

@@ -7,6 +7,7 @@ import zipfile
 import time
 from MetabolomicsData import MetabolomicsData
 
+
 class wikipathwaysData(MetabolomicsData):
     
     '''
@@ -192,6 +193,8 @@ class wikipathwaysData(MetabolomicsData):
                     # child = DataNode
                     # child2 = Graphics or Xref
                     
+                     
+                    
                     for child2 in child:
                       
                         childtag = child2.tag
@@ -215,7 +218,7 @@ class wikipathwaysData(MetabolomicsData):
                                              "HMDB_protein_accession": "NA",
                                              "Entrez" : "NA",
                                              "Enzyme Nomenclature": "NA"}
-                            
+                                
                                 geneMapping["common_name"] = metaboliteorgene
                               
                                 if databaseID is not "" and database == "Entrez Gene":
@@ -297,7 +300,7 @@ class wikipathwaysData(MetabolomicsData):
                               
                           
                             if Attributetype == "Metabolite":
-                              
+                                metaboliteorgene = 'NA' 
                                 metaboliteMapping = {
                                   "chebi_id": "NA", 
                                   "drugbank_id": "NA", 
@@ -319,9 +322,11 @@ class wikipathwaysData(MetabolomicsData):
                                   "hmdb_id": "NA",
                                   "CAS": "NA",
                                   'LIPIDMAPS':'NA'}
-                              
-                              
+                                # some of the common name has some special character follows '&'
+                                
+                                  
                                 if database == "HMDB":
+                                    
                                     # databaseID is the source ID 
                                     databaseID = databaseID.replace("HMDB","HMDB00")
                                     metaboliteMapping["hmdb_id"] = [databaseID]
@@ -365,10 +370,10 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                   
                                 if database == "KEGG Compound":
+                                    databaseID = databaseID.replace(' ','')
                                     metaboliteMapping["kegg_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                                     self.metaboliteCommonName[databaseID] = metaboliteorgene
-
                                     if databaseID not in listOfMetabolites:
                                         listOfMetabolites.append(databaseID)
                                         #self.metaboliteFromWhichDB["kegg_id"] += 1
@@ -396,19 +401,14 @@ class wikipathwaysData(MetabolomicsData):
                                         #self.metaboliteFromWhichDB["chemspider_id"] += 1
                                       
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                      
+                                '''      
                                 if database == "PubChem-substance":
                                     databaseID = 'pubchem:'+databaseID
                                     metaboliteMapping["pubchem_compound_id"] = databaseID
                                     self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
-                                    '''
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        self.metaboliteFromWhichDB["pubchem_compound_id"] +=1
-                                      '''                                
+                                    self.metaboliteCommonName[databaseID] = metaboliteorgene                           
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                              
+                              '''
                                 if databaseID not in self.metabolitesWithPathwaysDictionary:
                                     listOfPathways = []
                                     listOfPathways.append(pathwayID)

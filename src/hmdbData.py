@@ -9,6 +9,7 @@ import time
 import os
 from MetabolomicsData import MetabolomicsData
 
+
 class hmdbData(MetabolomicsData):
     
     '''
@@ -262,7 +263,7 @@ class hmdbData(MetabolomicsData):
         if tree is None:
             tree = ET.parse('../misc/data/hmdb/'+dir)
         root = tree.getroot()
-        metabohmdbid = "not yet found"
+        metabohmdbid = "NA"
         #we will need to iterate through the xml tree to find the information we are looking for
         print('####### Get pathway #######')
         smpdb2 = self.getSMPDB_Category()
@@ -277,8 +278,48 @@ class hmdbData(MetabolomicsData):
             
             #find the accession number (metabolite id)
             if metabolitetag == "metabolite":
-                
+                accessiontag = metabolite.find('{http://www.hmdb.ca}accession')
+                pathways = metabolite.find('{http://www.hmdb.ca}pathways')
+                synonyms = metabolite.find('{http://www.hmdb.ca}synonyms')
+                # Find accession number
+                if accessiontag is not None and accessiontag.text is not None:
+                    metabohmdbid = accessiontag.text
+        
+                    if metabohmdbid not in self.metabolitesWithSynonymsDictionary:
+                        self.metabolitesWithSynonymsDictionary[metabohmdbid] =[]
+                    if metabohmdbid not in self.metabolitesWithPathwaysDictionary:
+                        self.metabolitesWithPathwaysDictionary[metabohmdbid] =[]
+                else:
+                    raise ValueError('Accession number cannot be None')
+                if metabohmdbid is 'NA':
+                    raise ValueError('Metabolite ID cannot be None Type')
+                # find pathways
+                if pathways is not None:
+                    listOfPathways = []
+                    for pathway in pathways:
+                        pathwayNametag = pathway.find('{http://www.hmdb.ca}name')
+                        smpidtag = pathway.find('{http://www.hmdb.ca}smpdb_id')
+                        if pathwayNametag is not None and smpidtag is not None:
+                            smpid = smpidtag.text
+                            pathwayName = pathwayNametag.text
+                            if smpid is not None and pathwayName is not None and smpid not in self.pathwayDictionary:
+                                self.pathwayDictionary[smpid] = pathwayName
+                                self.pathwayCategory[smpid] = 'NA'
+                                if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
+                                    self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
+                                    
+                    
+                else:
+                    raise ValueError('Each metabolites tag has a pathways children')
+                # find synonyms 
+                if synonyms is not None:
+                    for synonym in synonyms:
+                        if synonym is not None and synonym.text is not None:
+                            self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
+                        
+                # find accession
                 #find other ids for metabolite 
+                '''
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
                     
@@ -325,13 +366,15 @@ class hmdbData(MetabolomicsData):
                     
                         #place all synonyms in a dictionary 
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] = listOfSynonyms
+                    '''    
         for key in self.pathwayCategory:
             if key in smpdb2:
                 self.pathwayCategory[key] = 'smpdb2'
             else:
                 self.pathwayCategory[key] = 'smpdb3'
         print('######### Finished for metaboliteIDDict ###########')
-        print('{} items in metaboliteIDDict.'.format(len(self.metaboliteIDDictionary)))
+        print('{} items in pathwayDictionary.'.format(len(self.pathwayDictionary)))
+        print('{} items in metabolitesWithSynonyms dictionary'.format(len(self.metabolitesWithSynonymsDictionary)))
         return tree                     
                            
              
@@ -395,17 +438,17 @@ class hmdbData(MetabolomicsData):
                             
                             idtag = {"uniprot_id":'Uniprot',
                                      "protein_accession":'HMDB_protein_accession',
-                                     "accession":'hmdb_id',
                                      "gene_name":'common_name',
                             }
                             for key in idtag:
                                 # Find all target tag in idtag.keys()
-                                sourceid = protein.findall('{http://www.hmdb.ca}' + key)
-                                for item in sourceid:
-                                    # replace the name space
-                                    id_tag_key = item.tag.replace('{http://www.hmdb.ca}','')
-                                    mapping_key = idtag[id_tag_key]
-                                    mapping[mapping_key] = item.text
+                                sourceid = protein.find('{http://www.hmdb.ca}' + key)
+                                
+                                # replace the name space
+                                id_tag_key = sourceid.tag.replace('{http://www.hmdb.ca}','')
+                                mapping_key = idtag[id_tag_key]
+                                if sourceid.text is not None:
+                                    mapping[mapping_key] = sourceid.text
                                     
                             
                             proteinacc = mapping['HMDB_protein_accession']
@@ -512,20 +555,34 @@ class hmdbData(MetabolomicsData):
     def getPathwaysLinkedToGene(self,tree = None):
         if tree is None:
             tree = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
-        keggnum = 0
+        smpdb2 = self.getSMPDB_Category()
         root = tree.getroot() 
         for protein in root:
             accession = protein.find('{http://www.hmdb.ca}accession')
-            proteintag = protein.tag.replace("{http://www.hmdb.ca}",'')
+            
+            uniprotidtag = protein.find('{http://www.hmdb.ca}uniprot_id')
+            if uniprotidtag is not None and uniprotidtag.text is not None:
+                accessionnum = accession.text
+                if accessionnum not in self.geneInfoDictionary:
+                    mapping = list(self.geneInfoDictionary.values())[0]
+                    mapping['HMDB_protein_accession'] = accessionnum
+                    mapping['UniProt'] = uniprotidtag.text
+                    self.geneInfoDictionary[accessionnum] = mapping
+                else:
+                    self.geneInfoDictionary[accessionnum]['UniProt'] = uniprotidtag.text
             for pathways in protein.iter('{http://www.hmdb.ca}pathways'):
                 for pathway in pathways:
                     pathwaytag = pathway.tag.replace('{http://www.hmdb.ca}','')
                     pathwayName = pathway.find('{http://www.hmdb.ca}name').text
                     smpid = pathway.find('{http://www.hmdb.ca}smpdb_id').text
                     if smpid is not None:
-                        if pathwayName is not None:
+                        if pathwayName is not None and smpid not in self.pathwayDictionary:
                             self.pathwayDictionary[smpid] = pathwayName
-                            self.pathwayCategory[smpid] = 'NA'
+                        if smpid not in self.pathwayCategory:
+                            if smpid in smpdb2:
+                                self.pathwayCategory[smpid] = 'smpdb2'
+                            else:
+                                self.pathwayCategory[smpid] = 'smpdb3'     
                     keggid = None
                     # Pathway ID now have the kegg id
                     # Considering incorporate KEGG pathway in the future

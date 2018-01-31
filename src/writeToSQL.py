@@ -144,7 +144,7 @@ class writeToSQL(MetabolomicsData):
             geneInfoDictionary.pop(each2)
         
         
-                
+             
     def createRampCompoundID(self, metaboliteIDDictionary, database, rampCompoundIDnumber = 0):
         
         '''
@@ -173,22 +173,29 @@ class writeToSQL(MetabolomicsData):
         # key source Id for that database
         # value: dictionary that contains all id from different sources
         for key in metaboliteIDDictionary:  
-            isThisNewCompound = True   
+            isThisNewCompound = True # Assume this compound is new compound   
             listOfIDs = []
             mapping = metaboliteIDDictionary[key]
             #print(mapping)
             #time.sleep(10)
+            # check if there exists an id inside id mapping
             for source in mapping:
                 ids = mapping[source]
                 if ids != 'NA':
+                    # Add all ids to the list to assign ramp Id
                     if type(ids) is list:
                         for id in ids:
+                            # HMDB has wrong pubchem id which is pubchem:0
                             if id not in ['',' ','pubchem:0']:
                                 listOfIDs.append(id)
+                            
                     else:
                         if ids not in ['',' ','0']:
                             listOfIDs.append(ids)
-                
+                    # chebi:17634 is alone without any id mapping
+                    if 'chebi:17634' in listOfIDs:
+                        listOfIDs.append('HMDB0000122')
+                    
                 
             # each id is from id mapping     
             # This links each compoundID to a rampID but ONLY one rampID 
@@ -219,6 +226,8 @@ class writeToSQL(MetabolomicsData):
                 # assume the entry will only overlap with another entry
                 overlap_id = list(overlap)[0]
                 ramp_id = self.rampCompoundIDdictionary[overlap_id]
+                # add to set of inwhich database dictionary
+                self.rampCompoundIdInWhichDatabases[ramp_id].add(database)
                 for eachid in listOfIDs:
                     self.rampCompoundIDdictionary[eachid] = ramp_id
                 
@@ -313,6 +322,33 @@ class writeToSQL(MetabolomicsData):
             
             print('{} has id mapping {}'.format(key,listOfIDs))
             #time.sleep(3)
+            isThisNewGene = True
+            overlap = []
+            for eachid in listOfIDs:
+                if eachid in self.rampGeneIDdictionary:
+                    isThisNewGene = False
+                    overlap.append(eachid)
+                    
+                if isThisNewGene:
+                    rampGeneIDnumber = rampGeneIDnumber + 1
+                    lengthOfID = len(rampGeneID)
+                    lengthOfIndex = len(str(rampGeneIDnumber))
+                    prefix = lengthOfID - lengthOfIndex
+                    rampGeneIDToFile = str(rampGeneID[:prefix]) + str(rampGeneIDnumber)
+                    for eachid in listOfIDs:
+                        self.rampGeneIDdictionary[eachid] = rampGeneIDToFile
+                    
+                    setOfDatabases = set()
+                    setOfDatabases.add(database)
+                    self.rampGeneIdInWhichDatabases[rampGeneIDToFile] = setOfDatabases 
+                else:
+                    overlap_id = listOfIDs[0]
+                    ramp_id = self.rampGeneIDdictionary[overlap_id]
+                    for eachid in listOfIDs:
+                        if eachid not in self.rampGeneIDdictionary:
+                            self.rampGeneIDdictionary[eachid] = ramp_id
+                    self.rampGeneIdInWhichDatabases[ramp_id].add(database)
+            '''       
             for eachid in listOfIDs:
                 if eachid not in self.rampGeneIDdictionary:
                     if not isThisNewGene:
@@ -340,7 +376,7 @@ class writeToSQL(MetabolomicsData):
                     if database not in setOfCurrentDatabases:
                         setOfCurrentDatabases.add(database)
                         self.rampGeneIdInWhichDatabases[OLDrampGeneIDToFile] = setOfCurrentDatabases  
-                
+                '''
                 
                    
 
@@ -354,7 +390,15 @@ class writeToSQL(MetabolomicsData):
         
         
         return rampGeneIDnumber
-    
+    def is_write_ok(self,*arg):
+        is_okay_to_write = True
+        for each in arg:
+            if each in ['',' ',None]:
+                is_okay_to_write = False
+        
+        return is_okay_to_write
+            
+            
     def write_source(self,file,source_id,rampId,database,geneOrCompound,commonName):
         '''
         This functions write the input to the designated source file
@@ -370,16 +414,18 @@ class writeToSQL(MetabolomicsData):
         
         if type(source_id) is list:
             for id in source_id:
-                file.write(id.encode("utf-8") +
-                           b'\t'+rampId.encode('utf-8')+
-                           b'\t'+database.encode('utf-8') +b'\t' + geneOrCompound.encode('utf-8') +
-                           b'\t' + commonName.encode('utf-8') + b'\n')
+                if(self.is_write_ok(id,rampId,database,geneOrCompound,commonName)):
+                    file.write(id.encode("utf-8") +
+                               b'\t'+rampId.encode('utf-8')+
+                               b'\t'+database.encode('utf-8') +b'\t' + geneOrCompound.encode('utf-8') +
+                               b'\t' + commonName.encode('utf-8') + b'\n')
         else:
-            file.write(source_id.encode("utf-8") +
-                       b'\t'+rampId.encode('utf-8')+
-                       b'\t'+database.encode('utf-8') +b'\t' + 
-                       geneOrCompound.encode('utf-8') +
-                       b'\t' + commonName.encode('utf-8') + b'\n')        
+            if(self.is_write_ok(source_id,rampId,database,geneOrCompound,commonName)):
+                file.write(source_id.encode("utf-8") +
+                           b'\t'+rampId.encode('utf-8')+
+                           b'\t'+database.encode('utf-8') +b'\t' + 
+                           geneOrCompound.encode('utf-8') +
+                           b'\t' + commonName.encode('utf-8') + b'\n')        
         
             
         
@@ -534,9 +580,10 @@ class writeToSQL(MetabolomicsData):
                     #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
                     if key is not "":
                         try:
-                            analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
-                                                                                         +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
-                                                                                         + str(database).encode('utf-8') + b"\n") 
+                            if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
+                                analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
+                                                                                             +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
+                                                                                             + str(database).encode('utf-8') + b"\n") 
                         except KeyError:
                             print(str(KeyError) + " When writing analytehaspathways ...")
                             print(key)
@@ -546,9 +593,9 @@ class writeToSQL(MetabolomicsData):
         for key in pathwaysWithGenesDictionary:
             value = pathwaysWithGenesDictionary[key]
             for listItem in value:
-
                 try:
-                    analyteHasPathwayOutFile.write(str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\t" +  str(rampPathwayIDdictionary[key]).encode('utf-8') + b"\t" + str(database).encode('utf-8') + b"\n")
+                    if self.is_write_ok(str(self.rampGeneIDdictionary[listItem]),str(rampPathwayIDdictionary[key]),str(database)):
+                        analyteHasPathwayOutFile.write(str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\t" +  str(rampPathwayIDdictionary[key]).encode('utf-8') + b"\t" + str(database).encode('utf-8') + b"\n")
 
                 except KeyError:
                     print(str(KeyError) + " when writing genes has pathways ..." +listItem)
@@ -557,16 +604,17 @@ class writeToSQL(MetabolomicsData):
         #GENE
         #analyte
         for key in geneInfoDictionary:
-            
             if key in self.rampGeneIDdictionary:
-                analyteOutFile.write(self.rampGeneIDdictionary[key].encode('utf-8') + b"\t" 
+                if self.is_write_ok(self.rampGeneIDdictionary[key]):
+                    analyteOutFile.write(self.rampGeneIDdictionary[key].encode('utf-8') + b"\t" 
                                                                  + b"gene" + b"\n")
         
         for key in metaboliteIDDictionary: 
             #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
             if key is not "":
-                analyteOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
-                                                                 + b"compound" + b"\n")
+                if self.is_write_ok(self.rampCompoundIDdictionary[key],key):
+                    analyteOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
+                                         + b"compound" + b"\n")
         
         
         
@@ -627,50 +675,60 @@ class writeToSQL(MetabolomicsData):
                     NameForSource = "NA"
                             
             if key in self.rampGeneIDdictionary:
-                if uniprotid is not "NA":
-                    for eachid in uniprotid:
-                        if eachid is not "NA":
-                            sourceOutFile.write(eachid.encode('utf-8') + b"\t" 
-                                                + self.rampGeneIDdictionary[key].encode('utf-8') + 
-                                                b"\t" + b"uniprot" + b"\t" + b"gene"
-                                                + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                
+                if uniprotid is not "NA" and type(uniprotid) is not list:
+                    sourceOutFile.write(uniprotid.encode('utf-8') + b"\t" 
+                                        + self.rampGeneIDdictionary[key].encode('utf-8') + 
+                                        b"\t" + b"uniprot" + b"\t" + b"gene"
+                                        + b"\t" + NameForSource.encode("utf-8") + b"\n")
+                elif type(uniprotid) is list:
+                    print('Uniprot id is list here...')
                 if hmdbgeneid is not "NA":
-                    sourceOutFile.write(hmdbgeneid.encode('utf-8') + b"\t" +
-                                         self.rampGeneIDdictionary[key].encode('utf-8') +
-                                          b"\t" + b"hmdb" + b"\t" + b"gene"+
-                                          b"\t" + NameForSource.encode("utf-8") + b"\n")
+                    if self.is_write_ok(hmdbgeneid,self.rampGeneIDdictionary[key],NameForSource,key):
+                        sourceOutFile.write(hmdbgeneid.encode('utf-8') + b"\t" +
+                                             self.rampGeneIDdictionary[key].encode('utf-8') +
+                                              b"\t" + b"hmdb" + b"\t" + b"gene"+
+                                              b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                 if entrez is not "NA":
-                    sourceOutFile.write(str(entrez).encode('utf-8') + b"\t" + 
-                                        self.rampGeneIDdictionary[key].encode('utf-8')
-                                         + b"\t" + b"entrez" + b"\t" + b"gene"
-                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
+                    if self.is_write_ok(entrez,self.rampGeneIDdictionary[key],NameForSource,key):
+                        sourceOutFile.write(str(entrez).encode('utf-8') + b"\t" + 
+                                            self.rampGeneIDdictionary[key].encode('utf-8')
+                                             + b"\t" + b"entrez" + b"\t" + b"gene"
+                                             + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                     
                     
                 if enzymeNomenclature is not "NA":
-                    sourceOutFile.write(enzymeNomenclature.encode('utf-8') + 
-                                        b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
-                                        + b"\t" + b"enzymeNomenclature" + b"\t" + b"gene"
-                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
+                    if self.is_write_ok(enzymeNomenclature,self.rampGeneIDdictionary[key],NameForSource,key):
+                        sourceOutFile.write(enzymeNomenclature.encode('utf-8') + 
+                                            b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
+                                            + b"\t" + b"enzymeNomenclature" + b"\t" + b"gene"
+                                             + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                 if ensembl is not "NA":
                     for eachid in ensembl:
                         if eachid is not "NA":
-                            sourceOutFile.write(eachid.encode('utf-8') + b"\t"
-                                                 + self.rampGeneIDdictionary[key].encode('utf-8')
-                                                  + b"\t" + b"ensembl" + b"\t" + b"gene"+
-                                                    b"\t" + NameForSource.encode("utf-8") + b"\n")
+                            if self.is_write_ok(eachid,self.rampGeneIDdictionary[key],NameForSource,key):
+                                sourceOutFile.write(eachid.encode('utf-8') + b"\t"
+                                                     + self.rampGeneIDdictionary[key].encode('utf-8')
+                                                      + b"\t" + b"ensembl" + b"\t" + b"gene"+
+                                                        b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                 if kegggeneid is not "NA":
                     if type(kegggeneid) is not list:
+                        if self.is_write_ok(kegggeneid,self.rampGeneIDdictionary[key],NameForSource,key):
                         #kegggeneid = "hsa:" + kegggeneid
-                        sourceOutFile.write(kegggeneid.encode('utf-8')
-                                             + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
-                                             + b"\t" + b"kegg" + b"\t" + b"gene"
-                                              + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                       
+                            sourceOutFile.write(kegggeneid.encode('utf-8')
+                                                 + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
+                                                 + b"\t" + b"kegg" + b"\t" + b"gene"
+                                                  + b"\t" + NameForSource.encode("utf-8") + b"\n")
+                    else:
+                        for eachid in kegggeneid:
+                            if self.is_write_ok(eachid,self.rampGeneIDdictionary[key],NameForSource,key): 
+                                sourceOutFile.write(eachid.encode('utf-8')
+                                                 + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
+                                                 + b"\t" + b"kegg" + b"\t" + b"gene"
+                                                  + b"\t" + NameForSource.encode("utf-8") + b"\n")  
             else:
                 print("This gene id {} does not have Ramp Gene Id".format(key))            
                 #time.sleep(0.1)
@@ -684,7 +742,7 @@ class writeToSQL(MetabolomicsData):
                 listItem = listItem.replace(" ", "")
                 listItem = listItem.replace(";", "")
                 listItem.lower()
-                if listItem is not "NA":
+                if listItem is not "NA" :
                     analyteSynonymOutFile.write(listItem.encode('utf-8') + b"\t" + 
                                                 self.rampCompoundIDdictionary[key].encode('utf-8') + 
                                                 b"\t" + b"compound" +b"\t"+
@@ -705,7 +763,7 @@ class writeToSQL(MetabolomicsData):
                     commonName = commonName.replace("\n", "")
                     commonName = commonName.replace("\"", "")
                     commonName = commonName.replace(" ", "")
-                    if commonName is not "NA":
+                    if commonName is not "NA" and self.is_write_ok(commonName,self.rampGeneIDdictionary[key],key):
                         analyteSynonymOutFile.write(commonName.encode('utf-8') + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') +
                                                      b"\t" + b"gene" +b"\t"+database.encode("utf-8")+ b"\n")
                 else:
@@ -713,7 +771,7 @@ class writeToSQL(MetabolomicsData):
                         item = item.replace("\n", "")
                         item = item.replace("\"", "")
                         item = item.replace(" ", "")
-                        if item is not "NA":
+                        if item is not "NA" and self.is_write_ok(item,self.rampGeneIDdictionary[key],key):
                             analyteSynonymOutFile.write(item.encode('utf-8') + b"\t" + 
                                                         self.rampGeneIDdictionary[key].encode('utf-8') 
                                                         + b"\t" + b"gene"+b"\t" +database.encode("utf-8") + b"\n")
@@ -740,106 +798,12 @@ class writeToSQL(MetabolomicsData):
             value = metabolitesLinkedToGenes[key]
             for listItem in value:
                 try:
-                    catalyzedOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t" + str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\n")
+                    if self.is_write_ok(str(self.rampCompoundIDdictionary[key],),str(self.rampGeneIDdictionary[listItem]),key,listItem):
+                        catalyzedOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t" + str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\n")
                 except:
                     pass 
-       # Crosslink file         
-        '''
-        for key in metaboliteIDDictionary:
-            mapping = metaboliteIDDictionary[key]
-            
-            #there are multiple chebi for every compound so you cannot 
-            #just call mapping["chebi_id"]
-            chebiJoined = "NA"
-            if mapping["chebi_id"] is not "NA":
-                chebiJoined = ":".join(mapping["chebi_id"])
-                if chebiJoined == "":
-                    chebiJoined = "NA"
-            hmdbidJoined = "NA"
-            if mapping["chebi_id"] is not "NA":
-                hmdbidJoined = ":".join(mapping["hmdb_id"])
-   
-                if hmdbidJoined == "":
-                    hmdbidJoined = "NA"
-            
-            compoundCrossLinksOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
-                                    + chebiJoined.encode('utf-8')  + b"\t"
-                                    + mapping["knapsack_id"].encode('utf-8') + b"\t"
-                                    + mapping["pubchem_compound_id"].encode('utf-8') + b"\t"
-                                    + mapping["drugbank_id"].encode('utf-8')  + b"\t"
-                                    + mapping["drugbank_metabolite_id"].encode('utf-8')  + b"\t"
-                                    + mapping["phenol_explorer_compound_id"].encode('utf-8')  + b"\t"
-                                    + mapping["phenol_explorer_metabolite_id"].encode('utf-8') + b"\t"
-                                    + mapping["foodb_id"].encode('utf-8') + b"\t"
-                                    + mapping["chemspider_id"].encode('utf-8') + b"\t"
-                                    + mapping["kegg_id"].encode('utf-8') + b"\t"
-                                    + mapping["biocyc_id"].encode('utf-8') + b"\t"
-                                    + mapping["bigg_id"].encode('utf-8') + b"\t"
-                                    + mapping["wikipidia"].encode('utf-8') + b"\t"
-                                    + mapping["nugowiki"].encode('utf-8') + b"\t"
-                                    + mapping["metagene"].encode('utf-8') + b"\t"
-                                    + mapping["metlin_id"].encode('utf-8') + b"\t" 
-                                    + mapping["het_id"].encode('utf-8') + b"\t"
-                                    + hmdbidJoined.encode('utf-8') + b"\t"
-                                    + mapping["CAS"].encode('utf-8') + b"\n")
-        
-        
-        
 
         
-        for key in geneInfoDictionary:
-           
-            mapping = geneInfoDictionary[key]
-            
-            ensemblJoined = "NA"
-            if mapping["Ensembl"] is not "NA":
-                ensemblJoined = ":".join(mapping["Ensembl"])
-                if ensemblJoined == "":
-                    ensemblJoined = "NA"
-                    
-            uniprotJoined = "NA"
-            if mapping["UniProt"] is not "NA":
-                uniprotJoined = ":".join(mapping["UniProt"])
-                if uniprotJoined == "":
-                    uniprotJoined = "NA"
-            
-            if key in self.rampGeneIDdictionary:
-                if type(mapping["common_name"]) is not list:
-                    geneCrossLinksOutFile.write(self.rampGeneIDdictionary[key].encode('utf-8') + b"\t"
-                                                + mapping['common_name'].encode('utf-8') + b"\t" 
-                                                + mapping['kegg'].encode('utf-8') + b"\t" 
-                                                + ensemblJoined.encode('utf-8') + b"\t" 
-                                                + mapping['HGNC'].encode('utf-8') + b"\t" 
-                                                + mapping['HPRD'].encode('utf-8') + b"\t" 
-                                                + mapping['NCBI-GeneID'].encode('utf-8') + b"\t"  
-                                                + mapping['NCBI-ProteinID'].encode('utf-8') + b"\t"  
-                                                + mapping['OMIM'].encode('utf-8') + b"\t" 
-                                                + uniprotJoined.encode('utf-8') + b"\t" 
-                                                + mapping['Vega'].encode('utf-8') + b"\t" 
-                                                + mapping['miRBase'].encode('utf-8') + b"\t" 
-                                                + mapping['HMDB_protein_accession'].encode('utf-8') + b"\t" 
-                                                + str(mapping['Entrez']).encode('utf-8') + b"\t" 
-                                                + mapping['Enzyme Nomenclature'].encode('utf-8')
-                                                + b"\n")
-                else:
-                    for item in mapping["common_name"]:
-                        geneCrossLinksOutFile.write(self.rampGeneIDdictionary[key].encode('utf-8') + b"\t"
-                                                + item.encode('utf-8') + b"\t" 
-                                                + mapping['kegg'].encode('utf-8') + b"\t" 
-                                                + ensemblJoined.encode('utf-8') + b"\t" 
-                                                + mapping['HGNC'].encode('utf-8') + b"\t" 
-                                                + mapping['HPRD'].encode('utf-8') + b"\t" 
-                                                + mapping['NCBI-GeneID'].encode('utf-8') + b"\t"  
-                                                + mapping['NCBI-ProteinID'].encode('utf-8') + b"\t"  
-                                                + mapping['OMIM'].encode('utf-8') + b"\t" 
-                                                + uniprotJoined.encode('utf-8') + b"\t" 
-                                                + mapping['Vega'].encode('utf-8') + b"\t" 
-                                                + mapping['miRBase'].encode('utf-8') + b"\t" 
-                                                + mapping['HMDB_protein_accession'].encode('utf-8') + b"\t" 
-                                                + str(mapping['Entrez']).encode('utf-8') + b"\t" 
-                                                + mapping['Enzyme Nomenclature'].encode('utf-8')
-                                                + b"\n")
-        '''
         # construct sql file that has rampOLId/CommonName/BiofluidORCellular
         # key is biofluid location (string) 
         # Total : biofluid, cellular, exo/endo , tissue

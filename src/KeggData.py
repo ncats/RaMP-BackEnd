@@ -547,10 +547,13 @@ class KeggData(MetabolomicsData):
                     metaboliteMapping["chebi_id"] = list(map(lambda x: 'chebi:'+x,metaboliteMapping["chebi_id"]))
                 if "CAS:" in line:
                     metaboliteMapping["CAS"] = line[line.find(':') + 2:].split(' ')
+                # pubchem in kegg is not included because kegg does not differentiate pubchem compound id and pubchem substance id.
+                # pubchem cpd id and pubchem substances id could overlap to cause extra errors.
+                '''
                 if "PubChem:" in line:
                     metaboliteMapping["pubchem_compound_id"] = line[line.find(':') + 2 :].split(' ')
                     metaboliteMapping["pubchem_compound_id"] = list(map(lambda x: 'pubchem:'+x,metaboliteMapping["pubchem_compound_id"]))
-                    
+                '''    
                 if "LIPIDMAPS:" in line:
                     metaboliteMapping['LIPIDMAPS'] = line[line.find(':') + 2: ].split(' ')  
                     count = count + 1 
@@ -675,6 +678,7 @@ class KeggData(MetabolomicsData):
                     #add to dictionary that keeps track of gene ids: key: geneid, value: genefullname 
                     mapping['common_name'] = [genefullname]       
                     mapping['kegg'] = geneid
+                    mapping['entrez'] = 'entrez:' + geneid
                     if geneid not in self.geneInfoDictionary:
                         self.geneInfoDictionary[geneid] = mapping
                     #add geneid to list for this pathway

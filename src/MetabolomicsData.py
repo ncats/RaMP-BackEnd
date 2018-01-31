@@ -29,7 +29,7 @@ class MetabolomicsData():
 			except OSError as e: # Trap the OS error and show the embedded error code
 				if e.errno != errno.EEXIST:
 					raise
-    				
+								
 	def download_files(self,url,dir,file = None):
 		'''
 		Download file from given url to given directory with all handled errors
@@ -57,18 +57,25 @@ class MetabolomicsData():
 					print("HTTP ERROR:" + e.code)
 		else:
 			raise TypeError("Expect a string for the file name")	
+	
 		
 	def write_myself_files(self,database,dir = '../misc/output/'):
+		'''
+		This function write all the dictionary attributes of a database to a certain directory
+		
+		param str database specify which database is written 
+		param dir dir the path for the output file
+		'''
 		path = dir + database +'/'
 		self.check_path(path)
 		attrs = vars(self)
+		# All attributes are stored in a dictionary
 		for key in attrs:
+			# Write the file if the dictionary is not empty.
 			if type(attrs[key]) is dict and len(attrs[key]) > 0:
 				with open(path+database+key+".txt",'wb') as f:
 					for id, value in attrs[key].items():
-					
 						if type(value) is not dict and type(value) is not list:
-							
 							f.write(id.encode('utf-8') +b'\t'
 									+ value.encode('utf-8') +b'\n')
 						elif type(value) is list:
@@ -90,8 +97,7 @@ class MetabolomicsData():
 											+ source.encode('utf-8')+b'\t'
 											+ str(sourceid).encode('utf-8') +b'\n')
 									
-					
-				
+	
 				
 	
 

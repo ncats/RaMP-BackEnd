@@ -65,19 +65,15 @@ class TestWikipathwaysMain(unittest.TestCase):
         print("Pathways number is " + str(len(wikipathways.pathwayDictionary)))
         print("metabolites number is " + str(len(wikipathways.metaboliteIDDictionary)))
         print('genes number is '+ str(len(wikipathways.geneInfoDictionary)))
-        '''
-        print("Compound:") 
-        stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
-        print("\n")
-        print("Gene:") 
-        stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
         
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
-        '''
+        
+        
+        
 
 if __name__ == "__main__":
     unittest.main()
