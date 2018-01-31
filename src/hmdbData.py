@@ -297,6 +297,8 @@ class hmdbData(MetabolomicsData):
                 if pathways is not None:
                     listOfPathways = []
                     for pathway in pathways:
+                        # Find pathway name and smp id
+                        # kegg id is not collected
                         pathwayNametag = pathway.find('{http://www.hmdb.ca}name')
                         smpidtag = pathway.find('{http://www.hmdb.ca}smpdb_id')
                         if pathwayNametag is not None and smpidtag is not None:
@@ -305,10 +307,9 @@ class hmdbData(MetabolomicsData):
                             if smpid is not None and pathwayName is not None and smpid not in self.pathwayDictionary:
                                 self.pathwayDictionary[smpid] = pathwayName
                                 self.pathwayCategory[smpid] = 'NA'
+                                # add pathways to metabolites With pathway dictionary
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
-                                    
-                    
                 else:
                     raise ValueError('Each metabolites tag has a pathways children')
                 # find synonyms 
@@ -316,63 +317,12 @@ class hmdbData(MetabolomicsData):
                     for synonym in synonyms:
                         if synonym is not None and synonym.text is not None:
                             self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
-                        
-                # find accession
-                #find other ids for metabolite 
-                '''
-                for child in metabolite:
-                    childtag = child.tag.replace("{http://www.hmdb.ca}", "")
-                    
-                    #THIS WILL BE THE KEY
-                    if childtag == "accession":
-                        metabohmdbid = child.text 
-                        #print("Getting ..." + metabohmdbid)    
-                    #find the pathways 
-                    
-                    listOfPathways = []
-                    if childtag =="pathways":
-                        
-                        for pathway in child:
-                            pathwayName = None
-                            smpid = None
-                            keggid = None
-                            
-                            for info in pathway:
-                                infotag = info.tag.replace("{http://www.hmdb.ca}", "")
-                                
-                                if infotag == "name":
-                                    if info.text is not None:
-                                        pathwayName = info.text
-                                if infotag == "smpdb_id":
-                                    if info.text is not None:
-                                        smpid = info.text
-                                        listOfPathways.append(smpid)
-                                        #place all pathways in a dictionary with the pathwayid as the key and the common name as the value
-                                        if smpid not in self.pathwayDictionary:
-                                            self.pathwayDictionary[smpid] = pathwayName
-                                            self.pathwayCategory[smpid] = 'NA'
-                                            
-                                                         
-                        if len(listOfPathways) >0 :           
-                            self.metabolitesWithPathwaysDictionary[metabohmdbid] = listOfPathways
-
-                    #find the synonyms                    
-                    listOfSynonyms = []
-                    
-                    if childtag  == "synonyms":
-                        for synonym in child:
-                            synonym = synonym.text
-                            listOfSynonyms.append(synonym)
-                    
-                        #place all synonyms in a dictionary 
-                        self.metabolitesWithSynonymsDictionary[metabohmdbid] = listOfSynonyms
-                    '''    
         for key in self.pathwayCategory:
             if key in smpdb2:
                 self.pathwayCategory[key] = 'smpdb2'
             else:
                 self.pathwayCategory[key] = 'smpdb3'
-        print('######### Finished for metaboliteIDDict ###########')
+        
         print('{} items in pathwayDictionary.'.format(len(self.pathwayDictionary)))
         print('{} items in metabolitesWithSynonyms dictionary'.format(len(self.metabolitesWithSynonymsDictionary)))
         return tree                     
@@ -436,7 +386,7 @@ class hmdbData(MetabolomicsData):
                                        'Entrez': 'NA',
                                        'Enzyme Nomenclature': 'NA'}
                             
-                            idtag = {"uniprot_id":'Uniprot',
+                            idtag = {"uniprot_id":'UniProt',
                                      "protein_accession":'HMDB_protein_accession',
                                      "gene_name":'common_name',
                             }
@@ -448,10 +398,10 @@ class hmdbData(MetabolomicsData):
                                 id_tag_key = sourceid.tag.replace('{http://www.hmdb.ca}','')
                                 mapping_key = idtag[id_tag_key]
                                 if sourceid.text is not None:
-                                    mapping[mapping_key] = sourceid.text
+                                    mapping[mapping_key] = [sourceid.text]
                                     
                             
-                            proteinacc = mapping['HMDB_protein_accession']
+                            proteinacc = mapping['HMDB_protein_accession'][0]
                             listofgenes.append(proteinacc)
                             self.geneInfoDictionary[proteinacc] = mapping
                         #using the uniprot id as the gene id 
@@ -556,20 +506,38 @@ class hmdbData(MetabolomicsData):
         if tree is None:
             tree = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
         smpdb2 = self.getSMPDB_Category()
-        root = tree.getroot() 
+        root = tree.getroot()
+         
         for protein in root:
             accession = protein.find('{http://www.hmdb.ca}accession')
             
             uniprotidtag = protein.find('{http://www.hmdb.ca}uniprot_id')
+            id_mapping = { 'kegg': 'NA',
+                       'common_name': 'NA',
+                       'Ensembl': 'NA', 
+                       'HGNC': 'NA', 
+                       'HPRD': 'NA', 
+                       'NCBI-GeneID': 'NA', 
+                       'NCBI-ProteinID': 'NA', 
+                       'OMIM': 'NA', 
+                       'UniProt': 'NA', 
+                       'Vega': 'NA', 
+                       'miRBase': 'NA', 
+                       'HMDB_protein_accession': 'NA',
+                       'Entrez': 'NA',
+                       'Enzyme Nomenclature': 'NA'}
             if uniprotidtag is not None and uniprotidtag.text is not None:
                 accessionnum = accession.text
                 if accessionnum not in self.geneInfoDictionary:
-                    mapping = list(self.geneInfoDictionary.values())[0]
+                    mapping = id_mapping.copy()
                     mapping['HMDB_protein_accession'] = accessionnum
                     mapping['UniProt'] = uniprotidtag.text
                     self.geneInfoDictionary[accessionnum] = mapping
                 else:
-                    self.geneInfoDictionary[accessionnum]['UniProt'] = uniprotidtag.text
+                    if self.geneInfoDictionary[accessionnum]['UniProt'] is not 'NA':
+                        self.geneInfoDictionary[accessionnum]['UniProt'].append(uniprotidtag.text)
+                    else:
+                        self.geneInfoDictionary[accessionnum]['UniProt'] = [uniprotidtag.text]
             for pathways in protein.iter('{http://www.hmdb.ca}pathways'):
                 for pathway in pathways:
                     pathwaytag = pathway.tag.replace('{http://www.hmdb.ca}','')

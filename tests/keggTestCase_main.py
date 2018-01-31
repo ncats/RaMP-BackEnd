@@ -72,13 +72,13 @@ class TestKeggMain(unittest.TestCase):
         print('PathwayDict number is ' + str(len(kegg.pathwayDictionary)))
         print('MetabolitesWithPath is ' + str(len(kegg.metabolitesWithPathwaysDictionary)))
         
-        '''
+        
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
-        '''
+        
 
 
 if __name__ == "__main__":
