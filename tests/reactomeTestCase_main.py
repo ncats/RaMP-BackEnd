@@ -54,8 +54,6 @@ class TestReactomeMain(unittest.TestCase):
                  reactome.tissue,
                  "reactome",
                  0,0)
-        
-      
         print("Pathways number is " + str(len(reactome.pathwayDictionary)))
         print("metabolites number is " + str(len(reactome.metaboliteIDDictionary)))
         print('genes number is '+ str(len(reactome.geneInfoDictionary)))

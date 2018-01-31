@@ -20,7 +20,7 @@ class TestHMDBMain(unittest.TestCase):
         
         
         print("Getting HMDB Metabolites...")
-        #tree = hmdb.getMetaboliteOtherIDs()
+        tree = hmdb.getMetaboliteOtherIDs()
         print("Getting HMDB pathways and synonyms...")
         hmdb.getPathwaysandSynonyms()
         
@@ -78,28 +78,28 @@ class TestHMDBMain(unittest.TestCase):
         print('Gene number is ' + str(len(hmdb.geneInfoDictionary)))
         print('Pathway number is ' + str(len(hmdb.pathwayDictionary)))
         print('Pathway that have Gene with it ' + str(len(hmdb.pathwaysWithGenesDictionary)))
-        #sql.writeIdInWhichdatabase()
-        # print("Compound:")
-        # stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
+        sql.writeIdInWhichdatabase()
+        print("Compound:")
+        stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
 
-        # print("\n")
-        # print("Gene:")
-        # stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
+        print("\n")
+        print("Gene:")
+        stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
 
-        # stat.databaseContent(hmdb.pathwayDictionary,
-        #         hmdb.pathwayCategory,
-        #         hmdb.metabolitesWithPathwaysDictionary,
-        #         hmdb.metabolitesWithSynonymsDictionary,
-        #         hmdb.metaboliteIDDictionary,
-        #         hmdb.pathwaysWithGenesDictionary,
-        #         hmdb.geneInfoDictionary,
-        #         hmdb.biofluidLocation,
-        #         hmdb.biofluid,
-        #         hmdb.cellularLocation,
-        #         hmdb.cellular,
-        #         hmdb.pathwayOntology,
-        #         hmdb.exoEndoDictionary,
-        #         "hmdb")
+        stat.databaseContent(hmdb.pathwayDictionary,
+                 hmdb.pathwayCategory,
+                 hmdb.metabolitesWithPathwaysDictionary,
+                 hmdb.metabolitesWithSynonymsDictionary,
+                 hmdb.metaboliteIDDictionary,
+                 hmdb.pathwaysWithGenesDictionary,
+                 hmdb.geneInfoDictionary,
+                 hmdb.biofluidLocation,
+                 hmdb.biofluid,
+                 hmdb.cellularLocation,
+                 hmdb.cellular,
+                 hmdb.pathwayOntology,
+                 hmdb.exoEndoDictionary,
+                 "hmdb")
         
 if __name__ == "__main__":
     unittest.main()

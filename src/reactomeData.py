@@ -114,7 +114,7 @@ class reactomeData(MetabolomicsData):
                                 'NCBI-GeneID': 'NA', 
                                 'NCBI-ProteinID': 'NA', 
                                 'OMIM': 'NA', 
-                                'UniProt': gene, 
+                                'UniProt': [gene], 
                                 'Vega': 'NA', 
                                 'miRBase': 'NA', 
                                 'HMDB_protein_accession': 'NA',
@@ -291,8 +291,11 @@ class reactomeData(MetabolomicsData):
     def getCommonNameFromUniprot(self):
         files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
+        i = 0
         for f in files:
-            print(path+f)
+            i = i + 1
+            if i % 100 ==0:
+                print('Processing {} files'.format(i))
             try:
                 tree = ET.parse(path + f)
                 geneid = f.replace(".xml","")

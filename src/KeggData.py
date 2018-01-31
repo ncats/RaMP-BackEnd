@@ -468,12 +468,6 @@ class KeggData(MetabolomicsData):
 #        The script checks for those and stops reading in at those lines.
         
         ##keeping track of current metabolite
-
-        
-     
-        
-        
-        
         found = False
         count = 0
         for metabolite in self.metabolitesWithPathwaysDictionary: 
@@ -746,7 +740,7 @@ class KeggData(MetabolomicsData):
                     names = splitline[len(splitline) - 1]
                     names = names.split(",")
                     
-                    mapping = self.geneInfoDictionary[gene]
+                    
                     for name in names:
                         name = name.replace(" ","")
                         
@@ -754,42 +748,13 @@ class KeggData(MetabolomicsData):
                         self.geneInfoDictionary[gene] = mapping 
                         #print(splitline)
                         #time.sleep(3)
-                if "AASEQ" in line or "NTSEQ" in line or "STRUCTURE" in line:
-                    found = False
-                    break
-                if "DBLINKS" in line:
-                    found = True
-                    splitline = line.split(" ")
-                    key = splitline[5]
-                    #chop off last character (a colon)
-                    key = key[:-1]
-                    value = splitline[6]
-                   
-                    #time.sleep(3)
-                    if key in keywords:
-                        if key in ['Ensembl', 'UniProt']:
-                            mapping[key] = [value]
-                        else:
-                            mapping[key] = value
-                    continue
-                if found:
-                    splitline = line.split(" ")
-                    key = splitline[12]
-                    #chop off last character (a colon)
-                    key = key[:-1]
-                    value = splitline[13]
-                    
-                    #time.sleep(3)
-                     
-                     
-                    if key in keywords:
-                        if key in ['Ensembl', 'UniProt']:
-                            mapping[key] = [value]
-                        else:
-                            mapping[key] = value
-                    continue
-            
-            
+                if 'Ensembl:' in line:
+                    ids = line[line.find(':')+2:].split(' ')
+                    mapping['Ensembl'] = ids
+                if 'UniProt:' in line:
+                    ids = line[line.find(':')+2:].split(' ')
+                    mapping['UniProt'] = ids
+
             self.geneInfoDictionary[gene] = mapping
             geneFile.close()
              

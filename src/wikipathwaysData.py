@@ -223,7 +223,7 @@ class wikipathwaysData(MetabolomicsData):
                               
                                 if databaseID is not "" and database == "Entrez Gene":
                                     databaseID = 'entrez:' + databaseID.replace(' ','') 
-                                    geneMapping["Entrez"] = databaseID
+                                    geneMapping["Entrez"] = [databaseID]
                                 if databaseID not in listOfGenes:
                                     listOfGenes.append(databaseID)
                                   
@@ -264,11 +264,11 @@ class wikipathwaysData(MetabolomicsData):
                                              "Entrez" : "NA",
                                              "Enzyme Nomenclature": "NA"}
                                 
-                                geneMapping["common_name"] = metaboliteorgene
+                                geneMapping["common_name"] = [metaboliteorgene]
                               
                                 if databaseID is not "" and database == "Entrez Gene": 
                                     databaseID = 'entrez:' + databaseID.replace(' ','')
-                                    geneMapping["Entrez"] = databaseID
+                                    geneMapping["Entrez"] = [databaseID]
                                     
                                 if databaseID not in listOfGenes:
                                     listOfGenes.append(databaseID)
@@ -401,6 +401,8 @@ class wikipathwaysData(MetabolomicsData):
                                         #self.metaboliteFromWhichDB["chemspider_id"] += 1
                                       
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+                                # Not collecting pubchem-substance id due to inability to differentiate it from
+                                # pubchem compound id.
                                 '''      
                                 if database == "PubChem-substance":
                                     databaseID = 'pubchem:'+databaseID
