@@ -114,7 +114,7 @@ class reactomeData(MetabolomicsData):
                                 'NCBI-GeneID': 'NA', 
                                 'NCBI-ProteinID': 'NA', 
                                 'OMIM': 'NA', 
-                                'UniProt': [gene], 
+                                'UniProt': gene, 
                                 'Vega': 'NA', 
                                 'miRBase': 'NA', 
                                 'HMDB_protein_accession': 'NA',

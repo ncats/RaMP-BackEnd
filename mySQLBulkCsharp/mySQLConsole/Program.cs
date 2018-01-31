@@ -14,10 +14,10 @@ namespace mysqlBatch
             Program prog = new Program();
             prog.createDatabaseAndAllTables();
             //source
-            prog.BulkImport("wikisource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
-            prog.BulkImport("reactomesource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
-            prog.BulkImport("keggsource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
             prog.BulkImport("hmdbsource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
+            prog.BulkImport("keggsource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
+            prog.BulkImport("reactomesource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
+            prog.BulkImport("wikisource.sql", "source", "SELECT sourceId, rampId, IDtype, geneOrCompound FROM source");
             //analyte
             prog.BulkImport("wikianalyte.sql", "analyte", "SELECT rampId, type FROM analyte");
             prog.BulkImport("reactomeanalyte.sql", "analyte", "SELECT rampId, type FROM analyte");
@@ -29,10 +29,11 @@ namespace mysqlBatch
             prog.BulkImport("keggpathway.sql", "pathway", "SELECT pathwayRampId, sourceId, type FROM pathway");
             prog.BulkImport("hmdbpathway.sql", "pathway", "SELECT pathwayRampId, sourceId, type FROM pathway");
             //analyteHasPathway
-            prog.BulkImport("wikianalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, type FROM analyteHasPathway");
-            prog.BulkImport("reactomeanalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, type FROM analyteHasPathway");
-            prog.BulkImport("kegganalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, type FROM analyteHasPathway");
-            prog.BulkImport("hmdbanalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, type FROM analyteHasPathway");
+            prog.BulkImport("kegganalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, pathwaySource FROM analyteHasPathway");
+            prog.BulkImport("hmdbanalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, pathwaySource FROM analyteHasPathway");
+            prog.BulkImport("wikianalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, pathwaySource FROM analyteHasPathway");
+            prog.BulkImport("reactomeanalyteHasPathway.sql", "analyteHasPathway", "SELECT rampId, pathwayRampId, pathwaySource FROM analyteHasPathway");
+            
             //analyteSynonym
             prog.BulkImport("hmdbanalyteSynonym.sql", "analyteSynonym", "SELECT Synonym, rampId, geneOrCompound FROM analyteSynonym");
             prog.BulkImport("kegganalyteSynonym.sql", "analyteSynonym", "SELECT Synonym, rampId, geneOrCompound FROM analyteSynonym");
@@ -62,7 +63,7 @@ namespace mysqlBatch
             string stringCreateTable1 = "create table source(sourceId VARCHAR(30), rampId VARCHAR(30), IDtype VARCHAR(30), geneOrCompound VARCHAR(30),commonName VARCHAR(30), PRIMARY KEY (sourceId)) engine = InnoDB;";
             string stringCreateTable2 = "create table analyte (rampId VARCHAR(30), type VARCHAR(30), PRIMARY KEY (rampId)) engine = InnoDB;";
             string stringCreateTable3 = "create table pathway (pathwayRampId VARCHAR(30), sourceId VARCHAR(30),type VARCHAR(30), pathwayCategory VARCHAR(30), pathwayName VARCHAR(250), PRIMARY KEY (pathwayRampId)) engine = InnoDB;";
-            string stringCreateTable4 = "create table analyteHasPathway (rampId VARCHAR(30), pathwayRampId VARCHAR(30), type VARCHAR(30)) engine = InnoDB;";
+            string stringCreateTable4 = "create table analyteHasPathway (rampId VARCHAR(30), pathwayRampId VARCHAR(30), pathwaySource VARCHAR(30)) engine = InnoDB;";
             string stringCreateTable5 = "create table analyteSynonym (Synonym VARCHAR(500), rampId VARCHAR(30), geneOrCompound VARCHAR(30), source VARCHAR(30)) engine = InnoDB;";
             string stringCreateTable6 = "create table catalyzed (rampCompoundId VARCHAR(30), rampGeneId VARCHAR(30)) engine = InnoDB;";
             string stringCreateTable7 = "create table analyteHasOntology (rampCompoundId VARCHAR(30), rampOntologyIdLocation VARCHAR(30)) engine = InnoDB;";

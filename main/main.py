@@ -102,14 +102,16 @@ class Main():
         '''
         print('Generate compound id')
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
-        wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", hmdbcompoundnum)
+        keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", hmdbcompoundnum)
+        wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", keggcompoundnum)
         reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", wikicompoundnum)
-        keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", reactomecompoundnum)
+        
         print('Generate gene id ...')
         hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
-        wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", hmdbgenenum)
+        kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", hmdbgenenum)
+        wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", kegggenenum)
         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", wikigenenum)
-        kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", reactomegenenum)
+        
         print('Write to sql file...')
         hmdbnumbers = sql.write(
                 hmdb.metaboliteCommonName,
