@@ -20,8 +20,11 @@ class TestHMDBMain(unittest.TestCase):
         wiki = wikipathwaysData()
         react = reactomeData()
         kegg = KeggData()
+        print('Running overlap plot test case...')
+        
         hmdb.getGenes()
         hmdb.getPathwaysLinkedToGene()
+        
         wiki.getEverything()
         wiki.getCommonNameForChebi()
         react.getGenes()
@@ -32,15 +35,12 @@ class TestHMDBMain(unittest.TestCase):
         kegg.getGeneInfo()
         kegg.getPathwayLinkedToGene()
         #idconvert.GeneConvert(hmdb.geneInfoDictionary, "hmdb")
-
-      
-        hmdb.write_myself_files('hmdb')
-        wiki.write_myself_files('wiki')
         
         hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
-        wikinum = sql.createRampGeneID(wiki.geneInfoDictionary,'wiki',hmdbgenenum)
+        keggnum = sql.createRampGeneID(kegg.geneInfoDictionary,'kegg',hmdbgenenum)
+        wikinum = sql.createRampGeneID(wiki.geneInfoDictionary,'wiki',keggnum)
         reactnum = sql.createRampGeneID(react.geneInfoDictionary,'reactome',wikinum)
-        keggnum = sql.createRampGeneID(kegg.geneInfoDictionary,'kegg',reactnum)
+        
         
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, 'Gene')   
         

@@ -224,6 +224,7 @@ class wikipathwaysData(MetabolomicsData):
                                 if databaseID is not "" and database == "Entrez Gene":
                                     databaseID = 'entrez:' + databaseID.replace(' ','') 
                                     geneMapping["Entrez"] = [databaseID]
+                                    geneMapping['kegg'] = [databaseID.replace('entrez:','')]
                                 if databaseID not in listOfGenes:
                                     listOfGenes.append(databaseID)
                                   

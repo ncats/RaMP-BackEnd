@@ -219,15 +219,23 @@ class writeToSQL(MetabolomicsData):
                 for eachid in listOfIDs:
                     self.rampCompoundIDdictionary[eachid] = rampCompoundIDToFile
                 # pair ramp id to a database
-                setOfDatabases = set()
-                setOfDatabases.add(database)
-                self.rampCompoundIdInWhichDatabases[rampCompoundIDToFile] = setOfDatabases
+                if rampCompoundIDToFile not in self.rampCompoundIdInWhichDatabases:
+                    setOfDatabases = set()
+                    setOfDatabases.add(database)
+                    self.rampCompoundIdInWhichDatabases[rampCompoundIDToFile] = setOfDatabases
+                else:
+                    self.rampCompoundIdInWhichDatabases[rampCompoundIDToFile].add(database)
             else:
                 # assume the entry will only overlap with another entry
                 overlap_id = list(overlap)[0]
                 ramp_id = self.rampCompoundIDdictionary[overlap_id]
                 # add to set of inwhich database dictionary
-                self.rampCompoundIdInWhichDatabases[ramp_id].add(database)
+                if ramp_id not in self.rampCompoundIdInWhichDatabases:
+                    setOfDatabases = set()
+                    setOfDatabases.add(database)
+                    self.rampCompoundIdInWhichDatabases[ramp_id] = setOfDatabases
+                else:
+                    self.rampCompoundIdInWhichDatabases[ramp_id].add(database)
                 for eachid in listOfIDs:
                     self.rampCompoundIDdictionary[eachid] = ramp_id
                 
@@ -277,9 +285,10 @@ class writeToSQL(MetabolomicsData):
                 if eachid in self.rampGeneIDdictionary:
                     isThisNewGene = False
                     overlap.append(eachid)
+                    '''
                     if len(overlap) > 2 :
                         print('Note: Two or more ids {} are overlaped'.format(overlap))
-                    
+                    '''
                 if isThisNewGene:
                     rampGeneIDnumber = rampGeneIDnumber + 1
                     lengthOfID = len(rampGeneID)

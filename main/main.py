@@ -66,40 +66,7 @@ class Main():
         #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)
         #hmdb: HMDB-protien-accession (mainID), 'Uniprot'
         #reactome:Uniprot (mainID)
-        '''
-        idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wikipathways")
-        idconvert.GeneConvert(hmdb.geneInfoDictionary, "hmdb")
-        idconvert.GeneConvert(reactome.geneInfoDictionary, "reactome")
-        idconvert.GeneConvert(kegg.geneInfoDictionary, "kegg")
         
-        idconvert.GeneUniprotToHMDBP(wikipathways.geneInfoDictionary, hmdb.geneInfoDictionary, "wikipathways")
-        idconvert.GeneUniprotToHMDBP(reactome.geneInfoDictionary, hmdb.geneInfoDictionary, "reactome")
-        idconvert.GeneUniprotToHMDBP(kegg.geneInfoDictionary, hmdb.geneInfoDictionary, "kegg")
-        
-        print("Converting metabolite ids...")
-        idconvert.MetaboliteKeggIDToChebi(kegg.metaboliteIDDictionary, hmdb.metaboliteIDDictionary, "hmdb") 
-        idconvert.MetaboliteChebiToHMDB(wikipathways.metaboliteIDDictionary, hmdb.metaboliteIDDictionary, "wikipathways")
-        idconvert.MetaboliteChebiToHMDB(reactome.metaboliteIDDictionary, hmdb.metaboliteIDDictionary, "reactome")
-        idconvert.MetaboliteChebiToHMDB(kegg.metaboliteIDDictionary, hmdb.metaboliteIDDictionary, "kegg")
-        
-        #check for dups
-        print("Wikipathways compounds...")
-        sql.checkForWithinDatabaseDuplicatesCompound(wikipathways.metaboliteIDDictionary, "wikipathways")
-        print("Wikipathways genes...")
-        sql.checkForWithinDatabaseDuplicatesGene(wikipathways.geneInfoDictionary, "wikipathways")
-        print("Kegg compounds...")
-        sql.checkForWithinDatabaseDuplicatesCompound(kegg.metaboliteIDDictionary, "kegg")
-        print("kegg genes...")
-        sql.checkForWithinDatabaseDuplicatesGene(kegg.geneInfoDictionary, "kegg")
-        print("reactome compounds...")
-        sql.checkForWithinDatabaseDuplicatesCompound(reactome.metaboliteIDDictionary, "reactome")
-        print("reactome genes...")
-        sql.checkForWithinDatabaseDuplicatesGene(reactome.geneInfoDictionary, "reactome")
-        print("hmdb compounds...")
-        sql.checkForWithinDatabaseDuplicatesCompound(hmdb.metaboliteIDDictionary, "hmdb")
-        print("hmdb genes...")
-        sql.checkForWithinDatabaseDuplicatesGene(hmdb.geneInfoDictionary, "hmdb")
-        '''
         print('Generate compound id')
         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
         keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", hmdbcompoundnum)
@@ -160,23 +127,23 @@ class Main():
         reactomenumbers = sql.write(
                 reactome.metaboliteCommonName,
                 reactome.pathwayDictionary, 
-                 reactome.pathwayCategory,
-                 reactome.metabolitesWithPathwaysDictionary,
-                 reactome.metabolitesWithSynonymsDictionary,
-                 reactome.metaboliteIDDictionary,
-                 reactome.pathwaysWithGenesDictionary,
-                 reactome.metabolitesLinkedToGenes,
-                 reactome.geneInfoDictionary,
-                 reactome.biofluidLocation,
-                 reactome.biofluid,
-                 reactome.cellularLocation,
-                 reactome.cellular,
-                 reactome.pathwayOntology,
-                 reactome.exoEndoDictionary,
-                 reactome.exoEndo,
-                 reactome.tissueLocation,
-                 reactome.tissue,
-                 "reactome",
+                reactome.pathwayCategory,
+                reactome.metabolitesWithPathwaysDictionary,
+                reactome.metabolitesWithSynonymsDictionary,
+                reactome.metaboliteIDDictionary,
+                reactome.pathwaysWithGenesDictionary,
+                reactome.metabolitesLinkedToGenes,
+                reactome.geneInfoDictionary,
+                reactome.biofluidLocation,
+                reactome.biofluid,
+                reactome.cellularLocation,
+                reactome.cellular,
+                reactome.pathwayOntology,
+                reactome.exoEndoDictionary,
+                reactome.exoEndo,
+                reactome.tissueLocation,
+                reactome.tissue,
+                "reactome",
                  wikipathwaysnumbers[0],wikipathwaysnumbers[1])
         
         keggnumbers = sql.write(

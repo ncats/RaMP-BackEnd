@@ -54,10 +54,10 @@ fourVenn <- function(kegg,
     hmdbpercent = round(((hmdbPercent)/hmdb)*100, digits=1)
     reactomepercent = round((reactomePercent)/reactome*100, digits=1)
     wikipercent = round(((wikiPercent)/wiki)*100, digits=1)
-    keggpercent = paste0("kegg (", keggpercent, "%)")
-    hmdbpercent = paste0("hmdb (", hmdbpercent, "%)")
-    reactomepercent = paste0("reactome (", reactomepercent, "%)")
-    wikipercent = paste0("wiki (", wikipercent, "%)")
+    keggpercent = paste0("KEGG (", keggpercent, "%)")
+    hmdbpercent = paste0("HMDB (", hmdbpercent, "%)")
+    reactomepercent = paste0("REACTOME (", reactomepercent, "%)")
+    wikipercent = paste0("WIKI (", wikipercent, "%)")
     
     venn.plot <- draw.quad.venn(
         area1 = num1,
@@ -78,12 +78,12 @@ fourVenn <- function(kegg,
         category = c(keggpercent, hmdbpercent, reactomepercent, wikipercent),
         fill = c("orange", "red", "green", "blue"),
         lty = "dashed",
-        cex = 2,
-        cat.cex = 2,
+        cex = 5,
+        cat.cex = 5,
         cat.col = c("orange", "red", "green", "blue"))
         
         name = paste0("../misc/output/", "fourVenn", type, ".pdf")
-        pdf(file = name, width = 20, height = 20)
+        pdf(file = name, width = 35, height = 30)
         grid.draw(venn.plot)
         dev.off()
 }
