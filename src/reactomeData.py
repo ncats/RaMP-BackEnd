@@ -294,7 +294,7 @@ class reactomeData(MetabolomicsData):
         i = 0
         for f in files:
             i = i + 1
-            if i % 100 ==0:
+            if i % 1000 == 0:
                 print('Processing {} files'.format(i))
             try:
                 tree = ET.parse(path + f)

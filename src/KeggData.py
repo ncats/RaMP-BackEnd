@@ -693,7 +693,6 @@ class KeggData(MetabolomicsData):
         files = os.listdir("../misc/data/kegg/pathwaysWithGenes/")
         for file in files:
             pathwayFile = open("../misc/data/kegg/pathwaysWithGenes/" + file)
-            
             for line in pathwayFile:
                 splitline = line.split("\t")
                 if(len(splitline) >1):
@@ -704,7 +703,7 @@ class KeggData(MetabolomicsData):
                     if pathway in self.pathwaysWithGenesDictionary:
                         geneList = self.pathwaysWithGenesDictionary[pathway]
                         if geneid not in geneList:
-                            print("Add extra gene to list ..." + geneid)
+                            #print("Add extra gene to list ..." + geneid)
                             geneList.append(geneid)
                             self.pathwaysWithGenesDictionary[pathway] = geneList
                     else:
