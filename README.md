@@ -94,6 +94,7 @@ Here is an overview of the folders in RaMP and what they contain:
 or lists of converted genes (can help with debugging)
 
 **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
+
 Note: since *data*,*output*,*sql* folder has large files, so they are not coming with this repo. Please expect a longer time for downloading data from beginning.
 
 Here is the overall workflow for getting the mySQL database up and running:
