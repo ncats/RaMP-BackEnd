@@ -11,7 +11,6 @@ The repository "MatheLabRaMP" = RaMP creation package: a python package for crea
 
 RaMP = the final mySQL databases made up of .sql files 
 
-
 ### How do I get set up? ###
 
 If you are planning to help contribute to RaMP here is some information on how to get set up.
@@ -96,6 +95,8 @@ or lists of converted genes (can help with debugging)
 
 **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
 
+Note: since *data*,*output*,*sql* folder has large files, so they are not coming with this repo. Please expect a longer time for downloading data from beginning.
+
 Here is the overall workflow for getting the mySQL database up and running:
 
 1. git clone this repository
@@ -107,6 +108,6 @@ Here is the overall workflow for getting the mySQL database up and running:
 
 
 ### Who do I talk to? ###
-
+* Repo owner: Bofei Zhang (zhang.5675@osu.edu)
 * Repo owner: Elizabeth Baskin (Elizabeth.Baskin@osumc.edu)
 * PI: Ewy Mathe (Ewy.Mathe@osumc.edu)
