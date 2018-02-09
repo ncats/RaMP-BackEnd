@@ -6,8 +6,8 @@ library(RMySQL)
 findAnalyteHasPathway <- function(pathwayRampId,GC = "C",n = 10){
   con <- dbConnect(MySQL(),
                    user = 'root',
-                   dbname='mathelabramp',
-                   password = 'Ehe131224',
+                   dbname='Your-database-name',
+                   password = 'Your-password',
                    host = 'localhost')
   on.exit(dbDisconnect(con))
   p_id <- unique(pathwayRampId)

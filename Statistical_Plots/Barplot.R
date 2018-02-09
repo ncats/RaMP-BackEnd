@@ -50,9 +50,9 @@ finderPathways3 <- function(dfOfIds){
 # End of functions
 
 con <- dbConnect(MySQL(),
-                 dbname ="mathelabramp",
+                 dbname ="Your-database-name",
                  host ="localhost",
-                 password = "Ehe131224",
+                 password = "Your-password",
                  username = "root")
 # Read all source id from Python output
 # The data is output from Python code.
