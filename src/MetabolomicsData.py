@@ -3,7 +3,7 @@ import os
 from urllib.error import URLError,HTTPError
 import time
 import datetime 
-from django.core.checks import database
+
 from builtins import str
 class MetabolomicsData():
 	'''
@@ -46,15 +46,22 @@ class MetabolomicsData():
 				print("Invalid URL: " + e.reason)
 			except HTTPError as e:
 				print("HTTP ERROR:" + e.code)
+			except ConnectionResetError:
+				print('Query database so frequently maybe?')
+				pass
+		
 		elif isinstance(file,str):
 			if file not in os.listdir(dir):
 				print("{}. Downloading {} ".format(str(len(os.listdir(dir))),file))
 				try:
 					urllib.request.urlretrieve(url,dir+file)
 				except URLError as e:
-					print("Invalid URL: " + e.reason)
+					print("Invalid URL: " +url)
 				except HTTPError as e:
-					print("HTTP ERROR:" + e.code)
+					print("HTTP ERROR:" + url)
+				except ConnectionResetError:
+					print('Query database so frequently maybe?')
+					pass
 		else:
 			raise TypeError("Expect a string for the file name")	
 	

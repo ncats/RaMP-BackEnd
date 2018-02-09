@@ -341,7 +341,7 @@ class KeggData(MetabolomicsData):
         
         #create a temporary pathway dictionary that has all human pathways regardless of category
         tempPathwayDictionary = dict()
-    
+        print('Start to get kegg pathways ...')
         hsaFile = open("../misc/data/kegg/hsa.txt")
         for line in hsaFile:
                 #split into columns via the tab character
