@@ -107,6 +107,6 @@ Here is the overall workflow for getting the mySQL database up and running:
 
 
 ### Who do I talk to? ###
-
+* Repo owner: Bofei Zhang (zhang.5675@osu.edu)
 * Repo owner: Elizabeth Baskin (Elizabeth.Baskin@osumc.edu)
 * PI: Ewy Mathe (Ewy.Mathe@osumc.edu)
