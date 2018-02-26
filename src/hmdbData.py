@@ -111,8 +111,19 @@ class hmdbData(MetabolomicsData):
         #key: tissue location, value : "placeholder"
         self.tissue = dict()
         self.idDictForMetabolite = dict()
-
-        
+    
+    '''
+    Run all the function to get everything from hmdb source
+    '''
+    def getEverything(self,writeToFile = False):
+        self.getDatabaseFiles()
+        tree = self.getMetaboliteOtherIDs()
+        self.getPathwaysandSynonyms(tree)
+        self.getGenes(tree)
+        self.getBiofluidCellularLocationDisease(tree)
+        self.getPathwaysLinkedToGene()
+        if writeToFile:
+            self.write_myself_files('hmdb')
         
     def getDatabaseFiles(self):
         '''
