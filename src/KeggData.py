@@ -86,6 +86,7 @@ class KeggData(MetabolomicsData):
         self.tissue = dict()
     
     
+            
     def getDatabaseFiles(self):
         
         '''This function gets the files that make up kegg and places them into the kegg folder. 
@@ -524,7 +525,7 @@ class KeggData(MetabolomicsData):
                     "kegg_id": "NA",
                     "biocyc_id": "NA",
                     "bigg_id": "NA",
-                    "wikipidia": "NA",
+                    "wikipedia": "NA",
                     "nugowiki": "NA",
                     "metagene": "NA",
                     "metlin_id": "NA",
@@ -756,7 +757,20 @@ class KeggData(MetabolomicsData):
 
             self.geneInfoDictionary[gene] = mapping
             geneFile.close()
-             
+    '''
+    Get everything from kegg
+    '''
+    def getEverything(self,writeToFile = False):
+        self.getDatabaseFiles()
+        self.getPathways()
+        self.getPathways_with_genes()
+        self.getMetabolites()
+        self.getSynonymsAndCHEBI()
+        self.getGenes()
+        self.getGeneInfo()
+        self.getPathwayLinkedToGene()
+        if writeToFile:
+            self.write_myself_files('kegg')         
 
             
 #This line exists for sphinx to work properly (documentation): http://autoapi.readthedocs.io/                

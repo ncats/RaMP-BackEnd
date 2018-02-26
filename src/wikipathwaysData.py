@@ -19,10 +19,12 @@ class wikipathwaysData(MetabolomicsData):
     
     The files have already been downloaded and placed in this package. The path to the files has been hardcoded into the function calls.
     
-    This class only has two functions:
+    To fill the data of this class, just call:
+    self.getEverything()
+        This function will check if the file are downloaded.
+        Then, parse all files to fill dict(). Finally query chebi API
+        to get all common names for metabolites.
     
-        - 1) getEverything
-        - 2) writeToFiles
         
     Due to the nature of the structure of this database (a series of xml files) it makes more sense to get all the information at one time 
     from one function call and then, as in the other classes, write everything to sqls for the RaMP database. 
@@ -112,10 +114,12 @@ class wikipathwaysData(MetabolomicsData):
         '''
         
         path = "../misc/data/wikipathways/"
-        url = "http://data.wikipathways.org/20180110/gpml/wikipathways-20180110-gpml-Homo_sapiens.zip"
-        file = "wikipathways-20180110-gpml-Homo_sapiens.zip"
+        url = 'http://data.wikipathways.org/20180210/gpml/wikipathways-20180210-gpml-Homo_sapiens.zip'
+        file = "wikipathways-20180210-gpml-Homo_sapiens.zip"
         existed = os.listdir(path)
-        if self.check_path(path) and file not in existed:
+        print(existed)
+        self.check_path(path)
+        if file not in existed:
             self.download_files(url, 
                                 path+file)
             
@@ -133,7 +137,8 @@ class wikipathwaysData(MetabolomicsData):
         Please make sure going to the website to see which one is the latest version for 
         wikipathways data.
         '''
-        
+        # make sure the database is gotten.
+        self.getDatabaseFiles()
         print("Call wikipathways getEverything......")  
         pathwikipathways = "../misc/data/wikipathways/"
       
@@ -438,10 +443,14 @@ class wikipathwaysData(MetabolomicsData):
             self.pathwayOntology[pathwayID] = listOfPathwaysForOntology        
             self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
             self.pathwayWithMetabolitesDictionary[pathwayID] = listOfMetabolites
+        self.getCommonNameForChebi()
      
      
     def getCommonNameForChebi(self):
-        
+        '''
+        Get common name from chebi API,
+        This function is called inside self.getEverything
+        '''
         for key in self.metaboliteIDDictionary:
             value = self.metaboliteIDDictionary[key]
             chebi = value["chebi_id"]
