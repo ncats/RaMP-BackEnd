@@ -15,6 +15,7 @@ class TestHMDBMain(unittest.TestCase):
         print(os.getcwd())
         # If does not have database file
         hmdb.getDatabaseFiles()
+        '''
         idconvert = IDconversion()
         stat = getStatistics()
         
@@ -100,6 +101,6 @@ class TestHMDBMain(unittest.TestCase):
                  hmdb.pathwayOntology,
                  hmdb.exoEndoDictionary,
                  "hmdb")
-        
+        '''
 if __name__ == "__main__":
     unittest.main()
