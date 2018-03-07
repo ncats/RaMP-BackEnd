@@ -16,12 +16,12 @@ class TestWikipathwaysMain(unittest.TestCase):
         stat = getStatistics()
         
         wikipathways = wikipathwaysData()
+        wikipathways.getDatabaseFiles()
+        
+        
+        
+        
         wikipathways.getEverything()
-        
-        
-        
-        
-     
         r1 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
         r2 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
         r3 =random.choice(list(wikipathways.geneInfoDictionary.keys()))
@@ -30,6 +30,9 @@ class TestWikipathwaysMain(unittest.TestCase):
         print(wikipathways.geneInfoDictionary[r3])
         print(wikipathways.geneInfoDictionary['ENSG00000139977'])
         print(wikipathways.geneInfoDictionary["path:hsa04530"])
+        #time.sleep(10)
+        #time.sleep(30)
+        wikipathways.getCommonNameForChebi()
         
         #idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
         wikipathways.write_myself_files('wiki')
@@ -59,11 +62,16 @@ class TestWikipathwaysMain(unittest.TestCase):
                  "wiki",
                  0, 0)
         
+        print("Pathways number is " + str(len(wikipathways.pathwayDictionary)))
+        print("metabolites number is " + str(len(wikipathways.metaboliteIDDictionary)))
+        print('genes number is '+ str(len(wikipathways.geneInfoDictionary)))
+        
         print("Compound:") 
         stat.analyteOverlaps(sql.rampCompoundIdInWhichDatabases, sql.rampCompoundIDdictionary, "Compound")
         print("\n")
         print("Gene:") 
         stat.analyteOverlaps(sql.rampGeneIdInWhichDatabases, sql.rampGeneIDdictionary, "Gene")
+        
         
         
 
