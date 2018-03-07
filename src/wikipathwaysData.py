@@ -8,6 +8,7 @@ import time
 from MetabolomicsData import MetabolomicsData
 
 
+
 class wikipathwaysData(MetabolomicsData):
     
     '''
@@ -103,7 +104,33 @@ class wikipathwaysData(MetabolomicsData):
         self.idSetFromGeneProducts = dict()
         self.idSetFromProtein = dict()
         '''
-        
+    '''
+    This functions replace some special character for the ID text
+    Also add two zeroes to HMDB ids
+    '''
+    def IDconversion(self,this_id):
+        to_convert = {'\n':'',
+                      '\t':'',
+                      ' ':'',
+                      'HMDB':'HMDB00',
+                      'CHEBI:':'chebi:'}  
+        for key,value in to_convert.items():
+            this_id = this_id.replace(key,value)
+        return this_id 
+    '''
+    Prepend some prefix to avoid id mapping problem when creating ramp id
+    e.g. pure number id are overlapped but from different source 
+    '''
+    def prepend(self,database,id):
+        prefix ={
+                 'pubchem_compound_id':'pubchem:',
+                 'Entrez':'entrez:',
+                 'chemspider_id':'chemsipder:'
+                 }
+        if database in prefix:
+            pre = prefix[database]
+            id = pre + id
+        return id
     def getDatabaseFiles(self):
         
         '''
@@ -116,9 +143,10 @@ class wikipathwaysData(MetabolomicsData):
         path = "../misc/data/wikipathways/"
         url = 'http://data.wikipathways.org/20180210/gpml/wikipathways-20180210-gpml-Homo_sapiens.zip'
         file = "wikipathways-20180210-gpml-Homo_sapiens.zip"
+        
+        self.check_path(path)
         existed = os.listdir(path)
         print(existed)
-        self.check_path(path)
         if file not in existed:
             self.download_files(url, 
                                 path+file)
@@ -143,7 +171,31 @@ class wikipathwaysData(MetabolomicsData):
         pathwikipathways = "../misc/data/wikipathways/"
       
         dictionaryOfFiles = dict()
-        
+        possible_attrType = set()
+        databaseType = dict()
+        '''
+        All possible collection of analytes type with their possible database sources are listed here
+        {'Protein': {'', 'Entrez Gene', 'ChEMBL compound', 'PubChem-compound', 'miRBase mature sequence', 'Uniprot-SwissProt', 'Ensembl', 'NCBI Protein', 'Uniprot-TrEMBL', 'Wikipedia', 'Ensembl Human', 'Enzyme Nomenclature', 'Wikidata', 'InterPro'}, 
+        None: {'', 'Ensembl', 'Wikipedia', 'Uniprot-TrEMBL', 'OMIM', 'Wikidata', 'ChEBI', 'NanoParticle Ontology'}, 
+        'Rna': {'', 'Entrez Gene', 'HGNC', 'miRBase Sequence', 'miRBase mature sequence', 'Ensembl'}, 
+        'Pathway': {'', 'KEGG Pathway', 'Reactome', 'WikiPathways', 'Wikipedia'}, 
+        'Metabolite': {'', 'KEGG Drug', 'Chemspider', 'HMDB', 'ChEMBL compound', 'PubChem-compound', 'LIPID MAPS', 'DrugBank', 'PubChem-substance', 'Wikidata', 'ChEBI', 'CAS', 'KEGG Compound'}, 
+        'GeneProduct': {'', 'Entrez Gene', 'HGNC', 'RefSeq', 'miRBase Sequence', 'miRBase mature sequence', 'Kegg ortholog', 'GeneOntology', 'Enzyme Nomenclature', 'Wikidata', 'Pfam', 'undefined', 'Ensembl Human', 'pato', 'Uniprot-SwissProt', 'Wikipedia', 'Uniprot-TrEMBL', 'EcoGene', 'KEGG Genes', 'Ensembl', 'NCBI Protein', 'Other'}, 
+        'Complex': {'', 'Wikipedia', 'Reactome', 'Uniprot-SwissProt'}}
+        '''
+        # all data types are collected are shown in this dict
+        target_analytes = {
+            'Protein': {'Entrez Gene','Uniprot-SwissProt', 
+                        'Ensembl','Uniprot-TrEMBL','Ensembl Human', 
+                        'Enzyme Nomenclature', 
+                        'Wikidata'},
+            'GeneProduct': {'Entrez Gene','Enzyme Nomenclature', 'Wikidata', 
+                            'Ensembl Human', 'Uniprot-SwissProt', 'Uniprot-TrEMBL',
+                            'KEGG Genes','Ensembl'},
+            'Metabolite': {'Chemspider','HMDB','PubChem-compound','LIPID MAPS', 
+                            'Wikidata', 'ChEBI', 'CAS', 'KEGG Compound'}
+            
+            }
         for filename in os.listdir(pathwikipathways):
             if ".zip" in filename:
                 continue  # the original downloaded file is also in same path
@@ -171,18 +223,140 @@ class wikipathwaysData(MetabolomicsData):
             currentpathway = pathwayID
           
 
-          
+            
           
             listOfGenes = []
             listOfMetabolites = []
             listOfPathwaysForOntology = []
           
             pathwayname = root.get("Name")
+            # link all pathways dictionary
             self.pathwayDictionary[pathwayID] = pathwayname
-          
+            self.pathwayCategory[pathwayID] = 'NA'
+            self.pathwaysWithGenesDictionary[pathwayID] = []
+            print('Parsing pathway {}:{}'.format(pathwayID,pathwayname))
+            prefix = "{http://pathvisio.org/GPML/2013a}"
+            dataNode = root.findall(prefix + 'DataNode')
+            for dn in dataNode:
+                textLabel = dn.get('TextLabel')
+                textLabel = self.IDconversion(textLabel)
+                type = dn.get('Type')
+                xref = dn.find(prefix + 'Xref')
+                database = xref.get('Database')
+                databaseID = xref.get('ID')
+                databaseID = self.IDconversion(databaseID)
+                if type in ['Protein','GeneProduct']:
+                    if database in target_analytes[type]:
+                        if databaseID is None or databaseID is '':
+                            print('No id ?????')
+                            print(databaseID)
+                            continue
+                            time.sleep(1)
+    
+                        geneMapping = {"kegg": "NA",
+                                        "common_name": "NA",
+                                        "Ensembl": "NA", 
+                                        "HGNC": "NA", 
+                                        "HPRD": "NA", 
+                                        "NCBI-GeneID": "NA", 
+                                        "NCBI-ProteinID": "NA", 
+                                        "OMIM": "NA", 
+                                        "UniProt": "NA", 
+                                        "Vega": "NA", 
+                                        "miRBase": "NA", 
+                                        "HMDB_protein_accession": "NA",
+                                        "Entrez" : "NA",
+                                        "Enzyme Nomenclature": "NA",
+                                        'WikiData':"NA"}
+                        convert = {'Entrez Gene':'Entrez',
+                                   'Uniprot-SwissProt':'UniProt', 
+                                   'Ensembl':'Ensembl',
+                                   'Uniprot-TrEMBL':'UniProt',
+                                   'Ensembl Human':'Ensembl', 
+                                   'Enzyme Nomenclature':'Enzyme Nomenclature', 
+                                   'Wikidata':'WikiData',
+                                   'KEGG Genes':'kegg'}
+                        key_for_mapping = convert[database]
+                        if databaseID not in self.geneInfoDictionary and databaseID is not '':
+                            databaseID = self.prepend(key_for_mapping, databaseID)
+                            geneMapping[key_for_mapping] = databaseID
+                            geneMapping['commonName'] = textLabel
+                            self.geneInfoDictionary[databaseID] = geneMapping
+                            self.pathwaysWithGenesDictionary[pathwayID].append(databaseID)
+                        if 'hsa:' in databaseID:
+                            print('Analyte {} is {} from database {} with id {}'.\
+                                  format(textLabel,type,database,databaseID))
+                            time.sleep(3)
+                elif type in ['Metabolite']:
+                    if database in target_analytes[type]:
+                        if databaseID is None or databaseID is '':
+                            print('No id ?????')
+                            print(databaseID)
+                            time.sleep(1)
+                            continue
+                        metaboliteMapping = {
+                                  "chebi_id": "NA", 
+                                  "drugbank_id": "NA", 
+                                  "drugbank_metabolite_id": "NA", 
+                                  "phenol_explorer_compound_id": "NA", 
+                                  "phenol_explorer_metabolite_id": "NA", 
+                                  "foodb_id": "NA", 
+                                  "knapsack_id": "NA", 
+                                  "chemspider_id": "NA",
+                                  "kegg_id": "NA",
+                                  "biocyc_id": "NA",
+                                  "bigg_id": "NA",
+                                  "wikipedia": "NA",
+                                  "nugowiki": "NA",
+                                  "metagene": "NA",
+                                  "metlin_id": "NA",
+                                  "pubchem_compound_id": "NA",
+                                  "het_id": "NA",
+                                  "hmdb_id": "NA",
+                                  "CAS": "NA",
+                                  'LIPIDMAPS':'NA',
+                                  'WikiData':'NA'}
+                        convert = {'Chemspider':'chemspider_id'
+                                   ,'HMDB':'hmdb_id',
+                                   'PubChem-compound':'pubchem_compound_id',
+                                   'LIPID MAPS':'LIPIDMAPS', 
+                                   'Wikidata':'WikiData', 
+                                   'ChEBI':'chebi_id', 
+                                   'CAS':'CAS', 
+                                   'KEGG Compound':'kegg_id'}
+                        key_for_mapping = convert[database]
+                        databaseID = self.prepend(key_for_mapping, databaseID)
+                        metaboliteMapping[key_for_mapping] = [databaseID]
+                        if databaseID not in self.metaboliteIDDictionary:
+                            self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                            self.metaboliteCommonName[databaseID] = textLabel
+                            self.metabolitesWithSynonymsDictionary[databaseID] = [textLabel]
+                        else:
+                            print('#### Repeated metabolites {}:{}'.format(textLabel,databaseID))
+                        if databaseID not in self.metabolitesWithPathwaysDictionary:
+                            self.metabolitesWithPathwaysDictionary[databaseID] = [pathwayID]
+                        else:
+                            if pathwayID not in self.metabolitesWithPathwaysDictionary[databaseID]:
+                                self.metabolitesWithPathwaysDictionary[databaseID].append(pathwayID)
+                            #time.sleep(0.1)
+                        if 'hsa:' in databaseID:
+                            print('Analyte {} is {} from database {} with id {}'.\
+                                  format(textLabel,type,database,databaseID))
+                            time.sleep(3)
+                        else:
+                            print('Analyte {} is {} from database {} with id {}'.\
+                                  format(textLabel,type,database,databaseID))
+        self.getCommonNameForChebi()
+        print('Total genes {};Total metabolites {}'\
+              .format(len(self.geneInfoDictionary),len(self.metaboliteIDDictionary)))
+        print('Relations path-gene/path-meta is {} and {}'\
+              .format(len(self.pathwaysWithGenesDictionary),
+                      len(self.metabolitesWithPathwaysDictionary)))
+        print('Common name for metabolites: {}'.format(len(self.metaboliteCommonName)))
+        '''
             for child in root:
                 childtag = child.tag.replace("{http://pathvisio.org/GPML/2013a}", "")
-             
+                
                 if childtag == "Comment":
                     if child.get("Source") == "WikiPathways-category":
                         category = child.text
@@ -198,17 +372,29 @@ class wikipathwaysData(MetabolomicsData):
                     # child = DataNode
                     # child2 = Graphics or Xref
                     
-                     
+                    if Attributetype not in possible_attrType:
+                        possible_attrType.add(Attributetype)
                     
                     for child2 in child:
-                      
                         childtag = child2.tag
+                        #print('Tag is {}'.format(childtag))
+                        #time.sleep(1)
                         childtag = child2.tag.replace("{http://pathvisio.org/GPML/2013a}", "")
                         if childtag == "Xref":
                             database = child2.get("Database")
                             databaseID = child2.get("ID")
                             databaseID = databaseID.replace(' ','')
-                            if Attributetype == "Protein":
+                            if Attributetype not in databaseType:
+                                databaseType[Attributetype] = set()
+                                databaseType[Attributetype].add(database)
+                            else:
+                                if database not in databaseType[Attributetype]:
+                                    databaseType[Attributetype].add(database)
+        print('Attributes type are {}'.format(possible_attrType))
+        print('Database Type is {}'.format(databaseType))
+        '''
+    '''
+                            if Attributetype == "Protein" or Attributetype == 'GeneProduct':
                                 geneMapping = {"kegg": "NA",
                                              "common_name": "NA",
                                              "Ensembl": "NA", 
@@ -409,14 +595,6 @@ class wikipathwaysData(MetabolomicsData):
                                     self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
                                 # Not collecting pubchem-substance id due to inability to differentiate it from
                                 # pubchem compound id.
-                                '''      
-                                if database == "PubChem-substance":
-                                    databaseID = 'pubchem:'+databaseID
-                                    metaboliteMapping["pubchem_compound_id"] = databaseID
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene                           
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                              '''
                                 if databaseID not in self.metabolitesWithPathwaysDictionary:
                                     listOfPathways = []
                                     listOfPathways.append(pathwayID)
@@ -445,7 +623,7 @@ class wikipathwaysData(MetabolomicsData):
             self.pathwayWithMetabolitesDictionary[pathwayID] = listOfMetabolites
         self.getCommonNameForChebi()
      
-     
+    ''' 
     def getCommonNameForChebi(self):
         '''
         Get common name from chebi API,
@@ -465,7 +643,10 @@ class wikipathwaysData(MetabolomicsData):
                     #time.sleep(3)
                 except:
                     pass
-            self.metabolitesWithSynonymsDictionary[key] = [name]     
+            if key not in self.metabolitesWithSynonymsDictionary:
+                self.metabolitesWithSynonymsDictionary[key] = [name]
+            else:
+                self.metabolitesWithSynonymsDictionary[key].append(name)     
           
 
                 
