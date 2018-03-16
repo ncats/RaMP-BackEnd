@@ -277,16 +277,18 @@ class wikipathwaysData(MetabolomicsData):
                                    'Wikidata':'WikiData',
                                    'KEGG Genes':'kegg'}
                         key_for_mapping = convert[database]
+                        # wiki store kegg pathway as a gene product # might be wrong for ramp
+                        if 'hsa' in databaseID:
+                            print('Analyte {} is {} from database {} with id {}'.\
+                                  format(textLabel,type,database,databaseID))
+                            continue
                         if databaseID not in self.geneInfoDictionary and databaseID is not '':
                             databaseID = self.prepend(key_for_mapping, databaseID)
                             geneMapping[key_for_mapping] = databaseID
                             geneMapping['commonName'] = textLabel
                             self.geneInfoDictionary[databaseID] = geneMapping
                             self.pathwaysWithGenesDictionary[pathwayID].append(databaseID)
-                        if 'hsa:' in databaseID:
-                            print('Analyte {} is {} from database {} with id {}'.\
-                                  format(textLabel,type,database,databaseID))
-                            time.sleep(3)
+                        
                 elif type in ['Metabolite']:
                     if database in target_analytes[type]:
                         if databaseID is None or databaseID is '':
@@ -327,25 +329,30 @@ class wikipathwaysData(MetabolomicsData):
                         key_for_mapping = convert[database]
                         databaseID = self.prepend(key_for_mapping, databaseID)
                         metaboliteMapping[key_for_mapping] = [databaseID]
+                        if 'hsa' in databaseID:
+                            print('Analyte {} is {} from database {} with id {}'.\
+                                  format(textLabel,type,database,databaseID))
+                            continue
                         if databaseID not in self.metaboliteIDDictionary:
                             self.metaboliteIDDictionary[databaseID] = metaboliteMapping
                             self.metaboliteCommonName[databaseID] = textLabel
                             self.metabolitesWithSynonymsDictionary[databaseID] = [textLabel]
+                            '''
                         else:
                             print('#### Repeated metabolites {}:{}'.format(textLabel,databaseID))
+                            '''
                         if databaseID not in self.metabolitesWithPathwaysDictionary:
                             self.metabolitesWithPathwaysDictionary[databaseID] = [pathwayID]
                         else:
                             if pathwayID not in self.metabolitesWithPathwaysDictionary[databaseID]:
                                 self.metabolitesWithPathwaysDictionary[databaseID].append(pathwayID)
                             #time.sleep(0.1)
-                        if 'hsa:' in databaseID:
-                            print('Analyte {} is {} from database {} with id {}'.\
-                                  format(textLabel,type,database,databaseID))
-                            time.sleep(3)
+                        
+                        '''
                         else:
                             print('Analyte {} is {} from database {} with id {}'.\
                                   format(textLabel,type,database,databaseID))
+                        '''
         self.getCommonNameForChebi()
         print('Total genes {};Total metabolites {}'\
               .format(len(self.geneInfoDictionary),len(self.metaboliteIDDictionary)))

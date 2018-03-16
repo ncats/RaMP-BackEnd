@@ -29,8 +29,8 @@ class TestWikipathwaysMain(unittest.TestCase):
         print(wikipathways.geneInfoDictionary[r2])
         print(wikipathways.geneInfoDictionary[r3])
         print(wikipathways.geneInfoDictionary['ENSG00000139977'])
-        print(wikipathways.geneInfoDictionary["path:hsa04530"])
-        
+        #print(wikipathways.geneInfoDictionary["path:hsa04530"])
+        time.sleep(3)
         #idconvert.GeneConvert(wikipathways.geneInfoDictionary, "wiki")
         wikipathways.write_myself_files('wiki')
         wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
