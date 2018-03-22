@@ -45,6 +45,7 @@ Set up requires adding the Sphinx to your PYTHONPATH. Traditionally, this would 
 
 #### Building the database ####
 *main.py*
+
 The main script to build the database is 'main.py'. This script calls the other classes and necessary code to build the database. 
 
 The first time 'main.py' is run, one must swith the "getDatabaseFiles" parameter to "True".  Setting this parameter to true will download the content of the databases (HMDB, KEGG, Reactome, WikiPathways) on your computer.  By default, we have set "getDatabasefiles" to FALSE because you may need to gather the information from each database again if you add new functionalities to the scripts (in which case there is no need to download the original files again).  
@@ -52,6 +53,7 @@ The first time 'main.py' is run, one must swith the "getDatabaseFiles" parameter
 The output of running 'main.py' are sql files that then need to be imported into one database.
 
 *importing sql tables*
+
 A C# script, mySQLBulkCsharp, imports the sql files in bulk.  The "Program.cs" file is the main script. 
 
 You may need to download the Visual Studio C# IDE: https://www.visualstudio.com/vs/
@@ -60,29 +62,31 @@ You may need to download the Visual Studio C# IDE: https://www.visualstudio.com/
 You may also need to download mySQL: https://www.mysql.com/downloads/. 
 
 *plots*
+
 Most of the code is written in Python but two scripts are written in R (src/threeVenn.R and fourVenn.R). These scripts produce plots that show the overlapping genes and metabolites between all databases in RaMP. You must have R installed on your computer, as well as these R packages: VennDiagram and grDevices.
 
 
 #### Overview of folders in this repo ####
+The repo contains the following folders
 
-  **src**: contains classes used by main.py (most of the code)
+    **src**: contains classes used by main.py (most of the code)
 
-  **main**: contains main.py -- uses the classes in src (code)
+    **main**: contains main.py -- uses the classes in src (code)
 
-  **docs**: documentation/user manual
+    **docs**: documentation/user manual
 
-  **tests**: unit testing
+    **tests**: unit testing
 
-  **mySQLBulkCsharp**: contains the C# script that will import the .sql files found in misc/sql into a mySQL database
+    **mySQLBulkCsharp**: contains the C# script that will import the .sql files found in misc/sql into a mySQL database
 
-  **misc/data**: folders for files from hmdb, wikipathways, kegg, and reactome stored here
+    **misc/data**: folders for files from hmdb, wikipathways, kegg, and reactome stored here
 
-  **misc/sql**: .sql files output from running main.py. These .sql files make up the mySQL RaMP database
+    **misc/sql**: .sql files output from running main.py. These .sql files make up the mySQL RaMP database
 
-  **misc/output**: any output file that is not a .sql file -- some functions have other outputs, such as venndiagrams
+    **misc/output**: any output file that is not a .sql file -- some functions have other outputs, such as venndiagrams
 or lists of converted genes (can help with debugging)
 
-  **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
+    **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
 
 *Note: when running main.py, the data, output, and sql folders contain lots of data which is not included with this repo due to size restrictions.*
 
