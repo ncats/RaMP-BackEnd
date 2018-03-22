@@ -37,7 +37,7 @@ Set up requires adding the package to your PYTHONPATH. Traditionally, this would
 4. Click "add source" button and select that *src* directory of the project
 5. Click apply and ok buttons.
 
-The script to build the database is main.py. When run, it calls the other classes and all the classes work together to build the database. The script takes ~10 minutes to run. If you want to run the script on the supercomputer how I do it is below: https://www.osc.edu/resources/technical_support/supercomputers/oakley
+The script to build the database is main.py. When run, it calls the other classes and all the classes work together to build the database. The script takes ~10 minutes to run. If you want to run the script on the OSC supercomputer how I do it is below: https://www.osc.edu/resources/technical_support/supercomputers/oakley
 
 Here is the script I use to build the database on oakley:
 
