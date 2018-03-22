@@ -47,7 +47,8 @@ Here is the script I use to build the database on oakley:
 
 module load python/3.4.2
 
-python /users/PAS1143/osu0084/mathelabramp/src/main.py```
+python /users/PAS1143/osu0084/mathelabramp/src/main.py
+```
 
 Save this in a file called "RaMP.sh".
 
