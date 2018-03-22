@@ -92,7 +92,7 @@ or lists of converted genes (can help with debugging)
 
 
 ### Contact ###
-* Bofei Zhang (zhang.5675@osu.edu)
-* Ewy Mathe (Ewy.Mathe@osumc.edu)
+* Bofei Zhang - CSE student (zhang.5675@osu.edu)
+* Ewy Mathe - PI (Ewy.Mathe@osumc.edu)
 
 Elizabeth Baskin and Senyang Hu were also involved in developing this code.
