@@ -41,15 +41,13 @@ The script to build the database is main.py. When run, it calls the other classe
 
 Here is the script I use to build the database on oakley:
 
-```#PBS -l walltime=3:00:00```
+```#PBS -l walltime=3:00:00
 
-```#PBS -l nodes=2:ppn=12```
+#PBS -l nodes=2:ppn=12
 
-```module load python/3.4.2```
+module load python/3.4.2
 
-```cd /users/PAS1143/osu0084/mathelabramp/src```
-
-```python /users/PAS1143/osu0084/mathelabramp/src/main.py```
+python /users/PAS1143/osu0084/mathelabramp/src/main.py```
 
 Save this in a file called "RaMP.sh".
 
