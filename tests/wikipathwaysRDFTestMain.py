@@ -7,8 +7,9 @@ class TestWikipathwaysMain(unittest.TestCase):
 
     def testMain(self):
         wp = WikipathwaysRDF()
-        wp.getDatabaseFile()
-        wp.getIDmapping()
+        #wp.getDatabaseFile()
+        #wp.displayRDFfile(3)
+        wp.getMetabolitesID()
         wp.write_myself_files('wikipathwayRDF')
         
         
