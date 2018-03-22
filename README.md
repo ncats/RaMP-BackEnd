@@ -95,6 +95,4 @@ or lists of converted genes (can help with debugging)
 * Bofei Zhang (zhang.5675@osu.edu)
 * Ewy Mathe (Ewy.Mathe@osumc.edu)
 
-The following were also involved in developing this code:
-Elizabeth Baskin 
-Senyang Hu
+Elizabeth Baskin and Senyang Hu were also involved in developing this code.
