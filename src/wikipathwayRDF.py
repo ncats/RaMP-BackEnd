@@ -8,6 +8,8 @@ import path
 from rdflib import URIRef,Graph
 import rdflib.namespace
 from rdflib.namespace import RDF, FOAF,RDFS,DC,DCTERMS
+from builtins import str
+
 
 class WikipathwaysRDF(MetabolomicsData):
     def __init__(self):
@@ -134,50 +136,292 @@ class WikipathwaysRDF(MetabolomicsData):
     , 'Inhibition', 'Protein', 'tp://www.w3.org/2004/02/skos/core#Collection', 
     'Rna', 'Interaction', 'Binding', 'PublicationReference', 'GeneProduct', 'Complex'}        
     '''
-    def getAllPathways(self):
-        path = '../misc/data/wikipathwaysRDF/wp/Human/'
-        listoffiles = os.listdir(path)
-        print('Total {} pathways in Human'.format(len(listoffiles)))
-        
-        for each in listoffiles:
-            this_pathway = each.replace('.ttl','')
-            print('pathway id is {}'.format(this_pathway))
-            g = Graph()
-            g.parse(path + each,format = 'n3')
-            for s,p,o in g.triples((None,DC.title,None)):
-                #print('---------------------------')
-                #print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
-                #print('---------------------------')
-                self.pathwayDictionary[this_pathway] = o
-                self.pathwayCategory[this_pathway] = 'NA'
-        
-        print('Total pathways are {}'.format(len(self.pathwayDictionary)))
-    def getIDmapping(self): 
-        path = '../misc/data/wikipathwaysRDF/wp/Human/'
-        listoffiles = os.listdir(path)
-        print('Total {} pathways in Human'.format(len(listoffiles)))
-        
-        for each in listoffiles:
-            this_pathway = each.replace('.ttl','')
-            print('pathway id is {}'.format(this_pathway))
-            g = Graph()
-            g.parse(path + each,format = 'n3')
+    def getPathwayInfoFromGraph(self,g,this_pathway):
+        for s,p,o in g.triples((None,DC.title,None)):
+            '''
+                print('---------------------------')
+                print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
+                print('---------------------------')
+            '''
+            self.pathwayDictionary[this_pathway] = o
+            self.pathwayCategory[this_pathway] = 'NA'
             
-            analytes = []
-            for s,p,o in g.triples((None,DCTERMS.identifier,None)):
-                #print('---------------------------')
-                #print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
-                #print('---------------------------')
-                analytes.append(s)
+    def displayRDFfile(self,second = 3):
+        path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        listoffiles = os.listdir(path)
+        print('Total {} pathways in Human'.format(len(listoffiles)))
+        
+        for each in listoffiles:
+            this_pathway = each.replace('.ttl','')
+            print('pathway id is {}'.format(this_pathway))
+            g = Graph()
+            g.parse(path + each,format = 'n3')
+            for s,p,o in g.triples((None,None,None)):
                 
-            print('Total analytes in this pathway: {}'\
-                  .format(len(analytes)))
-            time.sleep(0.5)
-            pred = URIRef('http://vocabularies.wikipathways.org/wp#')
-            while len(analytes)>0:
-                id = analytes.pop(0)
-                for s,p,o in g.triples((id,None,None)):
-                    print('---------------------------')
-                    print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
-                    print('---------------------------')
-                    time.sleep(1)
+                print('---------------------------')
+                print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
+                print('---------------------------')
+                time.sleep(second)
+        
+    def getMetabolitesID(self): 
+        path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        listoffiles = os.listdir(path)
+        print('Total {} pathways in Human'.format(len(listoffiles)))
+        
+        
+        total_files = len(listoffiles)
+        i = 0
+        for each in listoffiles:
+            i = i + 1
+            
+            # get pathways id
+            this_pathway = each.replace('.ttl','')
+            print('{}/{} ID:{}'.format(i,total_files,this_pathway))
+            g = Graph()
+            g.parse(path + each,format = 'n3')
+            # get pathway information at first
+            self.getPathwayInfoFromGraph(g, this_pathway)
+            # get metabolites information at second
+            # self.getMetabolitesIDFromGraph(g,this_pathway)
+            self.getGenesIDFromGraph(g, this_pathway)
+                #time.sleep(1)
+    def getGenesIDFromGraph(self,g,this_pathway):
+        geneProduct = URIRef('http://vocabularies.wikipathways.org/wp#GeneProduct')
+        type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
+        proteins = URIRef('http://vocabularies.wikipathways.org/wp#Protein')
+        possible_source = {
+            'ncbigene':'Entrez',
+            'ensembl':'Ensembl',
+            'uniprot':'Uniprot',
+            'ec-code':'Enzyme Nomenclature',
+            'wikidata':'WikiData',
+            'ncbiprotein':'NCBI-ProteinID'
+            }
+        # These source are not retrieved at this moment
+        not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
+                         'interpro','refseq','pfam','ecogene','chembl.compound']
+        genelist = set()
+        for gene in g.subjects(type_predicate,geneProduct):
+            bdbLinks = {
+                'Entrez':'http://vocabularies.wikipathways.org/wp#bdbEntrezGene',
+                'UniProt':'http://vocabularies.wikipathways.org/wp#bdbUniprot',
+                'Ensembl':'http://vocabularies.wikipathways.org/wp#bdbEnsembl',
+                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikiData'
+            }
+            geneMapping = {"kegg": "NA",
+                         "common_name": "NA",
+                         "Ensembl": "NA", 
+                         "HGNC": "NA", 
+                         "HPRD": "NA", 
+                         "NCBI-GeneID": "NA", 
+                         "NCBI-ProteinID": "NA", 
+                         "OMIM": "NA", 
+                         "UniProt": "NA", 
+                         "Vega": "NA", 
+                         "miRBase": "NA", 
+                         "HMDB_protein_accession": "NA",
+                         "Entrez" : "NA",
+                         "Enzyme Nomenclature": "NA",
+                         'WikiData':'NA'}
+            genesource = gene.split('/')[-2]
+            geneid = gene.split('/')[-1]
+            geneid = self.prependID(genesource, geneid)
+            if genesource not in not_retrieved:
+                geneMapping[possible_source[genesource]] = [geneid]
+                genelist.add(geneid)
+                for key,value in bdbLinks.items():
+                    for links in g.objects(gene,URIRef(value)):
+                        link_id = links.split('/')[-1]
+                        link_id = self.prependID(key, link_id)
+                        # sometimes URIREF type object accidently appears in link_id var, so avoid it by checking
+                        # data type here
+                        genelist.add(link_id)
+                        if geneMapping[key] == 'NA' and type(link_id) is str:
+                            geneMapping[key] = [link_id]
+                        elif type(geneMapping[key]) is list and type(link_id) is str:
+                            if link_id not in geneMapping[key]:
+                                geneMapping[key].append(link_id)
+                #print('{}\n{}'.format(geneid,geneMapping))
+                self.geneInfoDictionary[geneid] = geneMapping             
+                
+        for protein in g.subjects(type_predicate,proteins):
+            bdbLinks = {
+                'Entrez':'http://vocabularies.wikipathways.org/wp#bdbEntrezGene',
+                'UniProt':'http://vocabularies.wikipathways.org/wp#bdbUniprot',
+                'Ensembl':'http://vocabularies.wikipathways.org/wp#bdbEnsembl',
+                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata'
+            }
+            geneMapping = {"kegg": "NA",
+                         "common_name": "NA",
+                         "Ensembl": "NA", 
+                         "HGNC": "NA", 
+                         "HPRD": "NA", 
+                         "NCBI-GeneID": "NA", 
+                         "NCBI-ProteinID": "NA", 
+                         "OMIM": "NA", 
+                         "UniProt": "NA", 
+                         "Vega": "NA", 
+                         "miRBase": "NA", 
+                         "HMDB_protein_accession": "NA",
+                         "Entrez" : "NA",
+                         "Enzyme Nomenclature": "NA",
+                         'WikiData':'NA'}
+            genesource = protein.split('/')[-2]
+            geneid = protein.split('/')[-1]
+            geneid = self.prependID(genesource, geneid)
+            
+            if genesource not in not_retrieved:
+                geneMapping[possible_source[genesource]] = [geneid]
+                genelist.add(geneid)
+                for key,value in bdbLinks.items():
+                    for links in g.objects(protein,URIRef(value)):
+                        link_id = links.split('/')[-1]
+                        link_id = self.prependID(key, link_id)
+                        # sometimes URIREF type object accidently appears in link_id var, so avoid it by checking
+                        # data type here
+                        genelist.add(link_id)
+                        if geneMapping[key] == 'NA' and type(link_id) is str:
+                            geneMapping[key] = [link_id]
+                        elif type(geneMapping[key]) is list and type(link_id) is str:
+                            if link_id not in geneMapping[key]:
+                                geneMapping[key].append(link_id)
+                self.geneInfoDictionary[geneid] = geneMapping
+        self.pathwaysWithGenesDictionary[this_pathway] = list(genelist)
+        print('At pathway {}, total {} genes, {} pathways with genes'\
+              .format(this_pathway,len(self.geneInfoDictionary),len(self.pathwaysWithGenesDictionary)))
+        
+    def getMetabolitesIDFromGraph(self,g,this_pathway):
+        type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
+        
+        metabolite_object = URIRef('http://vocabularies.wikipathways.org/wp#Metabolite')
+        possible_source = {
+            'kegg.compound':'kegg_id',
+            'hmdb':'hmdb_id',
+            'pubchem.compound':'pubchem_compound_id',
+            'chebi':'chebi_id',
+            'chemspider':'chemspider_id',
+            'wikidata':'WikiData',
+            'cas':'CAS',
+            'lipidmaps':'LIPIDMAPS'
+            }
+        metabolite_list = set()
+        for metabolites in g.subjects(type_predicate,metabolite_object):
+            source = metabolites.split('/')
+            source = source[len(source) - 2]
+            # last items by split is retrieved
+            metabolites_id = metabolites.split('/')[-1]
+            #metabolites_id = self.getIDFromGraphLinks(g, metabolites)
+            metabolites_id = self.prependID(source, metabolites_id)
+            # predicate in RDF is defined here, this the subject/object with these predicates are extracted.
+            id_mapping = {
+                'chebi_id':'http://vocabularies.wikipathways.org/wp#bdbChEBI',
+                'hmdb_id':'http://vocabularies.wikipathways.org/wp#bdbHmdb',
+                'pubchem_compound_id':'http://vocabularies.wikipathways.org/wp#bdbPubChem',
+                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata',
+                'chemspider_id':'http://vocabularies.wikipathways.org/wp#bdbChemspider'
+            }
+            # metabolites id mapping created each loop
+            metaboliteMapping = {
+                              "chebi_id": "NA", 
+                              "drugbank_id": "NA", 
+                              "drugbank_metabolite_id": "NA", 
+                              "phenol_explorer_compound_id": "NA", 
+                              "phenol_explorer_metabolite_id": "NA", 
+                              "foodb_id": "NA", 
+                              "knapsack_id": "NA", 
+                              "chemspider_id": "NA",
+                              "kegg_id": "NA",
+                              "biocyc_id": "NA",
+                              "bigg_id": "NA",
+                              "wikipedia": "NA",
+                              "nugowiki": "NA",
+                              "metagene": "NA",
+                              "metlin_id": "NA",
+                              "pubchem_compound_id": "NA",
+                              "het_id": "NA",
+                              "hmdb_id": "NA",
+                              "CAS": "NA",
+                              'LIPIDMAPS':'NA',
+                              'WikiData':'NA'}
+            # skip pubchem.substance id at this moment
+            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug']:
+                metaboliteMapping[possible_source[source]] = [metabolites_id]
+                metabolite_list.add(metabolites_id)
+                for key,value in id_mapping.items():
+                    for links in g.objects(metabolites,URIRef(value)):
+                        link_id = links.split('/')
+                        link_id = link_id[len(link_id) - 1]
+                        link_id = self.prependID(key, link_id)
+                        metabolite_list.add(link_id)
+                        # add id to the metabolites id mapping 
+                        if metaboliteMapping[key] == 'NA' and type(link_id) is str:
+                            metaboliteMapping[key] = [link_id]
+                        elif type(metaboliteMapping[key]) is list and type(link_id) is str:
+                            if link_id not in metaboliteMapping[key]:
+                                metaboliteMapping[key].append(link_id)    
+                        #print('Root {} has been linked to {}'.format(metabolites_id,link_id))
+                #print(metaboliteMapping)
+                self.pathwayWithMetabolitesDictionary[this_pathway] = list(metabolite_list)
+                self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+        print('At pathway {}:{}, there are {} metabolites'\
+              .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))
+        print('{} pathway has at least one metabolites'.format(len(self.pathwayWithMetabolitesDictionary)))
+        
+    #print('Total metabolites in this version of pathways (roughly):{}'.format(len(self.metaboliteIDDictionary)))
+    # helper functions 
+    def getIDFromGraphLinks(self,g,subject):
+        '''
+        Given RDF graph and subject,
+        this function only looks at the object with identifier(source id) predicate
+        '''
+        for label in g.objects(URIRef(subject),DCTERMS.identifier):
+            return label
+        return 'NA'
+    def prependID(self,prefix,id):
+        '''
+        This function needs to be changed if the id_mapping dict has been changed
+        This function will prepend prefix to id. Modified id based on the given prefix.
+        '''
+        # change id based on condition
+        # Please look raw rdf file to figure out the pattern
+        if prefix == 'pubchem_compound_id':
+            id = id.replace('CID','')
+            id = 'pubchem:'+id
+        elif prefix == 'chebi_id' or prefix =='chebi':
+            id = id.replace('CHEBI:','')
+            id = 'chebi:' + id
+        elif prefix == 'hmdb_id':
+            if len(id) == 9:
+                id = id.replace('HMDB','HMDB00')
+            elif len(id) != 9  and len(id) != 11:
+                print('#### Check if hmdb id {} is correct ####'.format(id))
+                time.sleep(3)
+                '''
+            elif len(id) == 11:
+                print('HMDB id is in primary accession {}'.format(id))
+                '''
+            id = 'hmdb:' +id
+        elif prefix == 'WikiData' or prefix =='wikidata' or prefix == 'entity':
+            id = prefix.lower()+':'+id
+        elif prefix == 'chemspider_id':
+            id = 'chemspider:'+id
+        elif prefix == 'kegg.compound':
+            id = 'kegg:' +id
+        elif prefix == 'cas':
+            id = 'CAS:' + id
+        elif prefix == 'lipidmaps':
+            id = 'LIPIDMAPS:' + id
+        elif prefix == 'ncbigene' or prefix == 'Entrez':
+            id = 'entrez:' + id
+        elif prefix == 'uniprot' or prefix == 'UniProt':
+            id = 'uniprot:' + id
+        elif prefix == 'ec-code':
+            id = 'EN:' +id
+        elif prefix == 'ensembl' or prefix == 'Ensembl':
+            id = 'ensembl:' + id
+        elif prefix == 'ncbiprotein':
+            id = 'ncbiprotein:' + id
+            
+            
+        return id
+               
