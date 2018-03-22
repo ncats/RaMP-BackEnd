@@ -83,8 +83,7 @@ The repo contains the following folders
 
     **misc/sql**: .sql files output from running main.py. These .sql files make up the mySQL RaMP database
 
-    **misc/output**: any output file that is not a .sql file -- some functions have other outputs, such as venndiagrams
-or lists of converted genes (can help with debugging)
+    **misc/output**: any output file that is not a .sql file -- some functions have other outputs, such as venndiagrams or lists of converted genes (can help with debugging)
 
     **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
 
