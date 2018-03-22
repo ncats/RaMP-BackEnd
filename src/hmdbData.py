@@ -2,13 +2,11 @@
 import urllib.request
 #from xml.etree.ElementTree import ElementTree
 from lxml import etree as ET
-import codecs
-from test.test_iterlen import NoneLengthHint
 import zipfile
 import time
 import os
 from MetabolomicsData import MetabolomicsData
-
+import pandas as pd
 
 class hmdbData(MetabolomicsData):
     
@@ -593,8 +591,54 @@ class hmdbData(MetabolomicsData):
         print('After parsing protein file, metabolites-gene has {} items'.format(len(self.metabolitesLinkedToGenes)))
         return tree            
     def getSMPDB_Category(self):
+        '''
+        This function is used to give categories of hmdb pathways
+        The raw data is from SMPDB.txt, which depends on the version of SMPDB
+        '''
         SMPDB2 = []
         with open('../misc/data/hmdb/SMPDB.txt','r') as f:
             for line in f:
                 SMPDB2.append(line.rstrip('\n'))
         return SMPDB2
+    
+    def getMetabolitesClasses(self,tree = None,file = 'hmdb_metabolites.xml'):
+        # if the source file is not parsed yet
+        cols = ['hmdb_id','super_class','class','sub_class']
+        result = pd.DataFrame(columns= cols)
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/' + file)
+        root = tree.getroot()
+        prefix = '{http://www.hmdb.ca}'
+        i = 0
+        for metabolite in root.findall(prefix+'metabolite'):
+            #print(metabolite.tag)
+            hmdbid = metabolite.find(prefix+'accession')
+            taxonomy = metabolite.find(prefix+'taxonomy')
+            metabolites_class = {'super_class':'NA',
+                                 'class':'NA',
+                                 'sub_class':'NA'}
+            if i % 1000 == 0:
+                print('{} metabolites parsed'.format(i))
+            if taxonomy is not None:
+                super_clas = taxonomy.find(prefix+'super_class')
+                clas = taxonomy.find(prefix+'class')
+                sub_clas = taxonomy.find(prefix+'sub_class')
+                if super_clas is not None and super_clas is not None:
+                    metabolites_class['super_class'] = super_clas.text
+                if clas is not None and clas.text is not None:
+                    metabolites_class['class'] = clas.text
+                if sub_clas is not None and sub_clas.text is not None:
+                    metabolites_class['sub_class'] = sub_clas.text
+            
+            #print('metabolite {} has super class {} class {} subclass {}'\
+            #      .format(hmdbid.text,super_clas.text,clas.text,sub_clas.text))
+            result.loc[i,['hmdb_id','super_class','class','sub_class']] = [hmdbid.text,
+                                                                           metabolites_class['super_class'],
+                                                                           metabolites_class['class'],
+                                                                           metabolites_class['sub_class']]
+            i = i + 1
+        
+        result.to_csv('../misc/output/metabolites_class.csv')
+            
+        
+        
