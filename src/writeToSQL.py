@@ -1,7 +1,7 @@
 import time
 from MetabolomicsData import MetabolomicsData
 
-from builtins import str
+
 
 class writeToSQL(MetabolomicsData):
     

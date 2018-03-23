@@ -360,47 +360,7 @@ class wikipathwaysData(MetabolomicsData):
               .format(len(self.pathwaysWithGenesDictionary),
                       len(self.metabolitesWithPathwaysDictionary)))
         print('Common name for metabolites: {}'.format(len(self.metaboliteCommonName)))
-        '''
-            for child in root:
-                childtag = child.tag.replace("{http://pathvisio.org/GPML/2013a}", "")
-                
-                if childtag == "Comment":
-                    if child.get("Source") == "WikiPathways-category":
-                        category = child.text
-                        self.pathwayCategory[pathwayID] = category
-                  
-                #if a pathway category has not been found by this point defualt to NA
-                if pathwayID not in self.pathwayCategory:
-                    self.pathwayCategory[pathwayID] = "NA"
-                      
-                if childtag == "DataNode":
-                    metaboliteorgene = child.get("TextLabel")
-                    Attributetype = child.get("Type")
-                    # child = DataNode
-                    # child2 = Graphics or Xref
-                    
-                    if Attributetype not in possible_attrType:
-                        possible_attrType.add(Attributetype)
-                    
-                    for child2 in child:
-                        childtag = child2.tag
-                        #print('Tag is {}'.format(childtag))
-                        #time.sleep(1)
-                        childtag = child2.tag.replace("{http://pathvisio.org/GPML/2013a}", "")
-                        if childtag == "Xref":
-                            database = child2.get("Database")
-                            databaseID = child2.get("ID")
-                            databaseID = databaseID.replace(' ','')
-                            if Attributetype not in databaseType:
-                                databaseType[Attributetype] = set()
-                                databaseType[Attributetype].add(database)
-                            else:
-                                if database not in databaseType[Attributetype]:
-                                    databaseType[Attributetype].add(database)
-        print('Attributes type are {}'.format(possible_attrType))
-        print('Database Type is {}'.format(databaseType))
-        '''
-    '''
+        
                             if Attributetype == "Protein" or Attributetype == 'GeneProduct':
                                 geneMapping = {"kegg": "NA",
                                              "common_name": "NA",
