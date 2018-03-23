@@ -12,10 +12,10 @@ This script create a RaMP database with all tables based on the schema
 '''
 class RaMP_schema():
     # define all parameters for the database.
-    password = 'Ehe131224'
+    password = 'Ramp340!'
     username = 'root'
     host = 'localhost'
-    dbname = 'updateRaMP'
+    dbname = 'mathelabramp'
     engine = sqla.create_engine('mysql+pymysql://{}:{}@{}/{}'\
                                          .format(username,password,host,dbname))
         

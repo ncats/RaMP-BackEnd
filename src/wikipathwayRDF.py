@@ -163,7 +163,7 @@ class WikipathwaysRDF(MetabolomicsData):
                 print('---------------------------')
                 time.sleep(second)
         
-    def getMetabolitesID(self): 
+    def getIDMapingWithPathways(self): 
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
         listoffiles = os.listdir(path)
         print('Total {} pathways in Human'.format(len(listoffiles)))
@@ -182,7 +182,7 @@ class WikipathwaysRDF(MetabolomicsData):
             # get pathway information at first
             self.getPathwayInfoFromGraph(g, this_pathway)
             # get metabolites information at second
-            # self.getMetabolitesIDFromGraph(g,this_pathway)
+            self.getMetabolitesIDFromGraph(g,this_pathway)
             self.getGenesIDFromGraph(g, this_pathway)
                 #time.sleep(1)
     def getGenesIDFromGraph(self,g,this_pathway):
@@ -384,13 +384,13 @@ class WikipathwaysRDF(MetabolomicsData):
         '''
         # change id based on condition
         # Please look raw rdf file to figure out the pattern
-        if prefix == 'pubchem_compound_id':
+        if prefix == 'pubchem_compound_id' or prefix == 'pubchem.compound':
             id = id.replace('CID','')
             id = 'pubchem:'+id
         elif prefix == 'chebi_id' or prefix =='chebi':
             id = id.replace('CHEBI:','')
             id = 'chebi:' + id
-        elif prefix == 'hmdb_id':
+        elif prefix == 'hmdb_id' or prefix == 'hmdb':
             if len(id) == 9:
                 id = id.replace('HMDB','HMDB00')
             elif len(id) != 9  and len(id) != 11:
@@ -405,7 +405,7 @@ class WikipathwaysRDF(MetabolomicsData):
             id = prefix.lower()+':'+id
         elif prefix == 'chemspider_id':
             id = 'chemspider:'+id
-        elif prefix == 'kegg.compound':
+        elif prefix == 'kegg.compound' or prefix == 'kegg':
             id = 'kegg:' +id
         elif prefix == 'cas':
             id = 'CAS:' + id
@@ -415,7 +415,7 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'entrez:' + id
         elif prefix == 'uniprot' or prefix == 'UniProt':
             id = 'uniprot:' + id
-        elif prefix == 'ec-code':
+        elif prefix == 'ec-code' or prefix == 'Enzyme Nomenclature':
             id = 'EN:' +id
         elif prefix == 'ensembl' or prefix == 'Ensembl':
             id = 'ensembl:' + id
