@@ -59,6 +59,11 @@ class RampUpdater():
         #tissue location stay empty
         self.tissue = dbSource.tissue
         self.tissueLocation = dbSource.tissueLocation
+        # new rampid entry
+        self.newRampCompound = dict()
+        self.newRampGene = dict()
+        self.newRampPathway = dict()
+        self.newRampOntology = dict()
             
     def checkNewEntry(self):
         '''
@@ -72,10 +77,13 @@ class RampUpdater():
         for root,mapping in self.metaboliteIDDictionary.items():
             ids = self.getAllIDsFromMapping(mapping,root)
             (isoverlap, overlap) = self.isoverlap(ids)
+            print('Analytes {} is overlap? {}.'.format(root,overlap))
             if isoverlap:
                 rampid = self.findRampIDFromSource(overlap)
-                #print('Root {} overlap with rampid {}'.format(root,rampid))
-                #time.sleep(1)
+                print('Root {} overlap with rampid {}'.format(root,rampid))
+                if len(rampid) == 1:
+                    self.oneidOverlap(rampid, ids, type = 'C')
+                time.sleep(1)
             else:
                 self.addNewRampIdToAnalytes('compound')
                 time.sleep(3)
@@ -84,6 +92,12 @@ class RampUpdater():
         
         return 'Hello world'
     def isoverlap(self,listofids):
+        '''
+        Return true if the listofids has overlap ids with database
+        - param list listofids a list of ids from source file or dictionary
+        return:
+        a 2-tuple (isoverlap, overlap) if isoverlap = True, the overlap will contain the id that has overlaps.
+        '''
         sess = RaMP_schema().session
         sourcetb = RaMP_schema().Source
         isoverlap = False
@@ -98,15 +112,22 @@ class RampUpdater():
         return (isoverlap,overlap)
         
     def getAllIDsFromMapping(self,mapping,root):
+        '''
+        Put all ids in mapping to a list.
+        '''
         listofids = set()
         listofids.add(root)
         for source,ids in mapping.items():
-            if ids is not 'NA':
+            if ids not in ['NA','N','A']:
                 for each in ids:
                     listofids.add(each)
         
         return list(listofids)
     def findRampIDFromSource(self,setofids):
+        '''
+        Find overlaped rampid from given source ids.
+        '''
+        
         sess = RaMP_schema().session
         sourcetb = RaMP_schema().Source
         rampids = set()
@@ -115,18 +136,36 @@ class RampUpdater():
             rampids.add(rampid[0][0])
             
         return rampids
-    def addNewRampIdToAnalytes(self,type):
+    def addNewRampIdToAnalytes(self,type = 'C'):
+        assert type in ['C','G'], 'Please input a correct type, "G" for gene, "C" from compound'
+        prefix = 'RAMP_' +type +'_'
+        numberpart = 9
         sess = RaMP_schema().session
         analytetb = RaMP_schema().Analyte
         rampid = sess.query(analytetb.rampId).filter(analytetb.type == type).order_by(desc(analytetb.rampId)).first()
         print(rampid[0])
         rampid = str(rampid[0])
         rampnumber = int(rampid[7:])
-        
-        print(rampnumber)
+        newid = prefix + '0' * (numberpart - len(str(rampnumber))) + str(rampnumber)
+        print(newid)
         
         #analyte = RaMP_schema().Analyte(rampId = rampid,type = type)
         #sess.add(analyte)
         #sess.commit()
         
-        
+    def oneidOverlap(self,rampid,sourceids,type =None):
+        assert len(rampid) == 1,'Call this function when you only has one rampid overlapped.'
+        assert type in ['C','G'],'Analytes type should be C or G'
+        sess = RaMP_schema().session
+        sourcetb = RaMP_schema().Source
+        otherids = sess.query(sourcetb.sourceId).filter(sourcetb.rampId == list(rampid)[0]).all()
+        otherids = [i[0] for i in otherids if otherids is not None]
+        totaloverlap = set(otherids).union(set(sourceids))
+        print('The ids already in db is {}'.format(totaloverlap))
+        if type is 'C':
+            for each in totaloverlap:
+                id_value = list(rampid)[0]
+                if each not in self.newRampCompound:
+                    self.newRampCompound[each] = id_value
+                    
+                
