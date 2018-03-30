@@ -83,30 +83,63 @@ class RampUpdater():
         rampnumber = int(rampid[7:])
         sess = ramp_db.session
         source_table = ramp_db.Source
-        newCompound = set()
-        for root,mapping in self.metaboliteIDDictionary.items():
-            ids = self.getAllIDsFromMapping(mapping,root)
-            (isoverlap, overlap) = self.isoverlap(ids)
-            print('Analytes {} is overlap? {}.'.format(root,isoverlap))
-            if isoverlap:
-                rampid = self.findRampIDFromSource(overlap)
-                print('Root {} overlap with rampid {}'.format(root,rampid))
-                if len(rampid) == 1:
-                    # specific function to add entry that overlaps with only one ramp Id
-                    self.oneidOverlap(rampid, ids, analyte_type = 'C')
-                elif len(rampid) > 1:
-                    print('Two rampId overlaped ... ')
-                    disjointed_id = self.getDisjointIDsetFromRamp(rampid)
-                    disjointed_id = disjointed_id.union(ids)
-                    print(disjointed_id)
-                    # these disjointed set are unioned then assigned to a new ramp id. When writing the older one is dropped 
-                    (rampnumber,newrampId) = self.findNewRampIdToAnalytes(rampnumber = rampnumber, analyte_type = analyte_type)
-                    self.addAllidsToRamp(ids = disjointed_id, analyte_type='C', rampid = newrampId)
-                    #time.sleep(2)
-            else:
-                (rampnumber,newrampId) = self.findNewRampIdToAnalytes(analyte_type = analyte_type,rampnumber = rampnumber)
-                self.addAllidsToRamp(ids = ids, analyte_type = 'C', rampid = newrampId)
-                #time.sleep(3)
+        
+        if analyte_type is 'compound':
+            totalprocess = len(self.metaboliteIDDictionary)
+            i = 0
+            for root,mapping in self.metaboliteIDDictionary.items():
+                i = i + 1
+                if i % 100 is 0:
+                    print('Processing {}/{}'.format(i,totalprocess))
+                ids = self.getAllIDsFromMapping(mapping,root)
+                (isoverlap, overlap) = self.isoverlap(ids)
+                #print('Analytes {} is overlap? {}.'.format(root,isoverlap))
+                if isoverlap:
+                    rampid = self.findRampIDFromSource(overlap)
+                    #print('Root {} overlap with rampid {}'.format(root,rampid))
+                    if len(rampid) == 1:
+                        # specific function to add entry that overlaps with only one ramp Id
+                        self.oneidOverlap(rampid, ids, analyte_type = 'C')
+                    elif len(rampid) > 1:
+                        #print('Two rampId overlaped ... ')
+                        disjointed_id = self.getDisjointIDsetFromRamp(rampid)
+                        disjointed_id = disjointed_id.union(ids)
+                        #print(disjointed_id)
+                        # these disjointed set are unioned then assigned to a new ramp id. When writing the older one is dropped 
+                        (rampnumber,newrampId) = self.findNewRampIdToAnalytes(rampnumber = rampnumber, analyte_type = analyte_type)
+                        self.addAllidsToRamp(ids = disjointed_id, analyte_type='C', rampid = newrampId)
+                        #time.sleep(2)
+                else:
+                    (rampnumber,newrampId) = self.findNewRampIdToAnalytes(analyte_type = analyte_type,rampnumber = rampnumber)
+                    self.addAllidsToRamp(ids = ids, analyte_type = 'C', rampid = newrampId)
+        elif analyte_type is 'gene':
+            totalprocess = len(self.geneInfoDictionary)
+            i = 0
+            for root,mapping in self.geneInfoDictionary.items():
+                i = i + 1
+                if i % 100 is 0 :
+                    print('Processing gene... {}/{}'.format(i,totalprocess))
+                ids = self.getAllIDsFromMapping(mapping,root)
+                (isoverlap, overlap) = self.isoverlap(ids)
+                #print('Analytes {} is overlap? {}.'.format(root,isoverlap))
+                if isoverlap:
+                    rampid = self.findRampIDFromSource(overlap)
+                    #print('Root {} overlap with rampid {}'.format(root,rampid))
+                    if len(rampid) == 1:
+                        # specific function to add entry that overlaps with only one ramp Id
+                        self.oneidOverlap(rampid, ids, analyte_type = 'G')
+                    elif len(rampid) > 1:
+                        #print('Two rampId overlaped ... ')
+                        disjointed_id = self.getDisjointIDsetFromRamp(rampid)
+                        disjointed_id = disjointed_id.union(ids)
+                        #print(disjointed_id)
+                        # these disjointed set are unioned then assigned to a new ramp id. When writing the older one is dropped 
+                        (rampnumber,newrampId) = self.findNewRampIdToAnalytes(rampnumber = rampnumber, analyte_type = analyte_type)
+                        self.addAllidsToRamp(ids = disjointed_id, analyte_type='G', rampid = newrampId)
+                else:
+                    (rampnumber,newrampId) = self.findNewRampIdToAnalytes(analyte_type = analyte_type,rampnumber = rampnumber)
+                    self.addAllidsToRamp(ids = ids, analyte_type = 'G', rampid = newrampId)
+                    #time.sleep(3)
     def isoverlap(self,listofids):
         '''
         Return true if the listofids has overlap ids with database
@@ -167,7 +200,7 @@ class RampUpdater():
         prefix = 'RAMP_' +analyte_type +'_'
         rampnumber = rampnumber + 1
         newid = prefix + '0' * (numberpart - len(str(rampnumber))) + str(rampnumber)
-        print(newid)
+        #print(newid)
         return (rampnumber,newid)
         
     def oneidOverlap(self,rampid,sourceids,analyte_type =None):
@@ -179,7 +212,7 @@ class RampUpdater():
         # get source id from each tuple
         otherids = [i[0] for i in otherids if otherids is not None]
         totaloverlap = set(otherids).union(set(sourceids))
-        print('The ids already in db is {}'.format(totaloverlap))
+        #print('The ids already in db is {}'.format(totaloverlap))
         self.addAllidsToRamp(totaloverlap, analyte_type,rampid)
     
     def addAllidsToRamp(self,ids,analyte_type,rampid):
@@ -196,17 +229,22 @@ class RampUpdater():
         oldrampid= id_value
         if analyte_type is 'C':
             for each in ids:
-                if each not in self.newRampCompound:
-                    print('{}:{} is added to the dict'.format(each,id_value))
-                    self.newRampCompound[each] = id_value
-                    #if id_value != oldrampid:
-                        #time.sleep(1)  
-                else:
-                    print('Id {} is already in the dict with {}'.format(each,self.newRampCompound[each]))
-                    # if entry from same source has new overlap, they should also be assigned same rampId 
+                # check if the entry overlaped with previous updating entries
+                if each in self.newRampCompound:
                     id_value = self.newRampCompound[each]
-                    #time.sleep(0.1)
-                #time.sleep(1)
+                    break
+            for each in ids:
+                self.newRampCompound[each] = id_value
+            
+        elif analyte_type is 'G':
+            for each in ids:
+                # check if the entry overlaped with previous updating entries
+                if each in self.newRampGene:
+                    id_value = self.newRampGene[each]
+                    break
+            for each in ids:
+                self.newRampGene[each] = id_value
+
     def getDisjointIDsetFromRamp(self,rampids):
         '''
         This functions is called when rampids is a set with size greater than 2.
@@ -216,7 +254,7 @@ class RampUpdater():
         sourcetb = RaMP_schema().Source 
         sourceids = sess.query(sourcetb.sourceId).filter(sourcetb.rampId.in_(rampids)).all()
         sourceids = {i[0] for i in sourceids if sourceids is not None}
-        print(sourceids)
+        #print(sourceids)
         return sourceids           
     def checkNewPathwayEntry(self):
         ramp_db = RaMP_schema()
@@ -238,23 +276,34 @@ class RampUpdater():
                 #print(newrampid)
                 self.newRampPathway[pathwayid] = newrampid
     def writeToRamp(self,database):
+        assert database in ['kegg','wiki','hmdb','reactome'],'Wrong database type specified.'
         # write to pathway first
         ramp_db = RaMP_schema()
         sess = ramp_db.session
-        
+        # initialize all useful tables
+        pathwaytb = RaMP_schema().Pathway
+        sourcetb = RaMP_schema().Source
+        analytetb = RaMP_schema().Analyte
+        pathwayhasanalytetb = RaMP_schema().Analytehaspathway
+        # First, add pathways to the database
+        all_pathway = []
         for pathwayid,rpid in self.newRampPathway.items():
-            print('Add pathway {}'.format(pathwayid))
+            #print('Add pathway {}'.format(pathwayid))
             new_pathway = ramp_db.Pathway(pathwayRampId = rpid,
                                           sourceId = pathwayid,
                                           type = database,
                                           pathwayCategory = self.pathwayCategory[pathwayid],
                                           pathwayName = self.pathwayDictionary[pathwayid])
 
-            sess.add(new_pathway)
-            sess.commit()
-        sourcetb = RaMP_schema().Source
-        analytetb = RaMP_schema().Analyte
+            all_pathway.append(new_pathway)
+        print('Add {} pathways into RaMP'.format(len(all_pathway)))
+        sess.add_all(all_pathway)
+        sess.commit()
+        del all_pathway
+        
         for compoundid,rcid in self.newRampCompound.items():
+            if ':' not in compoundid:
+                continue
             (res_analyte,), = sess.query(exists().where(analytetb.rampId == rcid))
             (res_source,), = sess.query(exists().where(sourcetb.sourceId == compoundid))
             # not in both analyte and source table so it's new compound
@@ -277,6 +326,7 @@ class RampUpdater():
                                             )
                 sess.add(new_source)
                 sess.commit()
+            
             # if in the source table but not in analyte table, it's disjointed idmapping 
             # Delete previous entry and update the new one
             elif not res_analyte and res_source:
@@ -286,6 +336,7 @@ class RampUpdater():
                 new_analyte = ramp_db.Analyte(rampId = rcid,
                                 type = 'compound'
                                 )
+        
                 sess.add(new_analyte)
                 sess.commit()
                 if compoundid in self.metaboliteCommonName:
@@ -315,14 +366,70 @@ class RampUpdater():
                 sess.add(new_source)
                 sess.commit()
         
+        # writing gene to the Ramp
+        print("##### Writing gene into ramp #####")
+
+        for geneid,rgid in self.newRampGene.items():
+            print('Adding {}/{}'.format(geneid,rgid))
+            if ':' not in geneid:
+                print('Wrong id')
+                continue
+            (res_analyte,), = sess.query(exists().where(analytetb.rampId == rgid))
+            (res_source,), = sess.query(exists().where(sourcetb.sourceId == geneid))
+            commonName = 'NA'
+            # not in both analyte and source table so it's new compound
+            if not res_analyte and not res_source:
+                print('Brand new gene {}:{}'.format(geneid,rgid))
+                new_analyte = ramp_db.Analyte(rampId = rgid,
+                                type = 'gene'
+                                )
+                sess.add(new_analyte)
+                sess.commit()
+                
+                IDtype = geneid[:geneid.find(':')]
+                if IDtype is 'EN':
+                    IDtype = 'enzymeNomenclature'
+                new_source = ramp_db.Source(sourceId = geneid,
+                                            rampId = rgid,
+                                            IDtype = IDtype,
+                                            geneOrCompound = 'gene',
+                                            commonName = commonName
+                                            )
+                sess.add(new_source)
+                sess.commit()
+            elif not res_analyte and res_source:
+                print('Old entry of row {}'.format(geneid))
+                sess.query(sourcetb).filter(sourcetb.sourceId == geneid).delete()
+                sess.commit()
+                new_analyte = ramp_db.Analyte(rampId = rgid,
+                                type = 'gene'
+                                )
+                sess.add(new_analyte)
+                sess.commit()
+                
+                new_source = ramp_db.Source(sourceId = geneid,
+                                            rampId = rgid,
+                                            IDtype = geneid[:geneid.find(':')],
+                                            geneOrCompound = 'gene',
+                                            commonName = commonName
+                                            )
+                sess.add(new_source)
+                sess.commit()
         # update analytehaspathway table
-        pathwaytb = RaMP_schema().Pathway
+        # update metabolite-pathway relationship
+        pathway_metabolite_list =[]
         for pathwayid,metaboliteList in self.pathwayWithMetabolitesDictionary.items():
             rpid = sess.query(pathwaytb).filter(pathwaytb.sourceId == pathwayid).first()
-            print(rpid.pathwayrampId)
-            for id in metaboliteList:
-                linked_metabolite = sess.query(sourcetb).filter(sourcetb.sourceId == id).all()
-                linked_metabolite = {i.RampId for i in linked_metabolite}
-                print(linked_metabolite)
-                
-                time.sleep(3)
+            #print(rpid.pathwayRampId)
+            
+            linked_metabolite = sess.query(sourcetb).filter(sourcetb.sourceId.in_(metaboliteList)).all()
+            linked_metabolite = {i.rampId for i in linked_metabolite}
+            #print(linked_metabolite)
+            for each in linked_metabolite:
+                new_meta_path = pathwayhasanalytetb(rampId = each,pathwayRampId = rpid.pathwayRampId,
+                                    pathwaySource = database)
+                pathway_metabolite_list.append(new_meta_path)
+        print('Add {} entries to analytehaspathway table'.format(len(pathway_metabolite_list)))
+        sess.add_all(pathway_metabolite_list)
+        sess.commit()
+            
