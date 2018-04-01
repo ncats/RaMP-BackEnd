@@ -4,11 +4,11 @@ import os
 import sys
 from MetabolomicsData import MetabolomicsData
 import zipfile
-import path
 from rdflib import URIRef,Graph
 import rdflib.namespace
 from rdflib.namespace import RDF, FOAF,RDFS,DC,DCTERMS
 from builtins import str
+
 
 
 class WikipathwaysRDF(MetabolomicsData):
@@ -165,6 +165,7 @@ class WikipathwaysRDF(MetabolomicsData):
         
     def getIDMapingWithPathways(self): 
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        self.check_path(path)
         listoffiles = os.listdir(path)
         print('Total {} pathways in Human'.format(len(listoffiles)))
         
