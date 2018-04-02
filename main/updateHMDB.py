@@ -1,19 +1,26 @@
 from updateSQL import RampUpdater
 import pickle as pk
 import time
+from hmdbData import hmdbData
+def getHmdbPkl():
+    hmdb = hmdbData()
+    hmdb.getEverything()
+    hmdb.write_myself_files('hmdb')
+    hmdb_pkl = open('../misc/output/hmdbPkl.pkl','wb')
+    pk.dump(hmdb,hmdb_pkl,pk.HIGHEST_PROTOCOL)
+    hmdb_pkl.close()
+    del hmdb_pkl
 def getUpdateObjectPkl():
-    pkf = open('../misc/output/wikipathwayRdfPk.pkl','rb')
-    wp = pk.load(pkf)
+    pkf = open('../misc/output/hmdbPkl.pkl','rb')
+    hmdb = pk.load(pkf)
     pkf.close()
-    rp = RampUpdater(wp)
+    rp = RampUpdater(hmdb)
     rp.checkNewAnalyteEntry('compound')
     rp.checkNewAnalyteEntry('gene')
     rp.checkNewPathwayEntry()
-    pkf2 = open('../misc/output/updateObject328.pkl','wb')
+    pkf2 = open('../misc/output/updateHMDBObject330.pkl','wb')
     pk.dump(rp,pkf2,pk.HIGHEST_PROTOCOL)
     pkf2.close()
-    print('New pathway: {}'.format(len(rp.newRampPathway)))
-    
 def updatingRamp():
     pkf = open('../misc/output/updateObject328.pkl','rb')
     rp = pk.load(pkf)
