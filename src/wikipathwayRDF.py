@@ -179,12 +179,14 @@ class WikipathwaysRDF(MetabolomicsData):
             print('{}/{} ID:{}'.format(i,total_files,this_pathway))
             g = Graph()
             g.parse(path + each,format = 'n3')
+            '''
             # get pathway information at first
             self.getPathwayInfoFromGraph(g, this_pathway)
             # get metabolites information at second
             self.getMetabolitesIDFromGraph(g,this_pathway)
             self.getGenesIDFromGraph(g, this_pathway)
-                #time.sleep(1)
+            '''
+            self.getCatalyzation(g, this_pathway)
     def getGenesIDFromGraph(self,g,this_pathway):
         geneProduct = URIRef('http://vocabularies.wikipathways.org/wp#GeneProduct')
         type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -377,6 +379,20 @@ class WikipathwaysRDF(MetabolomicsData):
         for label in g.objects(URIRef(subject),DCTERMS.identifier):
             return label
         return 'NA'
+    def getCatalyzation(self,g,this_pathway):
+        '''
+        This function get all catalyzation relations between metabolites and genes from the graph
+        - param RDFgraph g The graph given by parsing RDF file
+        - param string this_pathway the pathway ID (WP_number) given from the file.
+        '''
+        for s,p,o in g.triples((None,None,None)):
+            if 'Interaction' not in s:
+                continue
+            print('---------------------------')
+            print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
+            print('---------------------------')
+            time.sleep(1)
+        
     def prependID(self,prefix,id):
         '''
         This function needs to be changed if the id_mapping dict has been changed
