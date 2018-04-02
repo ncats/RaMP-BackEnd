@@ -4,7 +4,6 @@ from writeToSQL import writeToSQL
 import pickle as pk
 
 class TestWikipathwaysMain(unittest.TestCase):
-
     def testMain(self):
         wp = WikipathwaysRDF()
         sql = writeToSQL()
