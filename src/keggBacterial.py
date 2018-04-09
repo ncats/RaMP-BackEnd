@@ -3,8 +3,9 @@ import time
 import urllib.error 
 from os import listdir
 from multiprocessing import Pool
-class keggBacterial():
-    
+from MetabolomicsData import MetabolomicsData
+import pandas as pd
+class keggBacterial(MetabolomicsData):
     def __init__(self):
         # key: sub categories value: super categories
         self.SpeciesToGenus = dict()
@@ -20,7 +21,12 @@ class keggBacterial():
         # key pathway id value pathway name without speicies
         self.pathwayDict = dict()
         self.metabolitesId = dict()
-        # pathway number part id
+        # kye: species T ID value: Species categories
+        self.keggIDToSpecies = dict()
+        # total_pathways set for store all pathways
+        self.total_pathway = set()
+        # species pathway information
+        self.keggSpeciesToPathways = dict()
     def findInt(self,str):
         try:
             str = str[str.find("(")+1:str.find(")")]
@@ -36,6 +42,96 @@ class keggBacterial():
     2. Download files with name of 3-letters-id.txt from KEGG
     3. Download individual pathway id file 
     '''
+    def getAllSpecies(self):
+        '''
+        Get all species from Kegg API.
+        '''
+        url = 'http://rest.kegg.jp/list/organism'
+        dir = '../misc/data/kegg/keggBacterial/'
+        self.check_path(dir)
+        self.download_files(url, dir, file = 'allKeggSpecies.txt')
+    def parseAllSpecies(self):
+        '''
+        Parse the species file 
+        - return species {'Fungi', 'Animals', 'Bacteria', 'Plants', 'Protists', 'Archaea'}
+        '''
+        with open('../misc/data/kegg/keggBacterial/allKeggSpecies.txt') as f:
+            content = [line.replace('\n','') for line in f if line is not '\n']
+        tpOfCategories = (set(),set(),set(),set())
+        for each in content:
+            #print(each)
+            #time.sleep(3)
+            value = each.split('\t')
+            categories = value[len(value) - 1].split(';')
+            #print(categories)
+            for i in range(0,len(categories)):
+                #print(categories[i])
+                #time.sleep(1)
+                tpOfCategories[i].add(categories[i])
+        
+    def getSpeciesPathwayFile(self):
+        '''
+        For now, the function will collect all microbial that falls in below categories:
+             {'Fungi','Bacteria','Protists', 'Archaea'}
+        '''       
+        target = {'Fungi','Bacteria','Protists', 'Archaea'}
+        with open('../misc/data/kegg/keggBacterial/allKeggSpecies.txt') as f:
+            content = [line.replace('\n','') for line in f if line is not '\n']
+            for each in content:
+                value = each.split('\t')
+                categories = value[len(value) - 1].split(';')[1]
+                if categories in target:
+                    self.keggIDToSpecies[value[0]] = categories
+        
+        print('Total {} microbial is collected from kegg specis file.'.format(len(self.keggIDToSpecies)))
+        dir = '../misc/data/kegg/keggBacterialPathway/'
+        url = 'http://rest.kegg.jp/list/pathway/'
+        self.check_path(dir)
+        urls = [url + key for key in self.keggIDToSpecies]
+        file_names = [key + '.txt' for key in self.keggIDToSpecies]
+        dirs = [dir] * len(file_names)
+        with Pool(30) as p:
+            p.starmap(self.download_files,zip(urls,dirs,file_names))
+    def getAllPathwaysFromMicrobial(self):
+        '''
+        After getting all files contains pathway information
+        Try to find all unique pathways by looking at number part
+        '''
+        dir = '../misc/data/kegg/keggBacterialPathway/'
+        microbial_files = listdir(dir)
+        stored = set()
+        for each in microbial_files:
+            with open(dir+each) as f:
+                content = [line.replace('\n','') for line in f if line is not '\n']
+                pathways = {p.split('\t')[0][-5:] for p in content}
+                self.total_pathway = self.total_pathway.union(pathways)
+                species = self.keggIDToSpecies[each.replace('.txt','')]
+                if species not in self.keggSpeciesToPathways:
+                    self.keggSpeciesToPathways[species] = set()
+                    self.keggSpeciesToPathways[species] = self.keggSpeciesToPathways[species].union(set(pathways))
+                else:
+                    self.keggSpeciesToPathways[species] = self.keggSpeciesToPathways[species].union(set(pathways))
+        print('Total {} unique pathways are found associated to microbial.'.format(len(self.total_pathway)))
+    def getAllLinkedCpdFromPathways(self):
+        url = 'http://rest.kegg.jp/link/cpd/'
+        dir_to_save = '../misc/data/kegg/keggBacterialCpd/'
+        self.check_path(dir_to_save)
+        file_names = ['map' + each + '.txt' for each in self.total_pathway]
+        urls = [url +'map'+each for each in self.total_pathway]
+        dir_to_save = [dir_to_save] * len(file_names)
+        with Pool(3) as p:
+            p.starmap(self.download_files,zip(urls,dir_to_save,file_names))
+    def getAllCpdFromMapFile(self):
+        dir_to_save = '../misc/data/kegg/keggBacterialCpd/'
+        files_name = listdir(dir_to_save)
+        setOfAllCpd = set()
+        for each in files_name:
+            with open(dir_to_save + each) as f:
+                content = [line.replace('\n','') for line in f if line is not '\n']
+                content = [line.split('\t')[1].replace('cpd:','') for line in content]
+                setOfAllCpd = setOfAllCpd.union(set(content))
+        df = pd.DataFrame({'cpd':list(setOfAllCpd)})
+        df.to_csv('../misc/data/kegg/keggBacterialcpd.csv')
     def getDatabaseFile(self,haveFiles = True):
         pathwayFile = open('../misc/data/kegg/bacterial.txt')
 
