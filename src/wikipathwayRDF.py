@@ -32,7 +32,7 @@ class WikipathwaysRDF(MetabolomicsData):
         self.pathwaysWithGenesDictionary = dict()
         
         #key: pathwayId, value: list of metabolites
-        self.pathwayWithMetabolitesDictionary = dict()
+        self.pathwaysWithMetabolitesDictionary = dict()
         
         #empty for reactome
         self.metabolitesWithSynonymsDictionary = dict()

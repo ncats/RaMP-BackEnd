@@ -72,8 +72,8 @@ class hmdbData(MetabolomicsData):
         
         # key: pathway SMP id, value: list of gene HMDBP id
         self.pathwaysWithGenesDictionary = dict()      
-        
-
+        # key: pathway id, value: list of metabolites id with this pathways.
+        self.pathwaysWithMetabolitesDictionary = dict()
         #key: gene id, value: list of FOUR gene identifiers 
         self.geneInfoDictionary = dict()
         
@@ -596,7 +596,7 @@ class hmdbData(MetabolomicsData):
         The raw data is from SMPDB.txt, which depends on the version of SMPDB
         '''
         SMPDB2 = []
-        with open('../misc/data/hmdb/SMPDB.txt','r') as f:
+        with open('../misc/SMPDB.txt','r') as f:
             for line in f:
                 SMPDB2.append(line.rstrip('\n'))
         return SMPDB2
