@@ -1,4 +1,6 @@
 # Ignored Directory #
-misc/
+misc/data/
+misc/sql/
+misc/output/
 
 
