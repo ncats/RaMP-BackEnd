@@ -26,7 +26,7 @@ class RampUpdater():
         self.pathwaysWithGenesDictionary = dbSource.pathwaysWithGenesDictionary
         
         #key: pathwayId, value: list of metabolites
-        self.pathwayWithMetabolitesDictionary = dbSource.pathwayWithMetabolitesDictionary
+        self.pathwaysWithMetabolitesDictionary = dbSource.pathwayWithMetabolitesDictionary
         
         #empty for reactome
         self.metabolitesWithSynonymsDictionary = dbSource.metabolitesWithSynonymsDictionary
@@ -416,7 +416,7 @@ class RampUpdater():
         # update analytehaspathway table
         # update metabolite-pathway relationship
         pathway_metabolite_list =[]
-        for pathwayid,metaboliteList in self.pathwayWithMetabolitesDictionary.items():
+        for pathwayid,metaboliteList in self.pathwaysWithMetabolitesDictionary.items():
             rpid = sess.query(pathwaytb).filter(pathwaytb.sourceId == pathwayid).first()
             #print(rpid.pathwayRampId)
             
@@ -430,4 +430,58 @@ class RampUpdater():
         print('Add {} entries to analytehaspathway table'.format(len(pathway_metabolite_list)))
         sess.add_all(pathway_metabolite_list)
         sess.commit()
-            
+        pathway_metabolite_list = []
+        for metaid, pids in self.metabolitesWithPathwaysDictionary.items():
+            rcid = sess.query(sourcetb).filter(sourcetb.sourceId == metaid).first()
+            linked_pathways = sess.query(pathwaytb).filter(pathwaytb.sourceId.in_(pids)).all()
+            linked_pathways = [i.pathwayRampId for i in linked_pathways]
+            for each in linked_pathways:
+                new_meta_path = pathwayhasanalytetb(rampId = rcid.rampId,pathwayRampId = each,
+                                                    pathwaySource = database)
+                pathway_metabolite_list.append(new_meta_path)
+        print('Add {} entries to analytehaspathway table'.format(len(pathway_metabolite_list)))
+        sess.add_all(pathway_metabolite_list)
+        sess.commit()
+class QualityControl():
+    def __init__(self):
+        self.analytesIDtype = [
+            'CAS',
+            'chebi',
+            'chemspider',
+            'EnzymeNomenclature',
+            'ensembl',
+            'entrez',
+            'hmdb',
+            'kegg',
+            'LIPIDMAPS',
+            'pubchem',
+            'uniprot'
+            ]
+        self.pathwaySource = [
+            'hmdb',
+            'kegg',
+            'wiki',
+            'reactome'
+            ]
+        self.analytesType = [
+            'gene',
+            'compound']
+    def checkAllColumns(self):
+        '''
+        This function checks couple columns to see if there are unexpected bugs due to update
+        It queries each table to get the unique value of each column. Find distinct value then compare it with our desired value.
+        The function will also print the wrong items.
+        '''
+        db = RaMP_schema()
+        sess = db.session
+        sourcetb = db.Source
+        pathwaytb = db.Pathway
+        analytetb = db.Analyte
+        sourceIDtype = sess.query(sourcetb.IDtype).distinct().all()
+        print(sourceIDtype)
+        pathwayIDtype = sess.query(pathwaytb.type).distinct().all()
+        print( pathwayIDtype)
+        analyteType1 = sess.query(analytetb.type).distinct().all()
+        print(analyteType1)
+        analyteType2 = sess.query(sourcetb.geneOrCompound).distinct().all()
+        print(analyteType2) 

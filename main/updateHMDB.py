@@ -1,4 +1,4 @@
-from updateSQL import RampUpdater
+from updateSQL import RampUpdater,QualityControl
 import pickle as pk
 import time
 from hmdbData import hmdbData
@@ -13,6 +13,7 @@ def getHmdbPkl():
 def getUpdateObjectPkl():
     pkf = open('../misc/output/hmdbPkl.pkl','rb')
     hmdb = pk.load(pkf)
+    print(hmdb.__dir__())
     pkf.close()
     rp = RampUpdater(hmdb)
     rp.checkNewAnalyteEntry('compound')
@@ -21,7 +22,7 @@ def getUpdateObjectPkl():
     pkf2 = open('../misc/output/updateHMDBObject330.pkl','wb')
     pk.dump(rp,pkf2,pk.HIGHEST_PROTOCOL)
     pkf2.close()
-def updatingRamp():
+def updatingRamp(db):
     pkf = open('../misc/output/updateObject328.pkl','rb')
     rp = pk.load(pkf)
     print('Unique metabolites: {} \nUnique genes: {}'.format(len(set(rp.newRampCompound.values())),
@@ -33,6 +34,7 @@ def updatingRamp():
     rp2.newRampCompound = rp.newRampCompound
     rp2.newRampPathway = rp.newRampPathway
     rp2.newRampGene = rp.newRampGene
-    rp2.writeToRamp('wiki')
+    rp2.writeToRamp(db)
 if __name__ == '__main__':
-    getUpdateObjectPkl()
+    qc = QualityControl()
+    qc.checkAllColumns()
