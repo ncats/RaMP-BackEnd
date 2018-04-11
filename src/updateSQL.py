@@ -3,8 +3,6 @@ import pymysql
 from sqlalchemy import *
 from sqlalchemy_utils import *
 from schema import RaMP_schema
-
-
 class RampUpdater():
     def __init__(self,dbSource):
         '''
