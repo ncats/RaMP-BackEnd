@@ -3,6 +3,8 @@ import pymysql
 from sqlalchemy import *
 from sqlalchemy_utils import *
 from schema import RaMP_schema
+import pandas as pd
+from bokeh.plotting.tests.test_figure import source
 class RampUpdater():
     def __init__(self,dbSource):
         '''
@@ -26,7 +28,7 @@ class RampUpdater():
         self.pathwaysWithGenesDictionary = dbSource.pathwaysWithGenesDictionary
         
         #key: pathwayId, value: list of metabolites
-        self.pathwaysWithMetabolitesDictionary = dbSource.pathwaysWithMetabolitesDictionary
+        self.pathwaysWithMetabolitesDictionary = dbSource.pathwayWithMetabolitesDictionary
         
         #empty for reactome
         self.metabolitesWithSynonymsDictionary = dbSource.metabolitesWithSynonymsDictionary
@@ -64,7 +66,22 @@ class RampUpdater():
         self.newRampGene = dict()
         self.newRampPathway = dict()
         self.newRampOntology = dict()
-            
+        # keep ramp id content for check
+        self.oldRaMPSource = None
+        
+    def getOldRaMPSourceContent(self):
+        print('#### Get old ramp content ####')
+        now = time.time()
+        db = RaMP_schema()
+        sess = db.session 
+        sourcetb = db.Source
+        sourceid = sess.query(sourcetb).all()
+        
+        self.oldRaMPSource = pd.DataFrame({'sourceId':[i.sourceId for i in sourceid],
+                                           'rampId':[i.rampId for i in sourceid]})
+        print("#### Done, takes {} s ####".format(time.time() - now))
+        print(self.oldRaMPSource.shape)
+        print(self.oldRaMPSource.head())
     def checkNewAnalyteEntry(self,analyte_type):
         '''
         The data object should be from class hmdbData,KeggData,wikipathwayRDF,ReactomeData
@@ -108,6 +125,7 @@ class RampUpdater():
                         self.addAllidsToRamp(ids = disjointed_id, analyte_type='C', rampid = newrampId)
                         #time.sleep(2)
                 else:
+                    print('Old entry !!!')
                     (rampnumber,newrampId) = self.findNewRampIdToAnalytes(analyte_type = analyte_type,rampnumber = rampnumber)
                     self.addAllidsToRamp(ids = ids, analyte_type = 'C', rampid = newrampId)
         elif analyte_type is 'gene':
@@ -149,12 +167,21 @@ class RampUpdater():
         sourcetb = RaMP_schema().Source
         isoverlap = False
         overlap = set()
+        df = self.oldRaMPSource
         for each in listofids:
-            (res,), = sess.query(exists().where(sourcetb.sourceId == each))
+            sub = df.loc[df['sourceId'] == each,]
+            print(sub.shape)
+            if sub.shape[0] is 1:
+                res = True
+            else:
+                res = False
+            print('{} is {}'.format(each,res))
+            time.sleep(3)
             if res:
                 overlap.add(each)
         if len(overlap) > 0 :
             isoverlap = True
+            print('Overlap!!!!!')
         
         return (isoverlap,overlap)
         
@@ -180,9 +207,11 @@ class RampUpdater():
         sess = RaMP_schema().session
         sourcetb = RaMP_schema().Source
         rampids = set()
+        df = self.oldRaMPSource
         for id in setofids:
-            rampid = sess.query(sourcetb.rampId).filter(sourcetb.sourceId == id).all()
-            rampids.add(rampid[0][0])
+            rampid = df[df['sourceId'] == id,'rampId']
+            print('One ID overlap {}'.format(rampid))
+            rampids.add(rampid)
             
         return rampids
     def findNewRampIdToAnalytes(self,rampnumber,analyte_type = 'compound'):
@@ -202,6 +231,13 @@ class RampUpdater():
         return (rampnumber,newid)
         
     def oneidOverlap(self,rampid,sourceids,analyte_type =None):
+        '''
+        This function is called when one ramp ID overlap is found, so the two disjointed set should be
+        connected by the new entry. Then, a old id is assigned to the entry.
+        - param set rampid a set with eaxactly one ramp id inside
+        - param sourceids a ID mapping that is new entry.
+        - param str analyte_type analyte_type that specifies if analyte is gene or compound 
+        '''
         assert len(rampid) == 1,'Call this function when you only has one rampid overlapped.'
         assert analyte_type in ['C','G'],'Analytes type should be C or G'
         sess = RaMP_schema().session
@@ -274,6 +310,9 @@ class RampUpdater():
                 #print(newrampid)
                 self.newRampPathway[pathwayid] = newrampid
     def writeToRamp(self,database):
+        '''
+        This function write all content (dictionaries) of this RaMP update class into RaMP.
+        '''
         assert database in ['kegg','wiki','hmdb','reactome'],'Wrong database type specified.'
         # write to pathway first
         ramp_db = RaMP_schema()
