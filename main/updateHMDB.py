@@ -4,8 +4,7 @@ import time
 from hmdbData import hmdbData
 def getHmdbPkl():
     hmdb = hmdbData()
-    hmdb.getEverything()
-    hmdb.write_myself_files('hmdb')
+    hmdb.getEverything(True)
     hmdb_pkl = open('../misc/output/hmdbPkl.pkl','wb')
     pk.dump(hmdb,hmdb_pkl,pk.HIGHEST_PROTOCOL)
     hmdb_pkl.close()
@@ -19,7 +18,7 @@ def getUpdateObjectPkl():
     rp.checkNewAnalyteEntry('compound')
     rp.checkNewAnalyteEntry('gene')
     rp.checkNewPathwayEntry()
-    pkf2 = open('../misc/output/updateHMDBObject330.pkl','wb')
+    pkf2 = open('../misc/output/updateHMDBObject411.pkl','wb')
     pk.dump(rp,pkf2,pk.HIGHEST_PROTOCOL)
     pkf2.close()
 def updatingRamp(db):
@@ -36,5 +35,4 @@ def updatingRamp(db):
     rp2.newRampGene = rp.newRampGene
     rp2.writeToRamp(db)
 if __name__ == '__main__':
-    qc = QualityControl()
-    qc.checkAllColumns()
+    getUpdateObjectPkl()

@@ -218,19 +218,29 @@ class hmdbData(MetabolomicsData):
                 commonName = metabolite.find('{http://www.hmdb.ca}name').text
                 
                 #print(metabohmdbid)
-                #find other ids for metabolite 
+                #find other ids for metabolite
+                # prefix is the id we collect and would like to store it in RamP 
+                prefix = {'chemsipder_id':'chemsipder:',
+                          'pubchem_compound_id':'pubchem:',
+                          'chebi_id':'chebi:',
+                          'CAS':'CAS:',
+                          'kegg_id':'kegg:'
+                          }
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
-                    
                     #print(childtag)
                     if childtag == "accession":
-                        metabohmdbid = child.text
+                        metabohmdbid = 'hmdb:' + child.text
                         mapping['hmdb_id']  = metabohmdbid
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
                         source = idtag[childtag]
                         # if has id in the tag, append it to the list 
+                        
                         if type(mapping[source]) is not list and child.text is not None:
+                            if source in prefix:
+                                mapping[source] = [prefix[source] + child.text]
+                            '''
                             if childtag == 'chemspider_id':
                                 mapping[source] = ['chemspider:'+child.text]
                             elif childtag == 'pubchem_compound_id':
@@ -239,8 +249,12 @@ class hmdbData(MetabolomicsData):
                                 mapping[source] =['chebi:'+child.text]
                             else:
                                 mapping[source] =[child.text]
+                                print(source + ' Not selected ID??'  + child.text)
+                                time.sleep(1)
+                            '''
                         elif type(mapping[source]) is list and child.text is not None:
-                            mapping[source].append(child.text)
+                            if source in prefix:
+                                mapping[source].append(prefix[source] + child.text)
                 #place all id information in this mapping        
                 if metabohmdbid not in self.metaboliteIDDictionary:
                     self.metaboliteIDDictionary[metabohmdbid] = mapping
@@ -292,8 +306,7 @@ class hmdbData(MetabolomicsData):
                 synonyms = metabolite.find('{http://www.hmdb.ca}synonyms')
                 # Find accession number
                 if accessiontag is not None and accessiontag.text is not None:
-                    metabohmdbid = accessiontag.text
-        
+                    metabohmdbid = 'hmdb:' + accessiontag.text
                     if metabohmdbid not in self.metabolitesWithSynonymsDictionary:
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] =[]
                     if metabohmdbid not in self.metabolitesWithPathwaysDictionary:
@@ -367,6 +380,8 @@ class hmdbData(MetabolomicsData):
 
             metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
             listofgenes = []
+            prefix = {"UniProt":'uniprot:',
+                      'HMDB_protein_accession':'hmdb:'}
             if metabolitetag == "metabolite":
                 #find other ids for metabolite 
                 for child in metabolite:
@@ -374,7 +389,7 @@ class hmdbData(MetabolomicsData):
 
                     #THIS WILL BE THE KEY
                     if childtag == "accession":
-                        metabohmdbid = child.text 
+                        metabohmdbid = 'hmdb:' + child.text 
                         
                     if childtag == "protein_associations":
                         
@@ -407,7 +422,10 @@ class hmdbData(MetabolomicsData):
                                 id_tag_key = sourceid.tag.replace('{http://www.hmdb.ca}','')
                                 mapping_key = idtag[id_tag_key]
                                 if sourceid.text is not None:
-                                    mapping[mapping_key] = [sourceid.text]
+                                    if mapping_key is not 'common_name':
+                                        mapping[mapping_key] = [prefix[mapping_key] + sourceid.text]
+                                    else:
+                                        mapping[mapping_key] = sourceid.text
                                     
                             
                             proteinacc = mapping['HMDB_protein_accession'][0]
@@ -457,7 +475,7 @@ class hmdbData(MetabolomicsData):
 
                     #THIS WILL BE THE KEY
                     if childtag == "accession":
-                        metabohmdbid = child.text 
+                        metabohmdbid = 'hmdb:' + child.text 
                     if childtag == "ontology":
                         for cellularlocations in child:
                             cellularlocationstag = cellularlocations.tag.replace("{http://www.hmdb.ca}", "")
@@ -536,7 +554,9 @@ class hmdbData(MetabolomicsData):
                        'Entrez': 'NA',
                        'Enzyme Nomenclature': 'NA'}
             if uniprotidtag is not None and uniprotidtag.text is not None:
-                accessionnum = accession.text
+                # prepend hmdb: to the HMDBP ID
+                accessionnum = 'hmdb:' + accession.text
+                uniprotid = 'uniprot:' + uniprotidtag.text
                 if accessionnum not in self.geneInfoDictionary:
                     mapping = id_mapping.copy()
                     mapping['HMDB_protein_accession'] = accessionnum
@@ -574,18 +594,18 @@ class hmdbData(MetabolomicsData):
                                     self.pathwayDictionary[smpid] = pathwayName
                                 if smpid not in self.pathwaysWithGenesDictionary:
                                     self.pathwaysWithGenesDictionary[smpid] = []
-                                    self.pathwaysWithGenesDictionary[smpid].append(accession.text)
+                                    self.pathwaysWithGenesDictionary[smpid].append('hmdb:' + accession.text)
                                 else:
                                     if accession.text not in self.pathwaysWithGenesDictionary[smpid]:
-                                        self.pathwaysWithGenesDictionary[smpid].append(accession.text)
+                                        self.pathwaysWithGenesDictionary[smpid].append('hmdb:'+accession.text)
             for metabolite in protein.find('{http://www.hmdb.ca}metabolite_associations'):
-                hmdb_id = metabolite.find('{http://www.hmdb.ca}accession').text # find the metabolite id under this node
+                hmdb_id = 'hmdb:' + metabolite.find('{http://www.hmdb.ca}accession').text # find the metabolite id under this node
                 # Use protein file to add more information to metablite-gene relations
                 if hmdb_id not in self.metabolitesLinkedToGenes:
-                    self.metabolitesLinkedToGenes[hmdb_id] = [accession.text]
+                    self.metabolitesLinkedToGenes[hmdb_id] = ['hmdb:' + accession.text]
                 else:
                     if accession.text not in self.metabolitesLinkedToGenes[hmdb_id]:
-                        self.metabolitesLinkedToGenes[hmdb_id].append(accession.text)
+                        self.metabolitesLinkedToGenes[hmdb_id].append('hmdb:' + accession.text)
                 
         print('After parsing protein file, geneInfo has {} items'.format(len(self.geneInfoDictionary)))
         print('After parsing protein file, metabolites-gene has {} items'.format(len(self.metabolitesLinkedToGenes)))
