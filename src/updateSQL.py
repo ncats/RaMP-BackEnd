@@ -26,7 +26,7 @@ class RampUpdater():
         self.pathwaysWithGenesDictionary = dbSource.pathwaysWithGenesDictionary
         
         #key: pathwayId, value: list of metabolites
-        self.pathwaysWithMetabolitesDictionary = dbSource.pathwayWithMetabolitesDictionary
+        self.pathwaysWithMetabolitesDictionary = dbSource.pathwaysWithMetabolitesDictionary
         
         #empty for reactome
         self.metabolitesWithSynonymsDictionary = dbSource.metabolitesWithSynonymsDictionary
