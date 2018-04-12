@@ -10,15 +10,16 @@ def getHmdbPkl():
     hmdb_pkl.close()
     del hmdb_pkl
 def getUpdateObjectPkl():
-    pkf = open('../misc/output/hmdbPkl.pkl','rb')
+    pkf = open('../misc/output/wikipathwayRdfPk.pkl','rb')
     hmdb = pk.load(pkf)
     print(hmdb.__dir__())
     pkf.close()
     rp = RampUpdater(hmdb)
+    rp.getOldRaMPSourceContent()
     rp.checkNewAnalyteEntry('compound')
     rp.checkNewAnalyteEntry('gene')
     rp.checkNewPathwayEntry()
-    pkf2 = open('../misc/output/updateHMDBObject411.pkl','wb')
+    pkf2 = open('../misc/output/updateObject328.pkl','wb')
     pk.dump(rp,pkf2,pk.HIGHEST_PROTOCOL)
     pkf2.close()
 def updatingRamp(db):
