@@ -28,7 +28,7 @@ class RampUpdater():
         self.pathwaysWithGenesDictionary = dbSource.pathwaysWithGenesDictionary
         
         #key: pathwayId, value: list of metabolites
-        self.pathwaysWithMetabolitesDictionary = dbSource.pathwayWithMetabolitesDictionary
+        self.pathwaysWithMetabolitesDictionary = dbSource.pathwaysWithMetabolitesDictionary
         
         #empty for reactome
         self.metabolitesWithSynonymsDictionary = dbSource.metabolitesWithSynonymsDictionary
@@ -80,13 +80,12 @@ class RampUpdater():
         self.oldRaMPSource = pd.DataFrame({'sourceId':[i.sourceId for i in sourceid],
                                            'rampId':[i.rampId for i in sourceid]})
         print("#### Done, takes {} s ####".format(time.time() - now))
-        print(self.oldRaMPSource.shape)
-        print(self.oldRaMPSource.head())
     def checkNewAnalyteEntry(self,analyte_type):
         '''
         The data object should be from class hmdbData,KeggData,wikipathwayRDF,ReactomeData
         - param str analyte_type string that specifies which type of analytes looking for.Should be 'compound' or 'gene' 
         '''
+        now = time.time()
         ramp_db = RaMP_schema()
         # First get the last item from RaMP
         numberpart = 9
@@ -98,14 +97,14 @@ class RampUpdater():
         rampnumber = int(rampid[7:])
         sess = ramp_db.session
         source_table = ramp_db.Source
-        
+        new_metabolite = 0
         if analyte_type is 'compound':
             totalprocess = len(self.metaboliteIDDictionary)
             i = 0
             for root,mapping in self.metaboliteIDDictionary.items():
                 i = i + 1
                 if i % 100 is 0:
-                    print('Processing {}/{}'.format(i,totalprocess))
+                    print('Processing {}/{} in {}'.format(i,totalprocess,(time.time() - now)))
                 ids = self.getAllIDsFromMapping(mapping,root)
                 (isoverlap, overlap) = self.isoverlap(ids)
                 #print('Analytes {} is overlap? {}.'.format(root,isoverlap))
@@ -125,7 +124,8 @@ class RampUpdater():
                         self.addAllidsToRamp(ids = disjointed_id, analyte_type='C', rampid = newrampId)
                         #time.sleep(2)
                 else:
-                    print('Old entry !!!')
+                    new_metabolite = new_metabolite + 1
+                    print('{} new entry !!!'.format(new_metabolite))
                     (rampnumber,newrampId) = self.findNewRampIdToAnalytes(analyte_type = analyte_type,rampnumber = rampnumber)
                     self.addAllidsToRamp(ids = ids, analyte_type = 'C', rampid = newrampId)
         elif analyte_type is 'gene':
@@ -170,18 +170,18 @@ class RampUpdater():
         df = self.oldRaMPSource
         for each in listofids:
             sub = df.loc[df['sourceId'] == each,]
-            print(sub.shape)
-            if sub.shape[0] is 1:
+            #print(sub.shape)
+            if sub.shape[0] == 1:
                 res = True
             else:
                 res = False
-            print('{} is {}'.format(each,res))
-            time.sleep(3)
+            #print('{} is {}'.format(each,res))
+            #time.sleep(1)
             if res:
                 overlap.add(each)
         if len(overlap) > 0 :
             isoverlap = True
-            print('Overlap!!!!!')
+            #print('Overlap!!!!!')
         
         return (isoverlap,overlap)
         
@@ -209,10 +209,11 @@ class RampUpdater():
         rampids = set()
         df = self.oldRaMPSource
         for id in setofids:
-            rampid = df[df['sourceId'] == id,'rampId']
-            print('One ID overlap {}'.format(rampid))
-            rampids.add(rampid)
-            
+            rampid = df.loc[df['sourceId'] == id,'rampId']
+            #print('One ID overlap {}'.format(rampid.tolist()))
+            rampid = set(rampid.tolist())
+            rampids = rampids.union(rampid)
+        #print('Ramp ID overlaps: {}'.format(rampids))    
         return rampids
     def findNewRampIdToAnalytes(self,rampnumber,analyte_type = 'compound'):
         '''
