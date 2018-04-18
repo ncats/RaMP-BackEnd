@@ -2,15 +2,17 @@ from updateSQL import RampUpdater,QualityControl
 import pickle as pk
 import time
 from hmdbData import hmdbData
+
 def getHmdbPkl():
     hmdb = hmdbData()
     hmdb.getEverything(True)
     hmdb_pkl = open('../misc/output/hmdbPkl.pkl','wb')
+    print('Start loading files ....')
     pk.dump(hmdb,hmdb_pkl,pk.HIGHEST_PROTOCOL)
     hmdb_pkl.close()
     del hmdb_pkl
 def getUpdateObjectPkl():
-    pkf = open('../misc/output/wikipathwayRdfPk.pkl','rb')
+    pkf = open('../misc/output/hmdbPkl.pkl','rb')
     hmdb = pk.load(pkf)
     print(hmdb.__dir__())
     pkf.close()

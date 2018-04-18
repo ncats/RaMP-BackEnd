@@ -184,7 +184,9 @@ class hmdbData(MetabolomicsData):
             #find the accession number (metabolite id)
             if metabolitetag == "metabolite":
                 ##here are some of the things we will be looking for in the xml tree
-                mapping = {"chebi_id": "NA", 
+                mapping = {
+                           "smiles":'NA',
+                            "chebi_id": "NA", 
                            "drugbank_id": "NA", 
                            "drugbank_metabolite_id": "NA", 
                            "phenol_explorer_compound_id": "NA", 
@@ -212,7 +214,8 @@ class hmdbData(MetabolomicsData):
                          "biocyc_id":'biocyc_id',
                          "cas_registry_number":"CAS",
                          "metlin_id":"metlin_id",
-                         "pubchem_compound_id":"pubchem_compound_id"
+                         "pubchem_compound_id":"pubchem_compound_id",
+                         'smiles':'smiles'
                          }
                 
                 commonName = metabolite.find('{http://www.hmdb.ca}name').text
@@ -224,7 +227,8 @@ class hmdbData(MetabolomicsData):
                           'pubchem_compound_id':'pubchem:',
                           'chebi_id':'chebi:',
                           'CAS':'CAS:',
-                          'kegg_id':'kegg:'
+                          'kegg_id':'kegg:',
+                          'smiles':'smiles:'
                           }
                 for child in metabolite:
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
@@ -236,22 +240,9 @@ class hmdbData(MetabolomicsData):
                     elif childtag in idtag:
                         source = idtag[childtag]
                         # if has id in the tag, append it to the list 
-                        
                         if type(mapping[source]) is not list and child.text is not None:
                             if source in prefix:
                                 mapping[source] = [prefix[source] + child.text]
-                            '''
-                            if childtag == 'chemspider_id':
-                                mapping[source] = ['chemspider:'+child.text]
-                            elif childtag == 'pubchem_compound_id':
-                                mapping[source] =['pubchem:' + child.text]
-                            elif childtag == 'chebi_id':
-                                mapping[source] =['chebi:'+child.text]
-                            else:
-                                mapping[source] =[child.text]
-                                print(source + ' Not selected ID??'  + child.text)
-                                time.sleep(1)
-                            '''
                         elif type(mapping[source]) is list and child.text is not None:
                             if source in prefix:
                                 mapping[source].append(prefix[source] + child.text)
@@ -539,7 +530,8 @@ class hmdbData(MetabolomicsData):
             accession = protein.find('{http://www.hmdb.ca}accession')
             
             uniprotidtag = protein.find('{http://www.hmdb.ca}uniprot_id')
-            id_mapping = { 'kegg': 'NA',
+            id_mapping = {
+                       'kegg': 'NA',
                        'common_name': 'NA',
                        'Ensembl': 'NA', 
                        'HGNC': 'NA', 
@@ -559,14 +551,15 @@ class hmdbData(MetabolomicsData):
                 uniprotid = 'uniprot:' + uniprotidtag.text
                 if accessionnum not in self.geneInfoDictionary:
                     mapping = id_mapping.copy()
-                    mapping['HMDB_protein_accession'] = accessionnum
-                    mapping['UniProt'] = uniprotidtag.text
+                    mapping['HMDB_protein_accession'] = [accessionnum]
+                    mapping['UniProt'] = [uniprotid]
                     self.geneInfoDictionary[accessionnum] = mapping
                 else:
-                    if self.geneInfoDictionary[accessionnum]['UniProt'] is not 'NA':
-                        self.geneInfoDictionary[accessionnum]['UniProt'].append(uniprotidtag.text)
+                    if self.geneInfoDictionary[accessionnum]['UniProt'] is not 'NA' and\
+                     uniprotid not in self.geneInfoDictionary[accessionnum]['UniProt']:
+                        self.geneInfoDictionary[accessionnum]['UniProt'].append(uniprotid)
                     else:
-                        self.geneInfoDictionary[accessionnum]['UniProt'] = [uniprotidtag.text]
+                        self.geneInfoDictionary[accessionnum]['UniProt'] = [uniprotid]
             for pathways in protein.iter('{http://www.hmdb.ca}pathways'):
                 for pathway in pathways:
                     pathwaytag = pathway.tag.replace('{http://www.hmdb.ca}','')
