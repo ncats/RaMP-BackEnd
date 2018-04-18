@@ -12,7 +12,7 @@ This script create a RaMP database with all tables based on the schema
 '''
 class RaMP_schema():
     # define all parameters for the database.
-    password = 'Ramp340!'
+    password = 'Ehe131224'
     username = 'root'
     host = 'localhost'
     dbname = 'mathelabramp'
@@ -98,7 +98,7 @@ class RaMP_schema():
     
     class Source(Base):
         __tablename__ = 'source'
-        sourceId = Column(String(30),primary_key = True)
+        sourceId = Column(String(500),primary_key = True)
         rampId = Column(String(30),ForeignKey('analyte.rampId'))
         IDtype = Column(String(30))
         geneOrCompound = Column(String(30))
