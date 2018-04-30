@@ -84,3 +84,5 @@ catalyzed | 865832
 ontology | 160
 pathway | 51994
 source | 226897
+
+* 18/4/30 Import lipidmaps id from HMDB to RaMP. Lipidmaps ID increases from 654 to **5218**.
