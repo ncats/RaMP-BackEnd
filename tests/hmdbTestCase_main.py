@@ -1,7 +1,7 @@
 from hmdbData import hmdbData
-from writeToSQL import writeToSQL
+#from writeToSQL import writeToSQL
 from getStatistics import getStatistics
-from IDconversion import IDconversion
+#from IDconversion import IDconversion
 
 import time
 import csv
@@ -10,11 +10,12 @@ import os
 
 class TestHMDBMain(unittest.TestCase):
     def testMain(self):
-        sql = writeToSQL()
+        #sql = writeToSQL()
         hmdb = hmdbData()
         print(os.getcwd())
         # If does not have database file
         hmdb.getDatabaseFiles()
+        hmdb.getEverything(True)
         '''
         idconvert = IDconversion()
         stat = getStatistics()

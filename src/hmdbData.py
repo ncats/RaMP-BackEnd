@@ -109,7 +109,9 @@ class hmdbData(MetabolomicsData):
         #key: tissue location, value : "placeholder"
         self.tissue = dict()
         self.idDictForMetabolite = dict()
-    
+        # key: source ID e.g. HMDBID, value: dictionary that has key of sub,class,super class
+        # value as the class name
+        self.metaboliteClass = dict()
     '''
     Run all the function to get everything from hmdb source
     '''
@@ -120,6 +122,7 @@ class hmdbData(MetabolomicsData):
         self.getGenes(tree)
         self.getBiofluidCellularLocationDisease(tree)
         self.getPathwaysLinkedToGene()
+        self.getMetabolitesClasses(tree)
         if writeToFile:
             self.write_myself_files('hmdb')
         
@@ -643,6 +646,7 @@ class hmdbData(MetabolomicsData):
                 if sub_clas is not None and sub_clas.text is not None:
                     metabolites_class['sub_class'] = sub_clas.text
             
+            self.metaboliteClass['hmdb:' + hmdbid.text] = metabolites_class
             #print('metabolite {} has super class {} class {} subclass {}'\
             #      .format(hmdbid.text,super_clas.text,clas.text,sub_clas.text))
             result.loc[i,['hmdb_id','super_class','class','sub_class']] = [hmdbid.text,

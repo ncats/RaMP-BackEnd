@@ -34,7 +34,7 @@ class RaMP_schema():
         rampId = Column(String(30),primary_key = True)
         type = Column(String(30))
         sources = relationship('Source',back_populates = 'analyte')
-        
+        classification = relationship('Chemo')
         def __repr__(self):
             return 'Analyte {}: Type {}'.format(self.rampId,self.type)
     
@@ -108,7 +108,21 @@ class RaMP_schema():
             return '|SourceId {}: RampId {}: IDtype {}: geneOrCompound {}: commonName {}|'\
                 .format(self.sourceId,self.rampId,self.IDtype,self.geneOrCompound,
                         self.commonName)
-            
+    class ChemoClass(Base):
+        __tablename__ = 'ChemoClass'
+        id = Column(Integer,primary_key = True)
+        sourceId = Column(String(50),ForeignKey('source.sourceId'))
+        rampId = Column(String(30),ForeignKey('analyte.rampId'))
+        sub_class = Column(String(50))
+        chem_class = Column(String(50))
+        super_class = Column(String(50))
+        smiles = Column(String(500))
+        
+        
+        def __repr__(self):
+            return 'Metabolite {} with rampId {} has {}:{}:{}'\
+                .format(self.sourceId,self.rampId,self.sub_class,
+                        self.chem_class,self.super_class)       
             
         
 
