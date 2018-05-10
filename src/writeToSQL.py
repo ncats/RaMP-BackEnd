@@ -544,7 +544,10 @@ class writeToSQL(MetabolomicsData):
             mapping = metaboliteIDDictionary[key]
                         #there are multiple chebi for every compound so you cannot 
             #just call mapping["chebi_id"]
-            commonName = metaboliteCommonName[key]
+            try:
+                commonName = metaboliteCommonName[key]
+            except KeyError:
+                commonName = "NA"
             if commonName is None:
                 commonName = "NA"
             id_to_write = {'chebi_id':'chebi',

@@ -1,12 +1,12 @@
-from updateSQL import RampUpdater,QualityControl
+from updateSQL import RampUpdater,QualityControl,RampUpdater_hmdb
 import pickle as pk
 import time
 from hmdbData import hmdbData
-
-def getHmdbPkl():
+from updateSQL import RaMP_schema
+def getHmdbPkl(file = 'hmdbPkl.pkl'):
     hmdb = hmdbData()
     hmdb.getEverything(True)
-    hmdb_pkl = open('../misc/output/hmdbPkl.pkl','wb')
+    hmdb_pkl = open('../misc/output/' + file,'wb')
     print('Start loading files ....')
     pk.dump(hmdb,hmdb_pkl,pk.HIGHEST_PROTOCOL)
     hmdb_pkl.close()
@@ -37,5 +37,13 @@ def updatingRamp(db):
     rp2.newRampPathway = rp.newRampPathway
     rp2.newRampGene = rp.newRampGene
     rp2.writeToRamp(db)
+def updatingMetaboliteClass():
+    pkf = open('../misc/output/hmdbPkl.pkl','rb')
+    hmdb = pk.load(pkf)
+    up = RampUpdater_hmdb(hmdb)
+    db = RaMP_schema()
+    db.build_db()
+
+    up.updateMetaboliteClass()
 if __name__ == '__main__':
-    getUpdateObjectPkl()
+    updatingMetaboliteClass()

@@ -11,7 +11,6 @@ class reactomeData(MetabolomicsData):
     This class contains all dict stored and distributed from Reactome Official websites.
     
     '''
-        
     def __init__(self):
         super().__init__()
         # key: Chebi ID from reactome Value: common Name by querying Chebi Database
@@ -63,7 +62,30 @@ class reactomeData(MetabolomicsData):
         self.exoEndo = dict()
         self.tissueLocation = dict()
         self.tissue = dict()
+    
+    def getEverything(self,writeToFile = False):
+        '''
+        This function runs all functions below to fill all dictionaries
         
+        '''
+        self.getDatabaseFiles()
+        print("Getting genes...")
+        self.getGenes()
+        print("Getting metabolites...")
+        self.getMetabolites()
+        
+        print("Getting common names...")
+        self.getCommonNameForChebi()
+        
+        
+        print("Getting common names for genes ...")
+        
+        self.getGenes()
+        self.downloadCommonNameFromUniprot()
+        self.getCommonNameFromUniprot()
+        if writeToFile:
+            self.write_myself_files('reactome')  
+
     def getDatabaseFiles(self):
         
         '''This function gets the files that make up reactome and places them into the reactome folder. 
@@ -292,6 +314,7 @@ class reactomeData(MetabolomicsData):
         files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
         i = 0
+        print('Parsing UniProt files ...')
         for f in files:
             i = i + 1
             if i % 1000 == 0:
@@ -317,7 +340,7 @@ class reactomeData(MetabolomicsData):
                                         print("Raw data does not have this ID ...")
                                         print(geneid)
             except ET.ParseError:
-                print("Skip this ...")
+                print("Skip {} ...".format(f))
                 pass
              
           

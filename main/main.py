@@ -1,10 +1,8 @@
 import sys
-
+from wikipathwayRDF import WikipathwaysRDF
 from hmdbData import hmdbData
 from KeggData import KeggData
 from reactomeData import reactomeData
-from wikipathwaysData import wikipathwaysData
-from IDconversion import IDconversion
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
 import os
@@ -14,16 +12,16 @@ class Main():
 
     def runEverything(self, getDatabaseFiles = False):
         sql = writeToSQL()
-        idconvert = IDconversion()
+        
         stat = getStatistics()
         hmdb = hmdbData()
-        wikipathways = wikipathwaysData()
+        wikipathways = WikipathwaysRDF()
         reactome = reactomeData()
         kegg = KeggData()
         # works based on your computer, setup working directory
         os.chdir('C:/Users/81963/Documents/workspace/RaMP/main')
-
-        hmdb.getDatabaseFiles()
+        hmdb.getEverything(True)
+        '''
         print("Getting HMDB Metabolites...")
         tree = hmdb.getMetaboliteOtherIDs()
         print("Getting HMDB pathways and synonyms...")
@@ -35,13 +33,13 @@ class Main():
         del tree
         print("Getting HMDB pathways links to genes ...")
         hmdb.getPathwaysLinkedToGene()
-        
+        '''
         print("Getting wikipathways...")
-        wikipathways.getEverything()
-        wikipathways.getCommonNameForChebi()
         
-        
-
+        wikipathways.getEverything(True)
+        reactome.getEverything(True)
+        kegg.getEverything(True)
+        '''
         reactome.getDatabaseFiles()
         print("Getting reactome genes...")
         reactome.getGenes()
@@ -50,6 +48,8 @@ class Main():
         reactome.getCommonNameForChebi()
         reactome.downloadCommonNameFromUniprot()
         reactome.getCommonNameFromUniprot()
+        '''
+        '''
         kegg.getDatabaseFiles()
         print("Getting kegg pathways...")
         kegg.getPathways()
@@ -60,7 +60,8 @@ class Main():
         kegg.getGenes()
         kegg.getGeneInfo()
         kegg.getPathwayLinkedToGene()
-        print("Converting gene ids...")
+        '''
+        
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
         #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)

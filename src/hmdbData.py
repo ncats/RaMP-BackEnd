@@ -112,10 +112,12 @@ class hmdbData(MetabolomicsData):
         # key: source ID e.g. HMDBID, value: dictionary that has key of sub,class,super class
         # value as the class name
         self.metaboliteClass = dict()
-    '''
-    Run all the function to get everything from hmdb source
-    '''
+    
     def getEverything(self,writeToFile = False):
+        '''
+        Run all the function to get everything from hmdb source
+        - param bool writeToFile if true, write all dictionaries to misc/output/hmdb/
+        '''
         self.getDatabaseFiles()
         tree = self.getMetaboliteOtherIDs()
         self.getPathwaysandSynonyms(tree)
@@ -645,10 +647,11 @@ class hmdbData(MetabolomicsData):
                     metabolites_class['class'] = clas.text
                 if sub_clas is not None and sub_clas.text is not None:
                     metabolites_class['sub_class'] = sub_clas.text
-            
+            i = i + 1
             self.metaboliteClass['hmdb:' + hmdbid.text] = metabolites_class
             #print('metabolite {} has super class {} class {} subclass {}'\
             #      .format(hmdbid.text,super_clas.text,clas.text,sub_clas.text))
+            '''
             result.loc[i,['hmdb_id','super_class','class','sub_class']] = [hmdbid.text,
                                                                            metabolites_class['super_class'],
                                                                            metabolites_class['class'],
@@ -657,5 +660,5 @@ class hmdbData(MetabolomicsData):
         
         result.to_csv('../misc/output/metabolites_class.csv')
             
-        
+        '''
         
