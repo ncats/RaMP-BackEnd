@@ -65,6 +65,16 @@ class WikipathwaysRDF(MetabolomicsData):
         #tissue location stay empty
         self.tissue = dict()
         self.tissueLocation = dict()
+    def getEverything(self,writeToFile = False):
+        '''
+        This function pack all functions in this class together, running this function will parse all data 
+        we would like to have.
+        - param bool writeToFile if true, write all dictionary to misc/output/wikipathwayRDF/
+        '''
+        self.getDatabaseFile()
+        self.getIDMapingWithPathways()
+        if writeToFile:
+            self.write_myself_files('wikipathwayRDF')
     def getDatabaseFile(self):
         '''
         Downloaded wikipathway file from the given url
@@ -87,6 +97,7 @@ class WikipathwaysRDF(MetabolomicsData):
     def _getAllRDFTypes(self):
         '''
         Find all possible types form rdf files
+        return:
         All namespaces for the rdf files:
         ('rdfs', rdflib.term.URIRef('http://www.w3.org/2000/01/rdf-schema#'))
         ('dc', rdflib.term.URIRef('http://purl.org/dc/elements/1.1/'))
@@ -164,6 +175,15 @@ class WikipathwaysRDF(MetabolomicsData):
                 time.sleep(second)
         
     def getIDMapingWithPathways(self): 
+        '''
+        This function parse all RDF files in Human pathways from source files. Then call functions
+    
+        1) self.getPathwayInfoFromGraph(g, this_pathway)
+        2) self.getMetabolitesIDFromGraph(g,this_pathway)
+        3) self.getGenesIDFromGraph(g, this_pathway)
+        4) self.getCatalyzation(g, this_pathway) // Not implemented 
+        
+        '''
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
         self.check_path(path)
         listoffiles = os.listdir(path)
@@ -180,14 +200,13 @@ class WikipathwaysRDF(MetabolomicsData):
             print('{}/{} ID:{}'.format(i,total_files,this_pathway))
             g = Graph()
             g.parse(path + each,format = 'n3')
-            '''
+            
             # get pathway information at first
             self.getPathwayInfoFromGraph(g, this_pathway)
             # get metabolites information at second
             self.getMetabolitesIDFromGraph(g,this_pathway)
             self.getGenesIDFromGraph(g, this_pathway)
-            '''
-            self.getCatalyzation(g, this_pathway)
+            #self.getCatalyzation(g, this_pathway)
     def getGenesIDFromGraph(self,g,this_pathway):
         geneProduct = URIRef('http://vocabularies.wikipathways.org/wp#GeneProduct')
         type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -364,12 +383,13 @@ class WikipathwaysRDF(MetabolomicsData):
                                 metaboliteMapping[key].append(link_id)    
                         #print('Root {} has been linked to {}'.format(metabolites_id,link_id))
                 #print(metaboliteMapping)
-                self.pathwayWithMetabolitesDictionary[this_pathway] = list(metabolite_list)
+                self.pathwaysWithMetabolitesDictionary[this_pathway] = list(metabolite_list)
                 self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+        '''
         print('At pathway {}:{}, there are {} metabolites'\
               .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))
-        print('{} pathway has at least one metabolites'.format(len(self.pathwayWithMetabolitesDictionary)))
-        
+        print('{} pathway has at least one metabolites'.format(len(self.pathwaysWithMetabolitesDictionary)))
+        '''
     #print('Total metabolites in this version of pathways (roughly):{}'.format(len(self.metaboliteIDDictionary)))
     # helper functions 
     def getIDFromGraphLinks(self,g,subject):

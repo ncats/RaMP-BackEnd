@@ -30,7 +30,9 @@ class wikipathwaysData(MetabolomicsData):
     Due to the nature of the structure of this database (a series of xml files) it makes more sense to get all the information at one time 
     from one function call and then, as in the other classes, write everything to sqls for the RaMP database. 
     
+    Update @ 5/9/2018
     
+    This class is deprecated since we are not using GPML file to import data.
     
     '''
     
@@ -104,11 +106,12 @@ class wikipathwaysData(MetabolomicsData):
         self.idSetFromGeneProducts = dict()
         self.idSetFromProtein = dict()
         '''
-    '''
-    This functions replace some special character for the ID text
-    Also add two zeroes to HMDB ids
-    '''
+    
     def IDconversion(self,this_id):
+        '''
+        This functions replace some special character for the ID text
+        Also add two zeroes to HMDB ids
+        '''
         to_convert = {'\n':'',
                       '\t':'',
                       ' ':'',
@@ -117,11 +120,12 @@ class wikipathwaysData(MetabolomicsData):
         for key,value in to_convert.items():
             this_id = this_id.replace(key,value)
         return this_id 
-    '''
-    Prepend some prefix to avoid id mapping problem when creating ramp id
-    e.g. pure number id are overlapped but from different source 
-    '''
+    
     def prepend(self,database,id):
+        '''
+        Prepend some prefix to avoid id mapping problem when creating ramp id
+        e.g. pure number id are overlapped but from different source 
+        '''
         prefix ={
                  'pubchem_compound_id':'pubchem:',
                  'Entrez':'entrez:',
@@ -590,7 +594,7 @@ class wikipathwaysData(MetabolomicsData):
             self.pathwayWithMetabolitesDictionary[pathwayID] = listOfMetabolites
         self.getCommonNameForChebi()
      
-    ''' 
+    
     def getCommonNameForChebi(self):
         '''
         Get common name from chebi API,

@@ -482,7 +482,48 @@ class RampUpdater():
         print('Add {} entries to analytehaspathway table'.format(len(pathway_metabolite_list)))
         sess.add_all(pathway_metabolite_list)
         sess.commit()
+class RampUpdater_hmdb(RampUpdater):
+    '''
+    This subclass of RampUpdater will be used to handle some dictionary that only hmdb has
+    without interrupting other database parsing process.
+    '''
+    def __init__(self,dbSource):
+        RampUpdater.__init__(self, dbSource)
+        self.metaboliteClass = dbSource.metaboliteClass
+    def updateMetaboliteClass(self):
+        db = RaMP_schema()
+        classtb = db.ChemoClass
+        sess = db.session
+        last_item_classtb = sess.query(classtb).order_by(desc(classtb.id)).first()
+        if last_item_classtb is None:
+            id = 1
+        else:
+            id = last_item_classtb.id
+        sourcetb = db.Source
+        for key in self.metaboliteIDDictionary:
+            metabolite = sess.query(sourcetb).filter(sourcetb.sourceId == key).all()
+            in_classtb = sess.query(classtb).filter(classtb.sourceId == key ).all()
+            if len(metabolite) > 0 and len(in_classtb) == 0:
+                metaboliteClass = self.metaboliteClass[key]
+                super_class = metaboliteClass['super_class']
+                sub_class = metaboliteClass['sub_class']
+                chem_class = metaboliteClass['class']
+                id = id + 1
+                rampid = [i.rampId for i in metabolite][0]
+                smiles = self.metaboliteIDDictionary[key]['smiles']
+                new_entry = db.ChemoClass(id = id,sourceId = key,
+                                          rampId = rampid,super_class = super_class,
+                                          sub_class =sub_class,
+                                          chem_class = chem_class,
+                                          smiles = smiles)
+                sess.add(new_entry)
+                sess.commit()
+                   
 class QualityControl():
+    '''
+    This class print each item inside tables, which gives an overview if this update make sense
+    or with some apparent bugs.
+    '''
     def __init__(self):
         self.analytesIDtype = [
             'CAS',
@@ -506,6 +547,27 @@ class QualityControl():
         self.analytesType = [
             'gene',
             'compound']
+    def checkSourcePrepended(self):
+        '''
+        This function will check the source table to find all source ID without prepended database name
+        Then this function will prepend database name to those IDs.
+        '''
+        sche = RaMP_schema()
+        sess = sche.session
+        Source = sche.Source
+        prepended_ids = sess.query(Source).filter(~Source.sourceId.like('%:%'))
+        len(prepended_ids.all()
+        for each in prepended_ids.all():
+            print('Updating {} ...'.format(each))
+            if ' ' not in each.sourceId:
+                if each.IDtype == 'enzymeNomenclature':
+                    each.sourceId = 'EN' + ':'+each.sourceId
+                else:
+                    each.sourceId = each.IDtype + ':'+each.sourceId.replace(' ','')
+            else:
+                sess.delete(each)
+                
+        sess.commit()
     def checkAllColumns(self):
         '''
         This function checks couple columns to see if there are unexpected bugs due to update

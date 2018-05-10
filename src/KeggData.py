@@ -85,7 +85,25 @@ class KeggData(MetabolomicsData):
         self.tissueLocation = dict()
         self.tissue = dict()
     
-    
+    def getEverything(self,writeToFile = False):
+        '''
+        Run all functions to fill all of dictionaries
+        - param bool writeToFile write to misc/output/kegg/ if true
+        '''
+        self.getDatabaseFiles()
+        
+        
+        self.getPathways()
+        self.getPathways_with_genes()
+        
+        self.getMetabolites()
+        
+        self.getSynonymsAndCHEBI()
+        self.getGenes()
+        self.getGeneInfo()
+        self.getPathwayLinkedToGene()
+        if writeToFile:
+            self.write_myself_files(database='kegg')  
             
     def getDatabaseFiles(self):
         
