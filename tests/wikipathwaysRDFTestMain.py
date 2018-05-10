@@ -7,6 +7,8 @@ class TestWikipathwaysMain(unittest.TestCase):
     def testMain(self):
         wp = WikipathwaysRDF()
         sql = writeToSQL()
+        wp.getEverything(True)
+        '''
         wp.getDatabaseFile()
         #wp.displayRDFfile(3)
         wp.getIDMapingWithPathways()
@@ -41,7 +43,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         rp2.newRampPathway = rp.newRampPathway
         rp2.newRampGene = rp.newRampGene
         rp2.writeToRamp('wiki')
-        
+        '''
 
 if __name__ == '__main__':
     unittest.main()

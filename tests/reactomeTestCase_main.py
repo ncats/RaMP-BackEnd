@@ -13,7 +13,7 @@ class TestReactomeMain(unittest.TestCase):
         
         sql = writeToSQL()
         reactome = reactomeData()
-        
+        reactome.getEverything(True)
         reactome.getDatabaseFiles()
         print("Getting genes...")
         reactome.getGenes()
