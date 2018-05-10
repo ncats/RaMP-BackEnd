@@ -21,47 +21,12 @@ class Main():
         # works based on your computer, setup working directory
         os.chdir('C:/Users/81963/Documents/workspace/RaMP/main')
         hmdb.getEverything(True)
-        '''
-        print("Getting HMDB Metabolites...")
-        tree = hmdb.getMetaboliteOtherIDs()
-        print("Getting HMDB pathways and synonyms...")
-        hmdb.getPathwaysandSynonyms(tree)
-        print("Getting HMDB genes...")
-        hmdb.getGenes(tree)
-        print("Getting HMDB biofluid and cellular locations...")
-        hmdb.getBiofluidCellularLocationDisease(tree)
-        del tree
-        print("Getting HMDB pathways links to genes ...")
-        hmdb.getPathwaysLinkedToGene()
-        '''
         print("Getting wikipathways...")
         
         wikipathways.getEverything(True)
         reactome.getEverything(True)
         kegg.getEverything(True)
-        '''
-        reactome.getDatabaseFiles()
-        print("Getting reactome genes...")
-        reactome.getGenes()
-        print("Getting reactome metabolites...")
-        reactome.getMetabolites()
-        reactome.getCommonNameForChebi()
-        reactome.downloadCommonNameFromUniprot()
-        reactome.getCommonNameFromUniprot()
-        '''
-        '''
-        kegg.getDatabaseFiles()
-        print("Getting kegg pathways...")
-        kegg.getPathways()
-        kegg.getPathways_with_genes()
-        print("Getting kegg genes and metabolites...")
-        kegg.getMetabolites()
-        kegg.getSynonymsAndCHEBI()
-        kegg.getGenes()
-        kegg.getGeneInfo()
-        kegg.getPathwayLinkedToGene()
-        '''
-        
+
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
         #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)
