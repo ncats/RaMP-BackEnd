@@ -84,8 +84,9 @@ class reactomeData(MetabolomicsData):
         self.downloadCommonNameFromUniprot()
         self.getCommonNameFromUniprot()
         if writeToFile:
-            self.write_myself_files('reactome')  
+            self.write_myself_files('reactome')
 
+        print("Done with ReactomeT ...")
     def getDatabaseFiles(self):
         
         '''This function gets the files that make up reactome and places them into the reactome folder. 
@@ -97,7 +98,7 @@ class reactomeData(MetabolomicsData):
         url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
                                                               "../misc/data/reactome/",
                                                               "ChEBI2Reactome_All_Levels.txt")
-        
+        existed = os.listdir(dir_proteins)
         if self.check_path(dir_proteins) :  
             
             if file_metabolites not in existed or file_proteins not in existed:                                                
@@ -260,7 +261,7 @@ class reactomeData(MetabolomicsData):
             }
         for key in self.geneInfoDictionary:
             reactGeneIds.append(key)
-        print("Total " + str(len(reactGeneIds)) +" without a common name")
+        #print("Total " + str(len(reactGeneIds)) +" without a common name")
         uniprot_commonName = dict()
         for key in otherdatabase:
             geneInfo = otherdatabase[key]
@@ -273,7 +274,7 @@ class reactomeData(MetabolomicsData):
                         for id in uniprot:
                             if commonName != "NA":
                                 uniprot_commonName[id] = commonName
-            print("Found Uniprot in " + key +": "+ str(len(uniprot_commonName)))
+            #print("Found Uniprot in " + key +": "+ str(len(uniprot_commonName)))
         for id in reactGeneIds:
             if id in uniprot_commonName:
                 name = uniprot_commonName[id]
@@ -282,7 +283,7 @@ class reactomeData(MetabolomicsData):
                 self.geneInfoDictionary[id] = mapping
                 reactGeneIds.remove(id)
         
-        print("Unfound genes for name are " + str(len(reactGeneIds))) 
+        #print("Unfound genes for name are " + str(len(reactGeneIds)))
         
         Ids = reactGeneIds
         url ="http://www.uniprot.org/uniprot/"
@@ -296,12 +297,12 @@ class reactomeData(MetabolomicsData):
         for id in Ids:
            
             if id + ".xml" not in files:
-                print("Downloading ..." + id)
+                #print("Downloading ..." + id)
                 query.append(url + id +".xml")
                 file_dir.append(dir)
                 files_name.append(id+".xml")
                 #self.download_files(query, dir + id + ".xml")
-                print( str(num) +"/" +str(len(Ids)))
+                #print( str(num) +"/" +str(len(Ids)))
                 num = num + 1
         with Pool(50) as p:
             p.starmap(self.download_files,
@@ -314,11 +315,11 @@ class reactomeData(MetabolomicsData):
         files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
         i = 0
-        print('Parsing UniProt files ...')
+        #print('Parsing UniProt files ...')
         for f in files:
             i = i + 1
-            if i % 1000 == 0:
-                print('Processing {} files'.format(i))
+            #if i % 1000 == 0:
+                #print('Processing {} files'.format(i))
             try:
                 tree = ET.parse(path + f)
                 geneid = f.replace(".xml","")

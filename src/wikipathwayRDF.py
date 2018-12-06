@@ -1,7 +1,8 @@
+import sys
+sys.path.append('/Users/pati13/Downloads/')
 import urllib.request as RE
 import time
 import os
-import sys
 from MetabolomicsData import MetabolomicsData
 import zipfile
 from rdflib import URIRef,Graph
@@ -82,17 +83,17 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20180310-rdf-wp.zip'
+        filename = 'wikipathways-20181010-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
         if filename not in existed:
-            print(path + filename)
+            #print(path + filename)
             self.download_files(url+filename, path + filename)
             with zipfile.ZipFile(path+filename,'r') as zip_ref:
                 zip_ref.extractall(path)
         else:
-            print('Already download ...')
+            print('Already downloaded Wiki ...')
     
     def _getAllRDFTypes(self):
         '''
@@ -119,14 +120,14 @@ class WikipathwaysRDF(MetabolomicsData):
         rdftype = set()
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
         listoffiles = os.listdir(path)
-        print(listoffiles)
+        #print(listoffiles)
         listoffiles.sort()
-        print('Total {} pathways in Human'.format(len(listoffiles)))
+        #print('Total {} pathways in Human'.format(len(listoffiles)))
         for each in listoffiles:
-            print(each)
+            #print(each)
             g = Graph()
             g.parse(path+each,format = 'n3')
-            print('length of graph: {}'.format(len(g)))
+            #print('length of graph: {}'.format(len(g)))
             for s,p,o in g.triples((None, RDF.type,None)):
                 #print('---------------------------')
                 #print('Subject: {} \nPredicate: {}\nObject: {}'.format(s,p,o))
@@ -138,7 +139,7 @@ class WikipathwaysRDF(MetabolomicsData):
                     rdftype.add(obj)
                 #time.sleep(1)
         
-        print(rdftype)
+        #print(rdftype)
         return(rdftype)
     '''
     All possible types 
@@ -160,11 +161,11 @@ class WikipathwaysRDF(MetabolomicsData):
     def displayRDFfile(self,second = 3):
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
         listoffiles = os.listdir(path)
-        print('Total {} pathways in Human'.format(len(listoffiles)))
+        #print('Total {} pathways in Human'.format(len(listoffiles)))
         
         for each in listoffiles:
             this_pathway = each.replace('.ttl','')
-            print('pathway id is {}'.format(this_pathway))
+            #print('pathway id is {}'.format(this_pathway))
             g = Graph()
             g.parse(path + each,format = 'n3')
             for s,p,o in g.triples((None,None,None)):
@@ -187,7 +188,7 @@ class WikipathwaysRDF(MetabolomicsData):
         path = '../misc/data/wikipathwaysRDF/wp/Human/'
         self.check_path(path)
         listoffiles = os.listdir(path)
-        print('Total {} pathways in Human'.format(len(listoffiles)))
+        #print('Total {} pathways in Human'.format(len(listoffiles)))
         
         
         total_files = len(listoffiles)
@@ -197,7 +198,7 @@ class WikipathwaysRDF(MetabolomicsData):
             
             # get pathways id
             this_pathway = each.replace('.ttl','')
-            print('{}/{} ID:{}'.format(i,total_files,this_pathway))
+            #print('{}/{} ID:{}'.format(i,total_files,this_pathway))
             g = Graph()
             g.parse(path + each,format = 'n3')
             
@@ -246,6 +247,9 @@ class WikipathwaysRDF(MetabolomicsData):
                          "Enzyme Nomenclature": "NA",
                          'WikiData':'NA'}
             genesource = gene.split('/')[-2]
+            if genesource not in possible_source:
+                continue
+            #print("gene source :", genesource)
             geneid = gene.split('/')[-1]
             geneid = self.prependID(genesource, geneid)
             if genesource not in not_retrieved:
@@ -309,8 +313,8 @@ class WikipathwaysRDF(MetabolomicsData):
                                 geneMapping[key].append(link_id)
                 self.geneInfoDictionary[geneid] = geneMapping
         self.pathwaysWithGenesDictionary[this_pathway] = list(genelist)
-        print('At pathway {}, total {} genes, {} pathways with genes'\
-              .format(this_pathway,len(self.geneInfoDictionary),len(self.pathwaysWithGenesDictionary)))
+        #print('At pathway {}, total {} genes, {} pathways with genes'\
+         #     .format(this_pathway,len(self.geneInfoDictionary),len(self.pathwaysWithGenesDictionary)))
         
     def getMetabolitesIDFromGraph(self,g,this_pathway):
         type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -390,7 +394,7 @@ class WikipathwaysRDF(MetabolomicsData):
               .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))
         print('{} pathway has at least one metabolites'.format(len(self.pathwaysWithMetabolitesDictionary)))
         '''
-    #print('Total metabolites in this version of pathways (roughly):{}'.format(len(self.metaboliteIDDictionary)))
+        #print('WIKI  Total metabolites in this version of pathways (roughly):{}'.format(len(self.metaboliteIDDictionary)))
     # helper functions 
     def getIDFromGraphLinks(self,g,subject):
         '''
