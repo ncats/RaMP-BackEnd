@@ -229,7 +229,7 @@ class writeToSQL(MetabolomicsData):
                 # assume the entry will only overlap with another entry
                 overlap_id = list(overlap)[0]
                 ramp_id = self.rampCompoundIDdictionary[overlap_id]
-                # add to set of inwhich database dictionary
+                # add to set of in which database dictionary
                 if ramp_id not in self.rampCompoundIdInWhichDatabases:
                     setOfDatabases = set()
                     setOfDatabases.add(database)
@@ -371,6 +371,7 @@ class writeToSQL(MetabolomicsData):
               exoEndo,
               tissueLocation,
               tissue,
+              inchi,
               database, 
               rampPathwayIDnumber = 0,
               rampOntologyLocationIDnumber = 0):
@@ -489,6 +490,7 @@ class writeToSQL(MetabolomicsData):
         analyteHasOntologyLocationOutFile = open("../misc/sql/" + str(database) + "analyteHasOntologyLocation.sql", "wb")
         pathwayOntologyOutFile = open("../misc/sql/" + str(database) + "PathwayOntology.sql", "wb")
         endoExoOutFile = open("../misc/sql/" + str(database) + "EndoExo.sql", "wb")
+        inchiFile = open("../misc/sql/" + str(database) + "inchi.sql", 'wb')
         
         #METABOLITE
         #analyte
@@ -504,6 +506,21 @@ class writeToSQL(MetabolomicsData):
                                 analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
                                                                                              +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
                                                                                              + str(database).encode('utf-8') + b"\n") 
+                        except KeyError:
+                            print(str(KeyError) + " When writing analytehaspathways ...")
+                            print(key)
+
+        print("inchhi bro")
+        for key in metabolitesWithPathwaysDictionary:
+                value = metabolitesWithPathwaysDictionary[key]
+                for listItem in value:
+                    #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
+                    if key is not "":
+                        try:
+                            if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
+                                inchiFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
+                                                                                             +  str(inchi[key]).encode('utf-8') + b"\t"
+                                                                                             + str(database).encode('utf-8') + b"\n")
                         except KeyError:
                             print(str(KeyError) + " When writing analytehaspathways ...")
                             print(key)

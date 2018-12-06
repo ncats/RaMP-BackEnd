@@ -69,7 +69,7 @@ class hmdbData(MetabolomicsData):
         
         #key: metabolite id, value: mapping of other ids
         self.metaboliteIDDictionary = dict()
-        
+        self.metaInchi = dict()
         # key: pathway SMP id, value: list of gene HMDBP id
         self.pathwaysWithGenesDictionary = dict()      
         # key: pathway id, value: list of metabolites id with this pathways.
@@ -80,7 +80,7 @@ class hmdbData(MetabolomicsData):
         #only not empty when a catalyzed class exists 
         #key: matabole, value: list of genes
         self.metabolitesLinkedToGenes = dict()
-        
+        #self.inchiDict = dict()
         ###################################################################
         
         #stays empty for this class
@@ -120,8 +120,11 @@ class hmdbData(MetabolomicsData):
         '''
         self.getDatabaseFiles()
         tree = self.getMetaboliteOtherIDs()
+        #self.getInchi(tree)
         self.getPathwaysandSynonyms(tree)
+
         self.getGenes(tree)
+
         self.getBiofluidCellularLocationDisease(tree)
         self.getPathwaysLinkedToGene()
         self.getMetabolitesClasses(tree)
@@ -225,7 +228,7 @@ class hmdbData(MetabolomicsData):
                 
                 commonName = metabolite.find('{http://www.hmdb.ca}name').text
                 
-                #print(metabohmdbid)
+
                 #find other ids for metabolite
                 # prefix is the id we collect and would like to store it in RamP 
                 prefix = {'chemsipder_id':'chemsipder:',
@@ -279,6 +282,8 @@ class hmdbData(MetabolomicsData):
             
         
         '''
+        countGlobal=0
+        countMicrobe=0
         if tree is None:
             tree = ET.parse('../misc/data/hmdb/'+dir)
         root = tree.getroot()
@@ -286,23 +291,86 @@ class hmdbData(MetabolomicsData):
         #we will need to iterate through the xml tree to find the information we are looking for
         print('####### Get pathway #######')
         smpdb2 = self.getSMPDB_Category()
+        #print(smpdb2)
+        hmdbinchiKeyFile = open("../misc/sql/" + "hmdbinchiKeyFile.sql", 'wb')
         for metabolite in root:
-          
+            countGlobal+=1
+            #print(type(metabolite))
+            #print('Metaboliteed', metabolite)
             #XML trees sometimes have namespace prefixes on the nodes. They need to be removed for parsing.
             #That's the point of the find and replace. We are removing the namespace string "{http://www.hmdb.ca}"
-            
+            #print(metabohmdbid)
             metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
             # Check if this metabolite has pathway
             haspathway = False
-            
+            #print('metatag', metabolite)
             #find the accession number (metabolite id)
+
             if metabolitetag == "metabolite":
                 accessiontag = metabolite.find('{http://www.hmdb.ca}accession')
                 pathways = metabolite.find('{http://www.hmdb.ca}pathways')
                 synonyms = metabolite.find('{http://www.hmdb.ca}synonyms')
+                biological_properties = metabolite.find('{http://www.hmdb.ca}biological_properties')
+                inchikey = metabolite.find('{http://www.hmdb.ca}inchikey')
+                inchi = metabolite.find('{http://www.hmdb.ca}inchi')
+                smiles = metabolite.find('{http://www.hmdb.ca}smiles')
+               #print(accessiontag.text, "\t", inchikey.text, "\t" ,inchi.text, "\t", smiles.text)
+                #self.inchiDict[metabohmdbid].append(inchi)
+                hmdbinchiKeyFile.write(str(accessiontag.text).encode('utf-8') + b"\t"
+                                               + str(inchikey.text).encode('utf-8') + b"\t"
+                                               + str(inchi.text).encode('utf-8') + b"\t"
+                                               + str(smiles.text).encode('utf-8') + b"\n")
+                #self.metaInchi[accessiontag] = inchi.text
+                #experiment
+                #if accessiontag.text == "HMDB0000058":
+                 #   biological_properties = metabolite.find('{http://www.hmdb.ca}biological_properties')
+                  #  pathwayd = biological_properties.find('{http://www.hmdb.ca}pathways')
+                   # #smpdb_id = pathwayd.find('{http://www.hmdb.ca}smpdb_id')
+                    #print("pathway test  for:",accessiontag.text,"is", pathwayd)
+
+                #secondary_accessions = metabolite.find('{http://www.hmdb.ca}secondary_accessions')
+                #accession = secondary_accessions.find('{http://www.hmdb.ca}accession')
+                #print("indirect sa", accession.text)
+                '''
+                ontology = metabolite.find('{http://www.hmdb.ca}ontology')
+                    if ontology is not None:
+                        root = ontology.findall('{http://www.hmdb.ca}root')
+                        if root is not None:
+                            for rootx in root:
+                                descendants1 = rootx.findall('{http://www.hmdb.ca}descendants')
+                                if descendants1 is not None:
+                                    for Dxs1 in descendants1:
+                                        descendant1 = Dxs1.findall('{http://www.hmdb.ca}descendant')
+                                        if descendant1 is not None:
+                                            for Dx1 in descendant1:
+                                                descendants2 = Dx1.findall('{http://www.hmdb.ca}descendants')
+                                                if descendants2 is not None:
+                                                    for Dxs2 in descendants2:
+                                                        descendant2 = Dxs2.findall('{http://www.hmdb.ca}descendant')
+                                                        if descendant2 is not None:
+                                                            for Dx2 in descendant2:
+                                                                descendants3 = Dx2.findall('{http://www.hmdb.ca}descendants')
+                                                                if descendants3 is not None:
+                                                                    for Dxs3 in descendants3:
+                                                                        descendant3 = Dxs3.findall('{http://www.hmdb.ca}descendant')
+                                                                        if descendant3 is not None:
+                                                                            for Dx3 in descendant3:
+                                                                                term = Dx3.findall('{http://www.hmdb.ca}term')
+                                                                                if term is not None:
+                                                                                    for termx in term:
+                                                                                        if termx.text == "Microbe":
+                                                                                            print(accessiontag.text)
+
+
+                '''
+
+                #end of experiment
+
+
                 # Find accession number
                 if accessiontag is not None and accessiontag.text is not None:
                     metabohmdbid = 'hmdb:' + accessiontag.text
+                    self.metaInchi[metabohmdbid] = inchi.text
                     if metabohmdbid not in self.metabolitesWithSynonymsDictionary:
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] =[]
                     if metabohmdbid not in self.metabolitesWithPathwaysDictionary:
@@ -312,6 +380,7 @@ class hmdbData(MetabolomicsData):
                 if metabohmdbid is 'NA':
                     raise ValueError('Metabolite ID cannot be None Type')
                 # find pathways
+                #print('Pathwaycsd', pathways)
                 if pathways is not None:
                     listOfPathways = []
                     for pathway in pathways:
@@ -319,6 +388,7 @@ class hmdbData(MetabolomicsData):
                         # kegg id is not collected
                         pathwayNametag = pathway.find('{http://www.hmdb.ca}name')
                         smpidtag = pathway.find('{http://www.hmdb.ca}smpdb_id')
+                        #print('++++++++SMPD', smpidtag)
                         if pathwayNametag is not None and smpidtag is not None:
                             smpid = smpidtag.text
                             pathwayName = pathwayNametag.text
@@ -328,24 +398,78 @@ class hmdbData(MetabolomicsData):
                                 # add pathways to metabolites With pathway dictionary
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
+
+                elif biological_properties is not None:
+                    pathways = biological_properties.find('{http://www.hmdb.ca}pathways')
+                    #print("for biological_properties pathways", accessiontag.text)
+                    listOfPathways = []
+                    for pathway in pathways:
+                        # Find pathway name and smp id
+                        # kegg id is not collected
+                        pathwayNametag = pathway.find('{http://www.hmdb.ca}name')
+                        smpidtag = pathway.find('{http://www.hmdb.ca}smpdb_id')
+                        # print('++++++++SMPD', smpidtag)
+                        if pathwayNametag is not None and smpidtag is not None:
+                            smpid = smpidtag.text
+                            pathwayName = pathwayNametag.text
+                            if smpid is not None and pathwayName is not None and smpid not in self.pathwayDictionary:
+                                self.pathwayDictionary[smpid] = pathwayName
+                                self.pathwayCategory[smpid] = 'NA'
+                                # add pathways to metabolites With pathway dictionary
+                                if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
+                                    self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
+
+
                 else:
+                    #print("Pathway None..", accessiontag.text)
                     raise ValueError('Each metabolites tag has a pathways children')
                 # find synonyms 
                 if synonyms is not None:
                     for synonym in synonyms:
                         if synonym is not None and synonym.text is not None:
                             self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
+        print("count global: ",countGlobal, " count micro ",countMicrobe)
         for key in self.pathwayCategory:
             if key in smpdb2:
                 self.pathwayCategory[key] = 'smpdb2'
             else:
                 self.pathwayCategory[key] = 'smpdb3'
-        
+        hmdbinchiKeyFile.close()
         print('{} items in pathwayDictionary.'.format(len(self.pathwayDictionary)))
         print('{} items in metabolitesWithSynonyms dictionary'.format(len(self.metabolitesWithSynonymsDictionary)))
-        return tree                     
-                           
-             
+        return tree
+
+    # def getInc(self, tree=None, dir='hmdb_metabolites.xml'):
+    #     if tree is None:
+    #         tree = ET.parse('../misc/data/hmdb/' + dir)
+    #     root = tree.getroot()
+    #
+    #     print('####### Get inch #######')
+    #
+    #     for metabolite in root:
+    #
+    #         # print(type(metabolite))
+    #         # print('Metaboliteed', metabolite)
+    #         # XML trees sometimes have namespace prefixes on the nodes. They need to be removed for parsing.
+    #         # That's the point of the find and replace. We are removing the namespace string "{http://www.hmdb.ca}"
+    #         # print(metabohmdbid)
+    #         metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
+    #         # Check if this metabolite has pathway
+    #         haspathway = False
+    #         # print('metatag', metabolite)
+    #         # find the accession number (metabolite id)
+    #         if metabolitetag == "metabolite":
+    #             accessiontag = metabolite.find('{http://www.hmdb.ca}accession')
+    #             pathways = metabolite.find('{http://www.hmdb.ca}pathways')
+    #             synonyms = metabolite.find('{http://www.hmdb.ca}synonyms')
+    #             biological_properties = metabolite.find('{http://www.hmdb.ca}biological_properties')
+    #             inchikey = metabolite.find('{http://www.hmdb.ca}inchikey')
+    #             print('inchi: for ',accessiontag.text, inchikey)
+
+
+
+
+
     def getGenes(self,tree = None,dir = 'hmdb_metabolites.xml'):
         '''
         This function finds genes linked to metabolites and places them in:
@@ -431,8 +555,8 @@ class hmdbData(MetabolomicsData):
             self.metabolitesLinkedToGenes[metabohmdbid] = listofgenes  
         print("Length of geneInfoDict is {}".format(str(len(self.geneInfoDictionary))))
         print('Length of metabolite-gene is {}'.format(len(self.metabolitesLinkedToGenes)))
-                            
-              
+
+
     def getBiofluidCellularLocationDisease(self,tree = None,dir = 'hmdb_metabolites.xml'):
         
         '''This function finds biofluid and cellular location infromation for every metabolite and places them in:
@@ -635,8 +759,8 @@ class hmdbData(MetabolomicsData):
             metabolites_class = {'super_class':'NA',
                                  'class':'NA',
                                  'sub_class':'NA'}
-            if i % 1000 == 0:
-                print('{} metabolites parsed'.format(i))
+            #if i % 1000 == 0:
+            #    print('{} metabolites parsed'.format(i))
             if taxonomy is not None:
                 super_clas = taxonomy.find(prefix+'super_class')
                 clas = taxonomy.find(prefix+'class')
