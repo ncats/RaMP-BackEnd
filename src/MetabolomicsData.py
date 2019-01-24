@@ -43,16 +43,16 @@ class MetabolomicsData():
 			try:
 				urllib.request.urlretrieve(url,dir)
 			except URLError as e:
-				print("Invalid URL: " + e.reason)
+				print("Invalid URL: " +url)#+ e.reason)
 			except HTTPError as e:
-				print("HTTP ERROR:" + e.code)
+				print("HTTP ERROR:" +url)#+ e.code)
 			except ConnectionResetError:
 				print('Query database so frequently maybe?')
 				pass
 		
 		elif isinstance(file,str):
 			if file not in os.listdir(dir):
-				print("{}. Downloading {} ".format(str(len(os.listdir(dir))),file))
+				#print("{}. Downloading {} ".format(str(len(os.listdir(dir))),file))
 				try:
 					urllib.request.urlretrieve(url,dir+file)
 				except URLError as e:

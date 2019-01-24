@@ -40,8 +40,8 @@ class keggReactions(KeggData):
             urls.append(url+key)
             paths.append(path)
             files.append('map'+key+'rn.txt')
-        print('{} urls, {} in the paths, {} files to download'
-              .format(len(urls),len(paths),len(files)))
+        #print('{} urls, {} in the paths, {} files to download'
+        #      .format(len(urls),len(paths),len(files)))
         with Pool(speed_up) as p:
             p.starmap(self.download_files,zip(urls,paths,files))
         
@@ -109,12 +109,12 @@ class keggReactions(KeggData):
                 reaction = {'substrates':[],
                             'products':[]}
                 rnid = react.replace('.txt','')
-                print('Reaction {}'.format(rnid))
+                #print('Reaction {}'.format(rnid))
                 for line in f:
                     # get rid of new line character
                     line = line.rstrip('\n')
                     if 'NAME' in line:
-                        print(line)
+                        #print(line)
                         time.sleep(1)
                     elif 'EQUATION' in line:
                         # split to substrates and products
@@ -124,7 +124,7 @@ class keggReactions(KeggData):
                         reaction['substrates'] = substrates
                         reaction['products'] = products
                         
-                        print("{} = {}".format(substrates,products))
+                        #print("{} = {}".format(substrates,products))
                         
                         time.sleep(1)
         

@@ -25,11 +25,11 @@ class Main():
 
         #kegg.getEverything(False)
         #print("KEGG Wonder")
-        #hmdb.getEverything(True)
+        hmdb.getEverything(True)
         print("Getting wikipathways...")
         wikipathways.getEverything(True)
         print("Getting reactome...")
-        #reactome.getEverything(True)
+        reactome.getEverything(True)
         print("Getting kegg...")
 
 
@@ -214,10 +214,10 @@ class Main():
                  wikipathways.exoEndoDictionary,
                  "wiki")
         print("fine till hwer")
-        #stat.Apoptosis(sql.rampGeneIDdictionary,
-        #                wikipathways.pathwaysWithGenesDictionary,
-        #                kegg.pathwaysWithGenesDictionary,
-        #                reactome.pathwaysWithGenesDictionary)
+        stat.Apoptosis(sql.rampGeneIDdictionary,
+                        wikipathways.pathwaysWithGenesDictionary,
+                        kegg.pathwaysWithGenesDictionary,
+                        reactome.pathwaysWithGenesDictionary)
 
         
         

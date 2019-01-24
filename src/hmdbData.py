@@ -194,7 +194,7 @@ class hmdbData(MetabolomicsData):
                 ##here are some of the things we will be looking for in the xml tree
                 mapping = {
                            "smiles":'NA',
-                            "chebi_id": "NA", 
+                           "chebi_id": "NA",
                            "drugbank_id": "NA", 
                            "drugbank_metabolite_id": "NA", 
                            "phenol_explorer_compound_id": "NA", 
@@ -293,6 +293,7 @@ class hmdbData(MetabolomicsData):
         smpdb2 = self.getSMPDB_Category()
         #print(smpdb2)
         hmdbinchiKeyFile = open("../misc/sql/" + "hmdbinchiKeyFile.sql", 'wb')
+        lipidCount = 0
         for metabolite in root:
             countGlobal+=1
             #print(type(metabolite))
@@ -332,6 +333,9 @@ class hmdbData(MetabolomicsData):
                 #accession = secondary_accessions.find('{http://www.hmdb.ca}accession')
                 #print("indirect sa", accession.text)
                 '''
+                
+                #Ontology scanning in finding Microbe metabolites 
+                
                 ontology = metabolite.find('{http://www.hmdb.ca}ontology')
                     if ontology is not None:
                         root = ontology.findall('{http://www.hmdb.ca}root')
@@ -363,6 +367,15 @@ class hmdbData(MetabolomicsData):
 
 
                 '''
+
+                tax = metabolite.find('{http://www.hmdb.ca}taxonomy')
+                if tax is not None:
+                    superClass = tax.find('{http://www.hmdb.ca}super_class')
+                    if superClass is not None:
+                        if superClass.text == "Lipids and lipid-like molecules":
+                            lipidCount = lipidCount+1
+                        #else:
+                        #    print("no true*********")
 
                 #end of experiment
 
@@ -399,6 +412,8 @@ class hmdbData(MetabolomicsData):
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
 
+#new HMDB taxonomy for pathways - edit: Manju
+
                 elif biological_properties is not None:
                     pathways = biological_properties.find('{http://www.hmdb.ca}pathways')
                     #print("for biological_properties pathways", accessiontag.text)
@@ -429,6 +444,7 @@ class hmdbData(MetabolomicsData):
                         if synonym is not None and synonym.text is not None:
                             self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
         print("count global: ",countGlobal, " count micro ",countMicrobe)
+        print("lipid super class", lipidCount)
         for key in self.pathwayCategory:
             if key in smpdb2:
                 self.pathwayCategory[key] = 'smpdb2'
