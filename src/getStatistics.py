@@ -77,7 +77,7 @@ class getStatistics():
             rampIDtoanalyteIdDictionary = {}
             num = 0
             for rampID in rampIdInWhichDatabases:
-                print("processing analyte number: " + str(num) + "/" + str(len(rampIdInWhichDatabases)))
+                #print("processing analyte number: " + str(num) + "/" + str(len(rampIdInWhichDatabases)))
                 num = num + 1
                 analyteList = []
                 for analyteID in rampIdDictionary:
@@ -520,7 +520,7 @@ class getStatistics():
         
                 wikiGenes = pathwaysWithGenesDictionaryWiki["WP254"]
                 reactomeGenes = pathwaysWithGenesDictionaryReactome["R-HSA-109581"]
-                keggGenes = pathwaysWithGenesDictionaryKegg["04210"]
+                #keggGenes = pathwaysWithGenesDictionaryKegg["04210"]
                 
                 wikiGenesRamp = set()
                 reactomeGenesRamp = set()
@@ -534,24 +534,24 @@ class getStatistics():
                     rampID = rampIdDictionary[item]
                     reactomeGenesRamp.add(rampID)
                 
-                for item in keggGenes:
-                    rampID = rampIdDictionary[item]
-                    keggGenesRamp.add(rampID)
+                #for item in keggGenes:
+                #    rampID = rampIdDictionary[item]
+                #    keggGenesRamp.add(rampID)
                 
                 
                 
                 w=len(wikiGenesRamp)
                 r=len(reactomeGenesRamp)
-                k=len(keggGenesRamp)
+                #k=len(keggGenesRamp)
                 wr=len(wikiGenesRamp.intersection(reactomeGenesRamp))
-                rk=len(reactomeGenesRamp.intersection(keggGenesRamp))
-                kw=len(keggGenesRamp.intersection(wikiGenesRamp))
-                rwk=len(keggGenesRamp.intersection(wikiGenesRamp).intersection(reactomeGenesRamp))
+                #rk=len(reactomeGenesRamp.intersection(keggGenesRamp))
+                #kw=len(keggGenesRamp.intersection(wikiGenesRamp))
+                #rwk=len(keggGenesRamp.intersection(wikiGenesRamp).intersection(reactomeGenesRamp))
                 
 
                 bash = ""
-        
-                for each in [w, r, k, wr, rk, kw, rwk]:
+                for each in [w, r, 0, wr, 0, 0, 0]:
+                #for each in [w, r, k, wr, rk, kw, rwk]:
                     bash = str(bash) + str(each) + " " 
             
                 print(bash)

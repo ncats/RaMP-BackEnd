@@ -365,96 +365,96 @@ class wikipathwaysData(MetabolomicsData):
                       len(self.metabolitesWithPathwaysDictionary)))
         print('Common name for metabolites: {}'.format(len(self.metaboliteCommonName)))
         
-                            if Attributetype == "Protein" or Attributetype == 'GeneProduct':
-                                geneMapping = {"kegg": "NA",
-                                             "common_name": "NA",
-                                             "Ensembl": "NA", 
-                                             "HGNC": "NA", 
-                                             "HPRD": "NA", 
-                                             "NCBI-GeneID": "NA", 
-                                             "NCBI-ProteinID": "NA", 
-                                             "OMIM": "NA", 
-                                             "UniProt": "NA", 
-                                             "Vega": "NA", 
-                                             "miRBase": "NA", 
-                                             "HMDB_protein_accession": "NA",
-                                             "Entrez" : "NA",
-                                             "Enzyme Nomenclature": "NA"}
+        if Attributetype == "Protein" or Attributetype == 'GeneProduct':
+            geneMapping = {"kegg": "NA",
+                         "common_name": "NA",
+                         "Ensembl": "NA",
+                         "HGNC": "NA",
+                         "HPRD": "NA",
+                         "NCBI-GeneID": "NA",
+                         "NCBI-ProteinID": "NA",
+                         "OMIM": "NA",
+                         "UniProt": "NA",
+                         "Vega": "NA",
+                         "miRBase": "NA",
+                         "HMDB_protein_accession": "NA",
+                         "Entrez" : "NA",
+                         "Enzyme Nomenclature": "NA"}
+
+            geneMapping["common_name"] = metaboliteorgene
+
+            if databaseID is not "" and database == "Entrez Gene":
+                databaseID = 'entrez:' + databaseID.replace(' ','')
+                geneMapping["Entrez"] = [databaseID]
+                geneMapping['kegg'] = [databaseID.replace('entrez:','')]
+            if databaseID not in listOfGenes:
+                listOfGenes.append(databaseID)
+
+
+            if databaseID is not "" and database == "Enzyme Nomenclature":
+                geneMapping["Enzyme Nomenclature"] = databaseID
+                if databaseID not in listOfGenes:
+                    listOfGenes.append(databaseID)
+
+
+            if databaseID is not "" and database == "Ensembl":
+                geneMapping["Ensembl"] = [databaseID]
+                if databaseID not in listOfGenes:
+                    listOfGenes.append(databaseID)
+
+
+            if databaseID is not "" and database == "Uniprot-TrEMBL":
+                geneMapping["UniProt"] = [databaseID]
+                if databaseID not in listOfGenes:
+                    listOfGenes.append(databaseID)
+
+            self.geneInfoDictionary[databaseID] = geneMapping
                                 
-                                geneMapping["common_name"] = metaboliteorgene
-                              
-                                if databaseID is not "" and database == "Entrez Gene":
-                                    databaseID = 'entrez:' + databaseID.replace(' ','') 
-                                    geneMapping["Entrez"] = [databaseID]
-                                    geneMapping['kegg'] = [databaseID.replace('entrez:','')]
-                                if databaseID not in listOfGenes:
-                                    listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                    geneMapping["Enzyme Nomenclature"] = databaseID
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Ensembl": 
-                                    geneMapping["Ensembl"] = [databaseID]
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Uniprot-TrEMBL": 
-                                    geneMapping["UniProt"] = [databaseID]
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                
-                                self.geneInfoDictionary[databaseID] = geneMapping
-                                
-                            if Attributetype == "GeneProduct":
-                                
-                                geneMapping = {"kegg": "NA",
-                                             "common_name": "NA",
-                                             "Ensembl": "NA", 
-                                             "HGNC": "NA", 
-                                             "HPRD": "NA", 
-                                             "NCBI-GeneID": "NA", 
-                                             "NCBI-ProteinID": "NA", 
-                                             "OMIM": "NA", 
-                                             "UniProt": "NA", 
-                                             "Vega": "NA", 
-                                             "miRBase": "NA", 
-                                             "HMDB_protein_accession": "NA",
-                                             "Entrez" : "NA",
-                                             "Enzyme Nomenclature": "NA"}
-                                
-                                geneMapping["common_name"] = [metaboliteorgene]
-                              
-                                if databaseID is not "" and database == "Entrez Gene": 
-                                    databaseID = 'entrez:' + databaseID.replace(' ','')
-                                    geneMapping["Entrez"] = [databaseID]
-                                    
-                                if databaseID not in listOfGenes:
-                                    listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Enzyme Nomenclature": 
-                                    geneMapping["Enzyme Nomenclature"] = databaseID
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Ensembl": 
-                                    geneMapping["Ensembl"] = [databaseID]
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                  
-                                  
-                                if databaseID is not "" and database == "Uniprot-TrEMBL": 
-                                    geneMapping["UniProt"] = [databaseID]
-                                    if databaseID not in listOfGenes:
-                                        listOfGenes.append(databaseID)
-                                self.geneInfoDictionary[databaseID] = geneMapping
-                                      
+            if Attributetype == "GeneProduct":
+
+                geneMapping = {"kegg": "NA",
+                             "common_name": "NA",
+                             "Ensembl": "NA",
+                             "HGNC": "NA",
+                             "HPRD": "NA",
+                             "NCBI-GeneID": "NA",
+                             "NCBI-ProteinID": "NA",
+                             "OMIM": "NA",
+                             "UniProt": "NA",
+                             "Vega": "NA",
+                             "miRBase": "NA",
+                             "HMDB_protein_accession": "NA",
+                             "Entrez" : "NA",
+                             "Enzyme Nomenclature": "NA"}
+
+                geneMapping["common_name"] = [metaboliteorgene]
+
+                if databaseID is not "" and database == "Entrez Gene":
+                    databaseID = 'entrez:' + databaseID.replace(' ','')
+                    geneMapping["Entrez"] = [databaseID]
+
+                if databaseID not in listOfGenes:
+                    listOfGenes.append(databaseID)
+
+
+                if databaseID is not "" and database == "Enzyme Nomenclature":
+                    geneMapping["Enzyme Nomenclature"] = databaseID
+                    if databaseID not in listOfGenes:
+                        listOfGenes.append(databaseID)
+
+
+                if databaseID is not "" and database == "Ensembl":
+                    geneMapping["Ensembl"] = [databaseID]
+                    if databaseID not in listOfGenes:
+                        listOfGenes.append(databaseID)
+
+
+                if databaseID is not "" and database == "Uniprot-TrEMBL":
+                    geneMapping["UniProt"] = [databaseID]
+                    if databaseID not in listOfGenes:
+                        listOfGenes.append(databaseID)
+                self.geneInfoDictionary[databaseID] = geneMapping
+
                               
                                   
                               
@@ -462,132 +462,132 @@ class wikipathwaysData(MetabolomicsData):
                               
                               
                           
-                            if Attributetype == "Metabolite":
-                                metaboliteorgene = 'NA' 
-                                metaboliteMapping = {
-                                  "chebi_id": "NA", 
-                                  "drugbank_id": "NA", 
-                                  "drugbank_metabolite_id": "NA", 
-                                  "phenol_explorer_compound_id": "NA", 
-                                  "phenol_explorer_metabolite_id": "NA", 
-                                  "foodb_id": "NA", 
-                                  "knapsack_id": "NA", 
-                                  "chemspider_id": "NA",
-                                  "kegg_id": "NA",
-                                  "biocyc_id": "NA",
-                                  "bigg_id": "NA",
-                                  "wikipidia": "NA",
-                                  "nugowiki": "NA",
-                                  "metagene": "NA",
-                                  "metlin_id": "NA",
-                                  "pubchem_compound_id": "NA",
-                                  "het_id": "NA",
-                                  "hmdb_id": "NA",
-                                  "CAS": "NA",
-                                  'LIPIDMAPS':'NA'}
-                                # some of the common name has some special character follows '&'
-                                
-                                  
-                                if database == "HMDB":
-                                    
-                                    # databaseID is the source ID 
-                                    databaseID = databaseID.replace("HMDB","HMDB00")
-                                    metaboliteMapping["hmdb_id"] = [databaseID]
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        
-                                
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                  
-                                  
-                                if database == "CAS":
-                                    metaboliteMapping["CAS"] = databaseID
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                  
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        #self.metaboliteFromWhichDB["CAS"] +=1
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
+                if Attributetype == "Metabolite":
+                    metaboliteorgene = 'NA'
+                    metaboliteMapping = {
+                      "chebi_id": "NA",
+                      "drugbank_id": "NA",
+                      "drugbank_metabolite_id": "NA",
+                      "phenol_explorer_compound_id": "NA",
+                      "phenol_explorer_metabolite_id": "NA",
+                      "foodb_id": "NA",
+                      "knapsack_id": "NA",
+                      "chemspider_id": "NA",
+                      "kegg_id": "NA",
+                      "biocyc_id": "NA",
+                      "bigg_id": "NA",
+                      "wikipidia": "NA",
+                      "nugowiki": "NA",
+                      "metagene": "NA",
+                      "metlin_id": "NA",
+                      "pubchem_compound_id": "NA",
+                      "het_id": "NA",
+                      "hmdb_id": "NA",
+                      "CAS": "NA",
+                      'LIPIDMAPS':'NA'}
+                    # some of the common name has some special character follows '&'
 
-                                  
-                                if database == "ChEBI":
-                                    #remove prefix
-                                    if 'CHEBI' in databaseID:
-                                        databaseID = databaseID.replace("CHEBI:", "chebi:")
-                                    else:
-                                        databaseID = 'chebi:' +databaseID
-            
-                                    #kegg makes a list of chebi ids since there are more than one. For consistency, and so both databases
-                                    #can use the ID conversion class, we will also make a list of chebi ids here
-                                    metaboliteMapping["chebi_id"] = [databaseID]
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
 
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        #self.metaboliteFromWhichDB["chebi_id"] += 1
-                                      
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                  
-                                if database == "KEGG Compound":
-                                    databaseID = databaseID.replace(' ','')
-                                    metaboliteMapping["kegg_id"] = databaseID
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        #self.metaboliteFromWhichDB["kegg_id"] += 1
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                  
-                                if database == "PubChem-compound":
-                                    databaseID = 'pubchem:'+databaseID
-                                    metaboliteMapping["pubchem_compound_id"] = databaseID
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
+                    if database == "HMDB":
 
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        #self.metaboliteFromWhichDB["pubchem_compound_id"] += 1
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                  
-                                if databaseID is not "" and database == "Chemspider": 
-                                    databaseID = 'chemspider:' + databaseID
-                                    metaboliteMapping["chemspider_id"] = databaseID
-                                    self.metaboliteIDDictionary[databaseID] = metaboliteMapping
-                                    self.metaboliteCommonName[databaseID] = metaboliteorgene
+                        # databaseID is the source ID
+                        databaseID = databaseID.replace("HMDB","HMDB00")
+                        metaboliteMapping["hmdb_id"] = [databaseID]
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
 
-                                    if databaseID not in listOfMetabolites:
-                                        listOfMetabolites.append(databaseID)
-                                        #self.metaboliteFromWhichDB["chemspider_id"] += 1
-                                      
-                                    self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
-                                # Not collecting pubchem-substance id due to inability to differentiate it from
-                                # pubchem compound id.
-                                if databaseID not in self.metabolitesWithPathwaysDictionary:
-                                    listOfPathways = []
-                                    listOfPathways.append(pathwayID)
-                                    if database in ["HMDB", "CAS", "ChEBI", "KEGG Compound", "PubChem-compound", "Chemspider", "PubChem-substance"]:
-                                        if database == "HMDB" and len(databaseID) < 11:
-                                            databaseID = databaseID.replace("HMDB","HMDB00")
-                                        self.metabolitesWithPathwaysDictionary[databaseID] = listOfPathways
-                                        currentpathway = pathwayID
-                                  
-                                #this is what should happen if the metabolite has already been seen but we are on a NEW pathway file. If it is the same 
-                                #pathway file it will not be recorded again.     
-                                elif currentpathway != pathwayID:
-                                   
-                                    value = self.metabolitesWithPathwaysDictionary[databaseID]
-                                    value = value.append(pathwayID)
-                                    if database in ["HMDB", "CAS", "ChEBI", "KEGG Compound", "PubChem-compound", "Chemspider", "PubChem-substance"]:
-                                        self.metabolitesWithPathwaysDictionary[databaseID] = listOfPathways
-                                    self.metabolitesWithPathwaysDictionary[databaseID] = value
-                                  
-                            if Attributetype == "Pathway":
-                                if database == "WikiPathways":
-                                    listOfPathwaysForOntology.append(databaseID) 
+
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+
+
+                    if database == "CAS":
+                        metaboliteMapping["CAS"] = databaseID
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
+                            #self.metaboliteFromWhichDB["CAS"] +=1
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+
+
+                    if database == "ChEBI":
+                        #remove prefix
+                        if 'CHEBI' in databaseID:
+                            databaseID = databaseID.replace("CHEBI:", "chebi:")
+                        else:
+                            databaseID = 'chebi:' +databaseID
+
+                        #kegg makes a list of chebi ids since there are more than one. For consistency, and so both databases
+                        #can use the ID conversion class, we will also make a list of chebi ids here
+                        metaboliteMapping["chebi_id"] = [databaseID]
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
+                            #self.metaboliteFromWhichDB["chebi_id"] += 1
+
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+
+                    if database == "KEGG Compound":
+                        databaseID = databaseID.replace(' ','')
+                        metaboliteMapping["kegg_id"] = databaseID
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
+                            #self.metaboliteFromWhichDB["kegg_id"] += 1
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+
+                    if database == "PubChem-compound":
+                        databaseID = 'pubchem:'+databaseID
+                        metaboliteMapping["pubchem_compound_id"] = databaseID
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
+                            #self.metaboliteFromWhichDB["pubchem_compound_id"] += 1
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+
+                    if databaseID is not "" and database == "Chemspider":
+                        databaseID = 'chemspider:' + databaseID
+                        metaboliteMapping["chemspider_id"] = databaseID
+                        self.metaboliteIDDictionary[databaseID] = metaboliteMapping
+                        self.metaboliteCommonName[databaseID] = metaboliteorgene
+
+                        if databaseID not in listOfMetabolites:
+                            listOfMetabolites.append(databaseID)
+                            #self.metaboliteFromWhichDB["chemspider_id"] += 1
+
+                        self.metabolitesWithSynonymsDictionary[databaseID] = [metaboliteorgene]
+                    # Not collecting pubchem-substance id due to inability to differentiate it from
+                    # pubchem compound id.
+                    if databaseID not in self.metabolitesWithPathwaysDictionary:
+                        listOfPathways = []
+                        listOfPathways.append(pathwayID)
+                        if database in ["HMDB", "CAS", "ChEBI", "KEGG Compound", "PubChem-compound", "Chemspider", "PubChem-substance"]:
+                            if database == "HMDB" and len(databaseID) < 11:
+                                databaseID = databaseID.replace("HMDB","HMDB00")
+                            self.metabolitesWithPathwaysDictionary[databaseID] = listOfPathways
+                            currentpathway = pathwayID
+
+                    #this is what should happen if the metabolite has already been seen but we are on a NEW pathway file. If it is the same
+                    #pathway file it will not be recorded again.
+                    elif currentpathway != pathwayID:
+
+                        value = self.metabolitesWithPathwaysDictionary[databaseID]
+                        value = value.append(pathwayID)
+                        if database in ["HMDB", "CAS", "ChEBI", "KEGG Compound", "PubChem-compound", "Chemspider", "PubChem-substance"]:
+                            self.metabolitesWithPathwaysDictionary[databaseID] = listOfPathways
+                        self.metabolitesWithPathwaysDictionary[databaseID] = value
+
+                if Attributetype == "Pathway":
+                    if database == "WikiPathways":
+                        listOfPathwaysForOntology.append(databaseID)
           
             self.pathwayOntology[pathwayID] = listOfPathwaysForOntology        
             self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
