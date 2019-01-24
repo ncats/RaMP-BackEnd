@@ -90,20 +90,17 @@ class KeggData(MetabolomicsData):
         Run all functions to fill all of dictionaries
         - param bool writeToFile write to misc/output/kegg/ if true
         '''
-        self.getDatabaseFiles()
-        
-        
-        self.getPathways()
-        self.getPathways_with_genes()
-        
-        self.getMetabolites()
-        
-        self.getSynonymsAndCHEBI()
-        self.getGenes()
-        self.getGeneInfo()
-        self.getPathwayLinkedToGene()
-        if writeToFile:
-            self.write_myself_files(database='kegg')  
+        #self.getDatabaseFiles()
+        #self.getPathways()
+        #self.getPathways_with_genes()
+        #self.getMetabolites()
+        #self.getSynonymsAndCHEBI()
+        #self.getGenes()
+        #self.getGeneInfo()
+        #self.getPathwayLinkedToGene()
+        #if writeToFile:
+        #    self.write_myself_files(database='kegg')
+        print("KEGG: Done")
             
     def getDatabaseFiles(self):
         
@@ -169,7 +166,7 @@ class KeggData(MetabolomicsData):
             name = "pathwayhsa"+key+".txt"
             #time.sleep(1)
             if name not in files:
-                print("url=" +url)
+                #print("url=" +url)
                 pathToSavedFile = "../misc/data/kegg/pathways/" + "pathwayhsa" + key + ".txt"
                 self.download_files(url, pathToSavedFile)
                 onePathwayFile = open(pathToSavedFile)
@@ -214,7 +211,7 @@ class KeggData(MetabolomicsData):
             
             compoundFile = None
             if name not in files:
-                print("download files ..." + name)
+                #print("download files ..." + name)
                 self.download_files(url, pathToSavedFile)
                 compoundFile = open(pathToSavedFile)
             else:
@@ -234,7 +231,7 @@ class KeggData(MetabolomicsData):
                 
             compoundFile.close()
             
-        print("Downloading additional information about compound...")    
+        print("Downloading additional information about compound...")
         #GET INDIVIDUAL COMPOUND FILES
         cpd_dir = '../misc/data/kegg/compounds/'
         self.check_path(cpd_dir)
@@ -245,7 +242,7 @@ class KeggData(MetabolomicsData):
             pathToSavedFile = "../misc/data/kegg/compounds/" + metabolite + ".txt"
             if file not in cfiles:
                 self.download_files(url, pathToSavedFile)
-                print(url)
+                #print(url)
        
         
         #GET DICTIONARY OF GENES (no new download)
@@ -295,7 +292,7 @@ class KeggData(MetabolomicsData):
             
             
             if file not in files:
-                print("current Kegg gene download:"+file+"---" + str(currentgene) + "/" + str(totalgenes))
+                #print("current Kegg gene download:"+file+"---" + str(currentgene) + "/" + str(totalgenes))
                 currentgene = currentgene + 1
                 self.download_files(url, pathToSavedFile)
                 
@@ -316,9 +313,9 @@ class KeggData(MetabolomicsData):
                 filename = "hsa"+key+".txt"
                 if filename not in dir:
                     url ="http://rest.kegg.jp/link/hsa/hsa" + key
-                    print("download ... " + url)
+                    #print("download ... " + url)
                     self.download_files(url,path + "hsa" +key+".txt")
-                    
+            print("getPathways_with_genes ... ")
             # Update genes dict
             genedir = os.listdir("../misc/data/kegg/genes/")
             for file in dir:
@@ -576,8 +573,8 @@ class KeggData(MetabolomicsData):
             metaboliteMapping["kegg_id"] = [metabolite]
             self.metaboliteIDDictionary[metabolite] = metaboliteMapping
             compound.close()
-        print("Total {} items in metabolite ID dict".format(len(self.metaboliteIDDictionary)))
-        print("Total {} items have LIPIDMAPS ID".format(count))
+        #print("Total {} items in metabolite ID dict".format(len(self.metaboliteIDDictionary)))
+        #print("Total {} items have LIPIDMAPS ID".format(count))
         time.sleep(3)
                          
                         
@@ -726,11 +723,11 @@ class KeggData(MetabolomicsData):
                             geneList.append(geneid)
                             self.pathwaysWithGenesDictionary[pathway] = geneList
                     else:
-                        print("Find new pathway " + pathway)
-                        print("Add gene " + geneid)
-                        print(self.pathwaysWithGenesDictionary)
+                        #print("Find new pathway " + pathway)
+                        #print("Add gene " + geneid)
+                        #print(self.pathwaysWithGenesDictionary)
                         self.pathwaysWithGenesDictionary[pathway] = [geneid]
-            
+            print("getPathwayLinkedToGene")
             pathwayFile.close()        
                 #time.sleep(3)
             

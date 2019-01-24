@@ -89,6 +89,12 @@ The repo contains the following folders
 
 *Note: when running main.py, the data, output, and sql folders contain lots of data which is not included with this repo due to size restrictions.*
 
+#### Updates ####
+The first update to the RaMP (01/24/2019):
+
+1. The major change is to adapt to the recent HMDB updates which changed the hierarchy of Ontology.
+2. Exclusion of KEGG database.
+3. Handled few compound mismatch that had occurred in the old version.
 
 ### Contact ###
 * Bofei Zhang - CSE student (zhang.5675@osu.edu)
