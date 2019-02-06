@@ -292,7 +292,7 @@ class hmdbData(MetabolomicsData):
         print('####### Get pathway #######')
         smpdb2 = self.getSMPDB_Category()
         #print(smpdb2)
-        hmdbinchiKeyFile = open("../misc/sql/" + "hmdbinchiKeyFile.sql", 'wb')
+        #hmdbinchiKeyFile = open("../misc/sql/" + "hmdbinchiKeyFile.sql", 'wb')
         lipidCount = 0
         for metabolite in root:
             countGlobal+=1
@@ -317,10 +317,10 @@ class hmdbData(MetabolomicsData):
                 smiles = metabolite.find('{http://www.hmdb.ca}smiles')
                #print(accessiontag.text, "\t", inchikey.text, "\t" ,inchi.text, "\t", smiles.text)
                 #self.inchiDict[metabohmdbid].append(inchi)
-                hmdbinchiKeyFile.write(str(accessiontag.text).encode('utf-8') + b"\t"
-                                               + str(inchikey.text).encode('utf-8') + b"\t"
-                                               + str(inchi.text).encode('utf-8') + b"\t"
-                                               + str(smiles.text).encode('utf-8') + b"\n")
+                #hmdbinchiKeyFile.write(str(accessiontag.text).encode('utf-8') + b"\t"
+                #                              + str(inchikey.text).encode('utf-8') + b"\t"
+                #                             + str(inchi.text).encode('utf-8') + b"\t"
+                #                            + str(smiles.text).encode('utf-8') + b"\n")
                 #self.metaInchi[accessiontag] = inchi.text
                 #experiment
                 #if accessiontag.text == "HMDB0000058":
@@ -450,7 +450,7 @@ class hmdbData(MetabolomicsData):
                 self.pathwayCategory[key] = 'smpdb2'
             else:
                 self.pathwayCategory[key] = 'smpdb3'
-        hmdbinchiKeyFile.close()
+        #hmdbinchiKeyFile.close()
         print('{} items in pathwayDictionary.'.format(len(self.pathwayDictionary)))
         print('{} items in metabolitesWithSynonyms dictionary'.format(len(self.metabolitesWithSynonymsDictionary)))
         return tree
