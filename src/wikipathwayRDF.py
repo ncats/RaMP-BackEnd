@@ -83,7 +83,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20181010-rdf-wp.zip'
+        filename = 'wikipathways-20180910-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
@@ -93,6 +93,8 @@ class WikipathwaysRDF(MetabolomicsData):
             with zipfile.ZipFile(path+filename,'r') as zip_ref:
                 zip_ref.extractall(path)
         else:
+            with zipfile.ZipFile(path+filename,'r') as zip_ref:
+                zip_ref.extractall(path)
             print('Already downloaded Wiki ...')
     
     def _getAllRDFTypes(self):
