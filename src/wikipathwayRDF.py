@@ -83,7 +83,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20180910-rdf-wp.zip'
+        filename = 'wikipathways-20190210-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
@@ -93,8 +93,6 @@ class WikipathwaysRDF(MetabolomicsData):
             with zipfile.ZipFile(path+filename,'r') as zip_ref:
                 zip_ref.extractall(path)
         else:
-            with zipfile.ZipFile(path+filename,'r') as zip_ref:
-                zip_ref.extractall(path)
             print('Already downloaded Wiki ...')
     
     def _getAllRDFTypes(self):
@@ -372,7 +370,8 @@ class WikipathwaysRDF(MetabolomicsData):
                               'LIPIDMAPS':'NA',
                               'WikiData':'NA'}
             # skip pubchem.substance id at this moment
-            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug']:
+            #ttd.drug is new addition for the feb 10 2019 data
+            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
                 metabolite_list.add(metabolites_id)
                 for key,value in id_mapping.items():
