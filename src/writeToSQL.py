@@ -510,12 +510,13 @@ class writeToSQL(MetabolomicsData):
                             print(str(KeyError) + " When writing analytehaspathways ...")
                             print(key)
 
-        print("inchhi bro")
+        
         for key in metabolitesWithPathwaysDictionary:
                 value = metabolitesWithPathwaysDictionary[key]
                 for listItem in value:
                     #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
                     if key is not "":
+
                         try:
                             if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
                                 inchiFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
@@ -754,7 +755,7 @@ class writeToSQL(MetabolomicsData):
                 print('Key Error')
                 print(key)
                 print(pathwayDictionary[key])
-                time.sleep(10)
+
         
         print("Metabolites linked to genes......................")
         for key in metabolitesLinkedToGenes:
@@ -774,41 +775,78 @@ class writeToSQL(MetabolomicsData):
         for key in biofluidLocation:
             value = biofluidLocation[key]
             for listItem in value:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t"
                                                                                                     + rampBiofluidIDdictionary[listItem].encode('utf-8') + b"\n")
+
+                except KeyError:
+                    print('Key Error')
+                    print(key)
+
         
         for key in biofluid:
-            ontologyLocationOutFile.write(rampBiofluidIDdictionary[key].encode('utf-8') + b"\t" 
+            try:
+                ontologyLocationOutFile.write(rampBiofluidIDdictionary[key].encode('utf-8') + b"\t"
                                                                            + key.encode('utf-8') + b"\t" 
                                                                     + b"biofluid" + b"\n")
+            except KeyError:
+                print('Key Error')
+                print(key)
              
         for key in cellularLocation:
             value = cellularLocation[key]
             for listItem in value:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t"
                                                                                                             + rampCellularIDdictionary[listItem].encode('utf-8') + b"\n")
+
+                except KeyError:
+                    print('Key Error')
+                    print(key)
+
       
         for key in cellular:
-            ontologyLocationOutFile.write(rampCellularIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"cellular location" + b"\n")
+            try:
+                ontologyLocationOutFile.write(rampCellularIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"cellular location" + b"\n")
+
+            except KeyError:
+                print('Key Error')
+                print(key)
+
         
         for key in pathwayOntology:
             listOfPathways =  pathwayOntology[key] 
             for listItem in listOfPathways:
                 pathwayOntologyOutFile.write(key.encode('utf-8')  + b"\t" + listItem.encode('utf-8') + b"\n")
         for key in exoEndo:
-            ontologyLocationOutFile.write(rampExoEndoIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"origins" + b"\n")  
-        
+            try:
+                ontologyLocationOutFile.write(rampExoEndoIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"origins" + b"\n")
+            except KeyError:
+                print('Key Error')
+                print(key)
+
         for key in exoEndoDictionary:
             listOfExoEndo = exoEndoDictionary[key]
             for item in listOfExoEndo:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampExoEndoIDdictionary[item].encode('utf-8') + b"\n" )
-        
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampExoEndoIDdictionary[item].encode('utf-8') + b"\n" )
+                except KeyError:
+                    print('Key Error')
+                    print(key)
         for key in tissue:
-            ontologyLocationOutFile.write(rampTissueIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" +b"tissue location" + b"\n")    
+            try:
+                ontologyLocationOutFile.write(rampTissueIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" +b"tissue location" + b"\n")
+            except KeyError:
+                print('Key Error')
+                print(key)
         for key in tissueLocation:
             listOfTissue = tissueLocation[key]
             for item in listOfTissue:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampTissueIDdictionary[item].encode('utf-8') + b"\n")
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampTissueIDdictionary[item].encode('utf-8') + b"\n")
+                except KeyError:
+                    print('Key Error')
+                    print(key)
         # Close all files ...
         analyteOutFile.close()
         analyteSynonymOutFile.close()
