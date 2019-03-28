@@ -7,7 +7,7 @@ namespace mysqlBatch
 {
 	public class Program
 	{
-        public String sqlFilesLocation = "/Users/81963/Documents/workspace/RaMP/misc/sql/";
+        public String sqlFilesLocation = "/Users/pati13/Downloads/RaMP-BackEnd-manju/misc/sql/";
 
 		static void Main(string[] args)
 		{
@@ -56,7 +56,7 @@ namespace mysqlBatch
 
         public void createDatabaseAndAllTables(){
 
-			string connStr = "server=localhost;user=root;database=mathelabramp;port=3306;password=Ehe131224";
+			string connStr = "server=localhost;user=root;database=ramp;port=3306;password=Autumn6265";
 			MySqlConnection conn = new MySqlConnection(connStr);
 
             //string stringCreateDatabase = "create database mathelabramp;";
@@ -108,7 +108,7 @@ namespace mysqlBatch
         public void BulkImport(string fileName, string destinationTableName, string command)
 		{
 
-			string connStr = "server=localhost;user=root;database=mathelabramp;port=3306;password=Ehe131224";
+			string connStr = "server=localhost;user=root;database=ramp;port=3306;password=Autumn6265";
 			MySqlConnection conn = new MySqlConnection(connStr);
 
 
