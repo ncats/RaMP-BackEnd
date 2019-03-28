@@ -213,7 +213,7 @@ class Main():
                  wikipathways.pathwayOntology,
                  wikipathways.exoEndoDictionary,
                  "wiki")
-        print("fine till hwer")
+        #print("fine till hwer")
         stat.Apoptosis(sql.rampGeneIDdictionary,
                         wikipathways.pathwaysWithGenesDictionary,
                         kegg.pathwaysWithGenesDictionary,
