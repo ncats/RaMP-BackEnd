@@ -249,7 +249,6 @@ class WikipathwaysRDF(MetabolomicsData):
             genesource = gene.split('/')[-2]
             if genesource not in possible_source:
                 continue
-            #print("gene source :", genesource)
             geneid = gene.split('/')[-1]
             geneid = self.prependID(genesource, geneid)
             if genesource not in not_retrieved:
@@ -258,7 +257,11 @@ class WikipathwaysRDF(MetabolomicsData):
                 for key,value in bdbLinks.items():
                     for links in g.objects(gene,URIRef(value)):
                         link_id = links.split('/')[-1]
+                        #print("link id:", link_id)
+                        #if link_id is "TP53":
+                            #print("*****************************found TP53 wiki *****")
                         link_id = self.prependID(key, link_id)
+                        #print("link id:", link_id)
                         # sometimes URIREF type object accidently appears in link_id var, so avoid it by checking
                         # data type here
                         genelist.add(link_id)

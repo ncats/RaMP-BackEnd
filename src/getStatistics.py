@@ -72,7 +72,8 @@ class getStatistics():
         
         khrwSet = set(["kegg", "hmdb", "wiki", "reactome"])
         
-        
+        #if analyteType is "Gene":
+
         if writeToFiles:
             rampIDtoanalyteIdDictionary = {}
             num = 0
@@ -99,7 +100,6 @@ class getStatistics():
             
             elif rampSet == hmdbSet:
                 hmdb = hmdb + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hmdb\n")
@@ -117,10 +117,9 @@ class getStatistics():
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",wiki\n")
-            
+
             elif rampSet == khSet:
                 kh = kh + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",kh\n")
@@ -141,21 +140,18 @@ class getStatistics():
             
             elif rampSet == hrSet:
                 hr = hr + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hr\n")
             
             elif rampSet == hwSet:
                 hw = hw + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hw\n")
             
             elif rampSet == rwSet:
                 rw = rw + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",rw\n")
@@ -176,7 +172,6 @@ class getStatistics():
             
             elif rampSet == hrwSet:
                 hrw = hrw + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hrw\n")
