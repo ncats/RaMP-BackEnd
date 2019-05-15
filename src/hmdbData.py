@@ -120,7 +120,6 @@ class hmdbData(MetabolomicsData):
         '''
         self.getDatabaseFiles()
         tree = self.getMetaboliteOtherIDs()
-        #self.getInchi(tree)
 
         self.getPathwaysandSynonyms(tree)
         self.getGenes(tree)
@@ -315,7 +314,24 @@ class hmdbData(MetabolomicsData):
                 inchikey = metabolite.find('{http://www.hmdb.ca}inchikey')
                 inchi = metabolite.find('{http://www.hmdb.ca}inchi')
                 smiles = metabolite.find('{http://www.hmdb.ca}smiles')
-               
+               #print(accessiontag.text, "\t", inchikey.text, "\t" ,inchi.text, "\t", smiles.text)
+                #self.inchiDict[metabohmdbid].append(inchi)
+                #hmdbinchiKeyFile.write(str(accessiontag.text).encode('utf-8') + b"\t"
+                #                              + str(inchikey.text).encode('utf-8') + b"\t"
+                #                             + str(inchi.text).encode('utf-8') + b"\t"
+                #                            + str(smiles.text).encode('utf-8') + b"\n")
+                #self.metaInchi[accessiontag] = inchi.text
+                #experiment
+                #if accessiontag.text == "HMDB0000058":
+                 #   biological_properties = metabolite.find('{http://www.hmdb.ca}biological_properties')
+                  #  pathwayd = biological_properties.find('{http://www.hmdb.ca}pathways')
+                   # #smpdb_id = pathwayd.find('{http://www.hmdb.ca}smpdb_id')
+                    #print("pathway test  for:",accessiontag.text,"is", pathwayd)
+
+                #secondary_accessions = metabolite.find('{http://www.hmdb.ca}secondary_accessions')
+                #accession = secondary_accessions.find('{http://www.hmdb.ca}accession')
+                #print("indirect sa", accession.text)
+
 
                 tax = metabolite.find('{http://www.hmdb.ca}taxonomy')
                 if tax is not None:
@@ -343,6 +359,7 @@ class hmdbData(MetabolomicsData):
                     raise ValueError('Metabolite ID cannot be None Type')
                 # find pathways
                 #print('Pathwaycsd', pathways)
+
                 if pathways is not None:
                     listOfPathways = []
                     for pathway in pathways:
@@ -360,6 +377,7 @@ class hmdbData(MetabolomicsData):
                                 # add pathways to metabolites With pathway dictionary
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
+                                    
 
 #new HMDB taxonomy for pathways - edit: Manju
 
@@ -372,6 +390,7 @@ class hmdbData(MetabolomicsData):
                         # kegg id is not collected
                         pathwayNametag = pathway.find('{http://www.hmdb.ca}name')
                         smpidtag = pathway.find('{http://www.hmdb.ca}smpdb_id')
+                        keggidtag = pathway.find('{http://www.hmdb.ca}kegg_map_id')
                         # print('++++++++SMPD', smpidtag)
                         if pathwayNametag is not None and smpidtag is not None:
                             smpid = smpidtag.text
@@ -382,6 +401,16 @@ class hmdbData(MetabolomicsData):
                                 # add pathways to metabolites With pathway dictionary
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
+
+                        if pathwayNametag is not None and keggidtag is not None:
+                            keggid = keggidtag.text
+                            pathwayName = pathwayNametag.text
+                            if keggid is not None and pathwayName is not None and keggid not in self.pathwayDictionary:
+                                self.pathwayDictionary[keggid] = pathwayName
+                                self.pathwayCategory[keggid] = 'kegg'
+                                # add pathways to metabolites With pathway dictionary
+                                if keggid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
+                                    self.metabolitesWithPathwaysDictionary[metabohmdbid].append(keggid)
 
 
                 else:
@@ -395,10 +424,11 @@ class hmdbData(MetabolomicsData):
         print("count global: ",countGlobal, " count micro ",countMicrobe)
         print("lipid super class", lipidCount)
         for key in self.pathwayCategory:
-            if key in smpdb2:
-                self.pathwayCategory[key] = 'smpdb2'
-            else:
-                self.pathwayCategory[key] = 'smpdb3'
+            if self.pathwayCategory[key] is 'NA':
+                if key in smpdb2:
+                    self.pathwayCategory[key] = 'smpdb2'
+                else:
+                    self.pathwayCategory[key] = 'smpdb3'
         #hmdbinchiKeyFile.close()
         print('{} items in pathwayDictionary.'.format(len(self.pathwayDictionary)))
         print('{} items in metabolitesWithSynonyms dictionary'.format(len(self.metabolitesWithSynonymsDictionary)))
@@ -479,7 +509,7 @@ class hmdbData(MetabolomicsData):
                     if childtag == "protein_associations":
                         
                         for protein in child:
-                            
+                            #print("Protein*******")
                             mapping = { 'kegg': 'NA',
                                        'common_name': 'NA',
                                        'Ensembl': 'NA', 
@@ -500,12 +530,14 @@ class hmdbData(MetabolomicsData):
                                      "gene_name":'common_name',
                             }
                             for key in idtag:
+                                #print("idTag*******")
                                 # Find all target tag in idtag.keys()
                                 sourceid = protein.find('{http://www.hmdb.ca}' + key)
-                                
+                                #print(sourceid)
                                 # replace the name space
                                 id_tag_key = sourceid.tag.replace('{http://www.hmdb.ca}','')
                                 mapping_key = idtag[id_tag_key]
+                                #print("******",id_tag_key, mapping_key)
                                 if sourceid.text is not None:
                                     if mapping_key is not 'common_name':
                                         mapping[mapping_key] = [prefix[mapping_key] + sourceid.text]
@@ -514,9 +546,11 @@ class hmdbData(MetabolomicsData):
                                     
                             
                             proteinacc = mapping['HMDB_protein_accession'][0]
+                            #print(proteinacc)
                             listofgenes.append(proteinacc)
                             self.geneInfoDictionary[proteinacc] = mapping
-                        #using the uniprot id as the gene id 
+                        #using the uniprot id as the gene id
+            #print("+++", metabohmdbid)
             self.metabolitesLinkedToGenes[metabohmdbid] = listofgenes  
         print("Length of geneInfoDict is {}".format(str(len(self.geneInfoDictionary))))
         print('Length of metabolite-gene is {}'.format(len(self.metabolitesLinkedToGenes)))
@@ -542,10 +576,7 @@ class hmdbData(MetabolomicsData):
         root = tree.getroot()
   
         metabohmdbid = "not yet found"
-        
 
-
-        
         #we will need to iterate through the xml tree to find the information we are looking for
         print("********IN BIO-FLUIDS***********")
         for metabolite in root:
@@ -598,7 +629,85 @@ class hmdbData(MetabolomicsData):
                                                                                 self.exoEndo[origintext] = "placeholder"
                                                                             listOfInfo.append(origintext)
                                                                         self.exoEndoDictionary[metabohmdbid] = listOfInfo
-                                                        
+    #new code for the ontology. can be used if the Ontology structure is updated by HMDB
+                                                        '''
+                                                        elif findBPs.text == "Biological location":
+                                                            foundBP = Dx1.find('{http://www.hmdb.ca}descendants') #only one check for bug
+                                                            if foundBP is not None:
+                                                                descendant2 = foundBP.findall('{http://www.hmdb.ca}descendant')
+                                                                if descendant2 is not None:
+                                                                    for Dx2 in descendant2:
+                                                                        findBio = Dx2.findall('{http://www.hmdb.ca}term')
+                                                                        for findBios in findBio:
+                                                                            if findBios.text == "Tissue and substructures" or findBios.text == "Organ and components":
+                                                                                TissueDs = Dx2.find('{http://www.hmdb.ca}descendants')
+                                                                                if TissueDs is not None:
+                                                                                    TissueD = TissueDs.findall('{http://www.hmdb.ca}descendant')
+                                                                                    if TissueD is not None:
+                                                                                        for tissue in TissueD:
+                                                                                            tissueName = tissue.findall('{http://www.hmdb.ca}term')
+                                                                                            tissueList = []
+                                                                                            for tissueNames in tissueName:
+                                                                                                tissuetext = tissueNames.text
+                                                                                                if tissuetext == "Endocrine gland":
+                                                                                                    insideBio = tissue.find('{http://www.hmdb.ca}descendants')
+                                                                                                    if insideBio is not None:
+                                                                                                        bioOne = insideBio.findall('{http://www.hmdb.ca}descendant')
+                                                                                                        if bioOne is not None:
+                                                                                                            for each in bioOne:
+                                                                                                                name = each.findall('{http://www.hmdb.ca}term')
+                                                                                                                for nameOne in name:
+                                                                                                                    if nameOne.text not in self.tissue:
+                                                                                                                        self.tissue[nameOne.text] = "placeholder"
+                                                                                                                    tissueList.append(nameOne.text)
+                                                                                                                self.tissueLocation[metabohmdbid] = tissueList
+
+                                                                                                elif tissuetext not in self.tissue:
+                                                                                                    self.tissue[tissuetext] = "placeholder"
+                                                                                                tissueList.append(tissuetext)
+                                                                                            self.tissueLocation[metabohmdbid] = tissueList
+                                                                            elif findBios.text == "Biofluid and excreta":
+                                                                                BioSpecimens = Dx2.find('{http://www.hmdb.ca}descendants')
+                                                                                if BioSpecimens is not None:
+                                                                                    BioSpecimen = BioSpecimens.findall('{http://www.hmdb.ca}descendant')
+                                                                                    if BioSpecimen is not None:
+                                                                                        for specimen in BioSpecimen:
+                                                                                            specimenName = specimen.findall('{http://www.hmdb.ca}term')
+                                                                                            biofluidList = []
+                                                                                            for bio in specimenName:
+                                                                                                biofluidtext = bio.text
+                                                                                                biofluidList.append(biofluidtext)
+                                                                                                if biofluidtext not in self.biofluid:
+                                                                                                    self.biofluid[biofluidtext] = "placeholder"
+                                                                                            self.biofluidLocation[metabohmdbid] = biofluidList
+                                                                            elif findBios.text == "Subcellular" or findBios.text == "Cell and elements":
+                                                                                subcellulars = Dx2.find('{http://www.hmdb.ca}descendants')
+                                                                                if subcellulars is not None:
+                                                                                    subcellular = subcellulars.findall('{http://www.hmdb.ca}descendant')
+                                                                                    if subcellular is not None:
+                                                                                        for subcell in subcellular:
+                                                                                            subcellName = subcell.findall('{http://www.hmdb.ca}term')
+                                                                                            listOfInfo = []
+                                                                                            for cell in subcellName:
+                                                                                                cellularlocationtext = cell.text
+                                                                                                if cellularlocationtext is "Cell" or "Element":
+                                                                                                    cellOrElements = subcell.find('{http://www.hmdb.ca}descendants')
+                                                                                                    if cellOrElements is not None:
+                                                                                                        cellOrElement = cellOrElements.findall('{http://www.hmdb.ca}descendant')
+                                                                                                        if cellOrElement is not None:
+                                                                                                            for EachCoE in cellOrElement:
+                                                                                                                FinalCellorEle = EachCoE.findall('{http://www.hmdb.ca}term')
+                                                                                                                for eachOfThese in FinalCellorEle:
+                                                                                                                    eachText = eachOfThese.text
+                                                                                                                    if eachText not in self.cellular:
+                                                                                                                        self.cellular[eachText] = "placeholder"
+                                                                                                                    listOfInfo.append(eachText)
+                                                                                                if cellularlocationtext not in self.cellular:
+                                                                                                    self.cellular[cellularlocationtext] = "placeholder"
+                                                                                                listOfInfo.append(cellularlocationtext)
+                                                                                            self.cellularLocation[metabohmdbid] = listOfInfo
+                                                            '''
+
 
 
 
@@ -658,7 +767,7 @@ class hmdbData(MetabolomicsData):
                                 self.tissueLocation[metabohmdbid] = tissueList
 
                     #THIS WILL BE THE KEY
-                    
+
     '''
     Try to link hmdb gene to pathways in this case. Note: This part uses different 
     XML file parsed compared to previous functions.
