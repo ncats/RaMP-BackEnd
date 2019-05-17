@@ -81,8 +81,12 @@ class reactomeData(MetabolomicsData):
         print("Getting common names for genes ...")
         
         self.getGenes()
+        print("Getting common names for genes1 ...")
+
         self.downloadCommonNameFromUniprot()
+        print("Getting common names for genes 2...")
         self.getCommonNameFromUniprot()
+        print("Getting common names for genes 3...")
         if writeToFile:
             self.write_myself_files('reactome')
 
@@ -126,8 +130,12 @@ class reactomeData(MetabolomicsData):
             if len(splitline) > 2:
                 if "Homo sapiens" in splitline[5]:
                     gene = splitline[0]
+                    #gene = 'uniprot:'+gene
+                    #print("gene:", gene)
                     pathwayID = splitline[1]
+                    #print("pathwayID:", pathwayID)
                     pathwayName = splitline[3]
+                    #print("pathwayName:", pathwayName)
                     
                     mapping = { 'kegg': 'NA',
                                 'common_name': 'NA',
@@ -145,15 +153,15 @@ class reactomeData(MetabolomicsData):
                                 'Enzyme Nomenclature': 'NA'}
 
                     if pathwayID not in self.pathwaysWithGenesDictionary:
-                        self.pathwaysWithGenesDictionary[pathwayID] = [gene]
+                        self.pathwaysWithGenesDictionary[pathwayID] = ['uniprot:'+gene]
                         self.pathwayDictionary[pathwayID] = pathwayName
                         self.pathwayCategory[pathwayID] = "NA"
-                        self.geneInfoDictionary[gene] = mapping
-                         
+                        self.geneInfoDictionary['uniprot:'+gene] = mapping
+                        #'uniprot:'+
                     else: 
                         listOfGenes = self.pathwaysWithGenesDictionary[pathwayID]
-                        listOfGenes.append(gene)
-                        self.geneInfoDictionary[gene] = mapping
+                        listOfGenes.append('uniprot:'+gene)
+                        self.geneInfoDictionary['uniprot:'+gene] = mapping
                         self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
                  
     
@@ -260,13 +268,15 @@ class reactomeData(MetabolomicsData):
             "wiki": wikidict,
             }
         for key in self.geneInfoDictionary:
-            reactGeneIds.append(key)
+            splitline = key.split(":")
+            reactGeneIds.append(splitline[1])
         #print("Total " + str(len(reactGeneIds)) +" without a common name")
         uniprot_commonName = dict()
         for key in otherdatabase:
             geneInfo = otherdatabase[key]
             if geneInfo is not None:
                 for key2 in geneInfo:
+                    #print("gene uniprot takeawy:", key)
                     mapping = geneInfo[key2]
                     uniprot = mapping["UniProt"]
                     commonName = mapping["common_name"]
@@ -276,11 +286,12 @@ class reactomeData(MetabolomicsData):
                                 uniprot_commonName[id] = commonName
             #print("Found Uniprot in " + key +": "+ str(len(uniprot_commonName)))
         for id in reactGeneIds:
+            #print("********id", id)
             if id in uniprot_commonName:
                 name = uniprot_commonName[id]
-                mapping = self.geneInfoDictionary[id]
+                mapping = self.geneInfoDictionary['uniprot:'+id]
                 mapping["common_name"] = name
-                self.geneInfoDictionary[id] = mapping
+                self.geneInfoDictionary['uniprot:'+id] = mapping
                 reactGeneIds.remove(id)
         
         #print("Unfound genes for name are " + str(len(reactGeneIds)))
@@ -335,7 +346,7 @@ class reactomeData(MetabolomicsData):
                                 if type == "primary":
                                     #print(geneid+":"+name.text)
                                     try:
-                                        mapping = self.geneInfoDictionary[geneid]
+                                        mapping = self.geneInfoDictionary['uniprot:'+geneid]
                                         mapping["common_name"] = name.text
                                     except KeyError:
                                         print("Raw data does not have this ID ...")

@@ -263,25 +263,42 @@ class writeToSQL(MetabolomicsData):
         lengthOfIndex = len(str(rampGeneIDnumber))
         prefix = lengthOfID - lengthOfIndex
         rampGeneIDToFile = str(rampGeneID[:prefix]) + str(rampGeneIDnumber)
-
-        
+        #to check how many uniprot has NA
+        countWikiNonUniProt = 0
         for key in geneInfoDictionary:
             isThisNewGene = False    
             mapping = geneInfoDictionary[key]
             listOfIDs = []
+            flag = False
             for key2 in mapping:
                 ids = mapping[key2]
+                if database == "wiki":
+                    if mapping["UniProt"] == "NA":
+                        flag = True
                 if key2 == 'common_name':
                     continue
                 if ids is not 'NA' and type(ids) is list:
-                    listOfIDs.extend([id for id in ids])
+                    if database == "reactome":
+                        for each in ids:
+                            listOfIDs.append("uniprot:"+each)
+                    else:
+                        listOfIDs.extend([id for id in ids])
                 elif ids is not 'NA' and type(ids) is str:
-                    listOfIDs.append(ids)
+                    if database == "reactome":
+                        listOfIDs.append("uniprot:"+ids)
+                    else:
+                        listOfIDs.append(ids)
             #print('{} has id mapping {}'.format(key,listOfIDs))
             #time.sleep(3)
+            if flag == True:
+                countWikiNonUniProt = countWikiNonUniProt+1
+                #print("UniProt NA: ", key)
             isThisNewGene = True
             overlap = set()
             for eachid in listOfIDs:
+                #print("eachid", eachid)
+                #if eachid == "uniprot:Q16739":
+                 #   print("database fro Q16739:", database)
                 if eachid in self.rampGeneIDdictionary:
                     isThisNewGene = False
                     overlap.add(eachid)
@@ -302,7 +319,7 @@ class writeToSQL(MetabolomicsData):
                     setOfDatabases.add(database)
                     self.rampGeneIdInWhichDatabases[rampGeneIDToFile] = setOfDatabases 
                 else:
-                    #print("************yes overlap")
+                    #print("yes overlap", eachid, database)
                     overlap_id = list(overlap)[0]
                     ramp_id = self.rampGeneIDdictionary[overlap_id]
                     if ramp_id not in self.rampGeneIdInWhichDatabases:
@@ -320,6 +337,7 @@ class writeToSQL(MetabolomicsData):
                             self.rampGeneIDdictionary[eachid] = ramp_id
                     self.rampGeneIdInWhichDatabases[ramp_id].add(database)
                     '''
+        print("NA wiki uniprots:", countWikiNonUniProt)
         print('There are {} unique genes based on ramp id'.format(len(set(self.rampGeneIDdictionary.values()))))
         return rampGeneIDnumber
     def is_write_ok(self,*arg):
@@ -527,7 +545,15 @@ class writeToSQL(MetabolomicsData):
             if key.startswith("smiles"):
                 continue
             myRaMp[value].append(key)
+        #this is for gene
+        myRaMpGene = defaultdict(list)
+        for key, value in self.rampGeneIDdictionary.items():
+            myRaMpGene[value].append(key)
 
+        with open("RaMPtoGenes.txt", "w") as file:
+            for key, value in myRaMpGene.items():
+                file.write(key + " " + " ".join(value) + "\n")
+                # print("key: ", key, "value :", "|".join(value))
         #Ramp to source mapping. Tells how many souceids are there in each rampid
         '''
         with open("RaMPtoIds1.txt", "w") as file:
@@ -692,8 +718,9 @@ class writeToSQL(MetabolomicsData):
                                         pathwayNotChebi.add(key)
 
                         except KeyError:
-                            print(str(KeyError) + " When writing analytehaspathways ...")
-                            print(key)
+                            pass
+                            #print(str(KeyError) + " When writing analytehaspathways ...")
+                            #print(key)
 
 
         for key in metabolitesWithPathwaysDictionary:
@@ -708,8 +735,9 @@ class writeToSQL(MetabolomicsData):
                                                                                              +  str(inchi[key]).encode('utf-8') + b"\t"
                                                                                              + str(database).encode('utf-8') + b"\n")
                         except KeyError:
-                            print(str(KeyError) + " When writing analytehaspathways ...")
-                            print(key)
+                            pass
+                            #print(str(KeyError) + " When writing analytehaspathways ...")
+                            #print(key)
         #GENE
         #analytehaspathway 
         print("Im analytehaspathway + Gene")                                                                                
@@ -731,10 +759,11 @@ class writeToSQL(MetabolomicsData):
                         '''
 
                 except KeyError:
-                    print(str(KeyError) + " when writing genes has pathways ..." +listItem)
+                    pass
+                    #print(str(KeyError) + " when writing genes has pathways ..." +listItem)
 
-        print("pathway chebi **** ", len(pathwayChebi))
-        print("pathway NOt chebi **** ", len(pathwayNotChebi))
+        #print("pathway chebi **** ", len(pathwayChebi))
+        #print("pathway NOt chebi **** ", len(pathwayNotChebi))
         #GENE
         #analyte
         for key in geneInfoDictionary:
@@ -781,6 +810,8 @@ class writeToSQL(MetabolomicsData):
                                       commonName)
         #GENE
         #Source
+
+
         for key in geneInfoDictionary:
             mapping = geneInfoDictionary[key]
             #key = key.replace("HMDBP","HMDB")
@@ -828,16 +859,16 @@ class writeToSQL(MetabolomicsData):
                                         b"\t" + b"uniprot" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
                 if hmdbgeneid is not "NA":
-                    #print("First step", hmdbgeneid)
+
                     if type(hmdbgeneid) is str:
-                        #print("Str step***", hmdbgeneid)
+
                         sourceOutFile.write(hmdbgeneid.encode('utf-8') + b"\t" +
                                              self.rampGeneIDdictionary[key].encode('utf-8') +
                                               b"\t" + b"hmdb" + b"\t" + b"gene"+
                                               b"\t" + NameForSource.encode("utf-8") + b"\n")
                     elif type(hmdbgeneid) is list:
                         for each in hmdbgeneid:
-                            #print("list step***", hmdbgeneid)
+
                             sourceOutFile.write(each.encode('utf-8') + b"\t" 
                                         + self.rampGeneIDdictionary[key].encode('utf-8') + 
                                         b"\t" + b"hmdb" + b"\t" + b"gene"
@@ -894,7 +925,8 @@ class writeToSQL(MetabolomicsData):
                                                  + b"\t" + b"kegg" + b"\t" + b"gene"
                                                   + b"\t" + NameForSource.encode("utf-8") + b"\n")  
             else:
-                print("This gene id {} does not have Ramp Gene Id".format(key))            
+                pass
+                #print("This gene id {} does not have Ramp Gene Id".format(key))
                 #time.sleep(0.1)
         #METABOLITE
         #metabolite with synonym (synonyms for the common name)
@@ -917,7 +949,6 @@ class writeToSQL(MetabolomicsData):
         #gene with synonym
         for key in geneInfoDictionary:
             if key in self.rampGeneIDdictionary:
-                
                 mapping = geneInfoDictionary[key]
                 commonName = mapping['common_name']
                 if commonName is None:
@@ -927,7 +958,10 @@ class writeToSQL(MetabolomicsData):
                     commonName = commonName.replace("\n", "")
                     commonName = commonName.replace("\"", "")
                     commonName = commonName.replace(" ", "")
+                    #if database == "wiki":
+                        #print("wiki canme comm", commonName)
                     if commonName is not "NA" and self.is_write_ok(commonName,self.rampGeneIDdictionary[key],key):
+
                         analyteSynonymOutFile.write(commonName.encode('utf-8') + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') +
                                                      b"\t" + b"gene" +b"\t"+database.encode("utf-8")+ b"\t" + key.encode('utf-8') + b"\n")
                 else:
@@ -952,9 +986,10 @@ class writeToSQL(MetabolomicsData):
                                                                             + str(pathwayDictionary[key]).encode('utf-8') + b"\n")
                 #print("Key Right !!")
             except KeyError:
-                print('Key Error')
-                print(key)
-                print(pathwayDictionary[key])
+                pass
+                #print('Key Error')
+                #print(key)
+                #print(pathwayDictionary[key])
 
         
         print("Metabolites linked to genes......................")
@@ -982,8 +1017,9 @@ class writeToSQL(MetabolomicsData):
                                                                                                     + key.encode('utf-8') + b"\n")
 
                 except KeyError:
-                    print('Key Error')
-                    print(key)
+                    pass
+                    #print('Key Error')
+                    #print(key)
 
         
         for key in biofluid:
@@ -992,8 +1028,9 @@ class writeToSQL(MetabolomicsData):
                                                                            + key.encode('utf-8') + b"\t" 
                                                                     + b"biofluid" + b"\n")
             except KeyError:
-                print('Key Error')
-                print(key)
+                pass
+                #print('Key Error')
+                #print(key)
              
         for key in cellularLocation:
             value = cellularLocation[key]
@@ -1004,8 +1041,9 @@ class writeToSQL(MetabolomicsData):
                                                                                                     + key.encode('utf-8')+ b"\n")
 
                 except KeyError:
-                    print('Key Error')
-                    print(key)
+                    pass
+                    #print('Key Error')
+                    #print(key)
 
       
         for key in cellular:
@@ -1013,8 +1051,9 @@ class writeToSQL(MetabolomicsData):
                 ontologyLocationOutFile.write(rampCellularIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"cellular location" + b"\n")
 
             except KeyError:
-                print('Key Error')
-                print(key)
+                pass
+                #print('Key Error')
+                #print(key)
 
         
         for key in pathwayOntology:
@@ -1025,8 +1064,9 @@ class writeToSQL(MetabolomicsData):
             try:
                 ontologyLocationOutFile.write(rampExoEndoIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"origins" + b"\n")
             except KeyError:
-                print('Key Error')
-                print(key)
+                pass
+                # print('Key Error')
+                # print(key)
 
         for key in exoEndoDictionary:
             listOfExoEndo = exoEndoDictionary[key]
@@ -1035,14 +1075,16 @@ class writeToSQL(MetabolomicsData):
                     analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampExoEndoIDdictionary[item].encode('utf-8') + b"\t"
                                                                                                     + key.encode('utf-8') + b"\n" )
                 except KeyError:
-                    print('Key Error')
-                    print(key)
+                    pass
+                    # print('Key Error')
+                    # print(key)
         for key in tissue:
             try:
                 ontologyLocationOutFile.write(rampTissueIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" +b"tissue location" + b"\n")
             except KeyError:
-                print('Key Error')
-                print(key)
+                pass
+                # print('Key Error')
+                # print(key)
         for key in tissueLocation:
             listOfTissue = tissueLocation[key]
             for item in listOfTissue:
@@ -1050,8 +1092,9 @@ class writeToSQL(MetabolomicsData):
                     analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampTissueIDdictionary[item].encode('utf-8') + b"\t"
                                                                                                     + key.encode('utf-8') + b"\n")
                 except KeyError:
-                    print('Key Error')
-                    print(key)
+                    pass
+                    # print('Key Error')
+                    # print(key)
         # Close all files ...
         analyteOutFile.close()
         analyteSynonymOutFile.close()

@@ -86,7 +86,12 @@ class getStatistics():
                         analyteList.append(analyteID)
             
                 rampIDtoanalyteIdDictionary[rampID] = analyteList
-        
+
+        hwF = open("HmdbWiki.txt", "w")
+        hrF = open("HmdbReactome.txt", "w")
+        wrF = open("WikiReactome.txt", "w")
+        hwrF = open("HmdbWikiReactome.txt", "w")
+
         for rampID in rampIdInWhichDatabases:
             
             rampSet = rampIdInWhichDatabases[rampID]
@@ -140,18 +145,21 @@ class getStatistics():
             
             elif rampSet == hrSet:
                 hr = hr + 1
+                hrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hr\n")
             
             elif rampSet == hwSet:
                 hw = hw + 1
+                hwF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hw\n")
             
             elif rampSet == rwSet:
                 rw = rw + 1
+                wrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",rw\n")
@@ -172,6 +180,7 @@ class getStatistics():
             
             elif rampSet == hrwSet:
                 hrw = hrw + 1
+                hwrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hrw\n")
@@ -193,6 +202,10 @@ class getStatistics():
         
         if writeToFiles:
             statisticsOutFile.close()
+        hwF.close()
+        hrF.close()
+        wrF.close()
+        hwrF.close()
         
         wiki = wiki + kw + hw + rw + krw + hrw + khw +  khrw
         hmdb = hmdb + kh + hr + hw + khr + hrw + khw + khrw
@@ -231,7 +244,7 @@ class getStatistics():
         
         for each in [kegg, hmdb, reactome, wiki, kh, kr, kw, hr, hw, rw, khr, krw, hrw, khw, khrw]:
            bash = str(bash) + str(each) + " " 
-            
+        print("values for each:", kegg, hmdb, reactome, wiki, kh, kr, kw, hr, hw, rw, khr, krw, hrw, khw, khrw)
         print(bash)
         
         bash = "Rscript ../__init__/fourVenn.R " + str(bash) + str(analyteType)
