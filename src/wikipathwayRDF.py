@@ -208,6 +208,7 @@ class WikipathwaysRDF(MetabolomicsData):
             self.getMetabolitesIDFromGraph(g,this_pathway)
             self.getGenesIDFromGraph(g, this_pathway)
             #self.getCatalyzation(g, this_pathway)
+        print("End of wiki genes")
     def getGenesIDFromGraph(self,g,this_pathway):
         geneProduct = URIRef('http://vocabularies.wikipathways.org/wp#GeneProduct')
         type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -224,12 +225,18 @@ class WikipathwaysRDF(MetabolomicsData):
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
                          'interpro','refseq','pfam','ecogene','chembl.compound']
         genelist = set()
+        count = 0
+        #print("this pathway:", this_pathway)
         for gene in g.subjects(type_predicate,geneProduct):
+            count=count+1
+            #if this_pathway == 'WP3807':
+             #   print("gene: ", gene)
             bdbLinks = {
                 'Entrez':'http://vocabularies.wikipathways.org/wp#bdbEntrezGene',
                 'UniProt':'http://vocabularies.wikipathways.org/wp#bdbUniprot',
                 'Ensembl':'http://vocabularies.wikipathways.org/wp#bdbEnsembl',
-                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikiData'
+                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikiData',
+                'common_name': 'http://vocabularies.wikipathways.org/wp#bdbHgncSymbol',
             }
             geneMapping = {"kegg": "NA",
                          "common_name": "NA",
@@ -246,6 +253,7 @@ class WikipathwaysRDF(MetabolomicsData):
                          "Entrez" : "NA",
                          "Enzyme Nomenclature": "NA",
                          'WikiData':'NA'}
+
             genesource = gene.split('/')[-2]
             if genesource not in possible_source:
                 continue
@@ -257,10 +265,11 @@ class WikipathwaysRDF(MetabolomicsData):
                 for key,value in bdbLinks.items():
                     for links in g.objects(gene,URIRef(value)):
                         link_id = links.split('/')[-1]
+
                         #print("link id:", link_id)
-                        #if link_id is "TP53":
-                            #print("*****************************found TP53 wiki *****")
                         link_id = self.prependID(key, link_id)
+                        #if this_pathway == 'WP3807':
+                         #   print("link id:", link_id)
                         #print("link id:", link_id)
                         # sometimes URIREF type object accidently appears in link_id var, so avoid it by checking
                         # data type here
@@ -271,14 +280,27 @@ class WikipathwaysRDF(MetabolomicsData):
                             if link_id not in geneMapping[key]:
                                 geneMapping[key].append(link_id)
                 #print('{}\n{}'.format(geneid,geneMapping))
-                self.geneInfoDictionary[geneid] = geneMapping             
-                
+                self.geneInfoDictionary[geneid] = geneMapping
+                #if this_pathway == "WP3807":
+                 #   for key, value in geneMapping.items():
+                  #      print("key ", key)
+                    #     print("value ", value)
+
+        #if this_pathway == "WP3807":
+         #   print("count after gene:", count)
+
+
+        count = 0
         for protein in g.subjects(type_predicate,proteins):
+            count=count+1
+            #if this_pathway == 'WP3807':
+             #   print("protein: ", protein)
             bdbLinks = {
                 'Entrez':'http://vocabularies.wikipathways.org/wp#bdbEntrezGene',
                 'UniProt':'http://vocabularies.wikipathways.org/wp#bdbUniprot',
                 'Ensembl':'http://vocabularies.wikipathways.org/wp#bdbEnsembl',
-                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata'
+                'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata',
+                'common_name': 'http://vocabularies.wikipathways.org/wp#bdbHgncSymbol',
             }
             geneMapping = {"kegg": "NA",
                          "common_name": "NA",
@@ -298,7 +320,6 @@ class WikipathwaysRDF(MetabolomicsData):
             genesource = protein.split('/')[-2]
             geneid = protein.split('/')[-1]
             geneid = self.prependID(genesource, geneid)
-            
             if genesource not in not_retrieved:
                 geneMapping[possible_source[genesource]] = [geneid]
                 genelist.add(geneid)
@@ -316,6 +337,8 @@ class WikipathwaysRDF(MetabolomicsData):
                                 geneMapping[key].append(link_id)
                 self.geneInfoDictionary[geneid] = geneMapping
         self.pathwaysWithGenesDictionary[this_pathway] = list(genelist)
+        #if this_pathway == "WP3807":
+         #   print("count after protein:", count)
         #print('At pathway {}, total {} genes, {} pathways with genes'\
          #     .format(this_pathway,len(self.geneInfoDictionary),len(self.pathwaysWithGenesDictionary)))
         

@@ -538,8 +538,12 @@ class hmdbData(MetabolomicsData):
                                 id_tag_key = sourceid.tag.replace('{http://www.hmdb.ca}','')
                                 mapping_key = idtag[id_tag_key]
                                 #print("******",id_tag_key, mapping_key)
+                                #print(metabohmdbid)
+
                                 if sourceid.text is not None:
                                     if mapping_key is not 'common_name':
+                                        #if metabohmdbid == "hmdb:HMDB0004970":
+                                         #   print("for HMDB0004970:", [prefix[mapping_key] + sourceid.text], mapping_key)
                                         mapping[mapping_key] = [prefix[mapping_key] + sourceid.text]
                                     else:
                                         mapping[mapping_key] = sourceid.text
