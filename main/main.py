@@ -52,7 +52,7 @@ class Main():
         kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", hmdbgenenum)
         wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", kegggenenum)
         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", wikigenenum)
-        
+        print(" hmdbgenenum ", hmdbgenenum, " kegggenenum ", kegggenenum, " wikigenenum ", wikigenenum, " reactomegenenum ", reactomegenenum)
         print('Write to sql file...')
         hmdbnumbers = sql.write(
                  hmdb.metaboliteCommonName,
@@ -213,11 +213,11 @@ class Main():
                  wikipathways.pathwayOntology,
                  wikipathways.exoEndoDictionary,
                  "wiki")
-        #print("fine till hwer")
-        stat.Apoptosis(sql.rampGeneIDdictionary,
-                        wikipathways.pathwaysWithGenesDictionary,
-                        kegg.pathwaysWithGenesDictionary,
-                        reactome.pathwaysWithGenesDictionary)
+
+        #stat.Apoptosis(sql.rampGeneIDdictionary,
+         #               wikipathways.pathwaysWithGenesDictionary,
+          #              kegg.pathwaysWithGenesDictionary,
+           #             reactome.pathwaysWithGenesDictionary)
 
         
         
