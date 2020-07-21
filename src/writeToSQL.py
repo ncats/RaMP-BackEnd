@@ -1,6 +1,6 @@
 import time
 from MetabolomicsData import MetabolomicsData
-
+from collections import defaultdict
 
 
 class writeToSQL(MetabolomicsData):
@@ -229,7 +229,7 @@ class writeToSQL(MetabolomicsData):
                 # assume the entry will only overlap with another entry
                 overlap_id = list(overlap)[0]
                 ramp_id = self.rampCompoundIDdictionary[overlap_id]
-                # add to set of inwhich database dictionary
+                # add to set of in which database dictionary
                 if ramp_id not in self.rampCompoundIdInWhichDatabases:
                     setOfDatabases = set()
                     setOfDatabases.add(database)
@@ -263,28 +263,45 @@ class writeToSQL(MetabolomicsData):
         lengthOfIndex = len(str(rampGeneIDnumber))
         prefix = lengthOfID - lengthOfIndex
         rampGeneIDToFile = str(rampGeneID[:prefix]) + str(rampGeneIDnumber)
-
-        
+        #to check how many uniprot has NA
+        countWikiNonUniProt = 0
         for key in geneInfoDictionary:
             isThisNewGene = False    
             mapping = geneInfoDictionary[key]
             listOfIDs = []
+            flag = False
             for key2 in mapping:
                 ids = mapping[key2]
+                if database == "wiki":
+                    if mapping["UniProt"] == "NA":
+                        flag = True
                 if key2 == 'common_name':
                     continue
                 if ids is not 'NA' and type(ids) is list:
-                    listOfIDs.extend([id for id in ids])
+                    if database == "reactome":
+                        for each in ids:
+                            listOfIDs.append("uniprot:"+each)
+                    else:
+                        listOfIDs.extend([id for id in ids])
                 elif ids is not 'NA' and type(ids) is str:
-                    listOfIDs.append(ids)
+                    if database == "reactome":
+                        listOfIDs.append("uniprot:"+ids)
+                    else:
+                        listOfIDs.append(ids)
             #print('{} has id mapping {}'.format(key,listOfIDs))
             #time.sleep(3)
+            if flag == True:
+                countWikiNonUniProt = countWikiNonUniProt+1
+                #print("UniProt NA: ", key)
             isThisNewGene = True
-            overlap = []
+            overlap = set()
             for eachid in listOfIDs:
+                #print("eachid", eachid)
+                #if eachid == "uniprot:Q16739":
+                 #   print("database fro Q16739:", database)
                 if eachid in self.rampGeneIDdictionary:
                     isThisNewGene = False
-                    overlap.append(eachid)
+                    overlap.add(eachid)
                     '''
                     if len(overlap) > 2 :
                         print('Note: Two or more ids {} are overlaped'.format(overlap))
@@ -302,12 +319,25 @@ class writeToSQL(MetabolomicsData):
                     setOfDatabases.add(database)
                     self.rampGeneIdInWhichDatabases[rampGeneIDToFile] = setOfDatabases 
                 else:
-                    overlap_id = listOfIDs[0]
+                    #print("yes overlap", eachid, database)
+                    overlap_id = list(overlap)[0]
                     ramp_id = self.rampGeneIDdictionary[overlap_id]
+                    if ramp_id not in self.rampGeneIdInWhichDatabases:
+                        setOfDatabases = set()
+                        setOfDatabases.add(database)
+                        self.rampGeneIdInWhichDatabases[ramp_id] = setOfDatabases
+                    else:
+                        self.rampGeneIdInWhichDatabases[ramp_id].add(database)
+                    for eachid in listOfIDs:
+                        self.rampGeneIDdictionary[eachid] = ramp_id
+
+                    '''
                     for eachid in listOfIDs:
                         if eachid not in self.rampGeneIDdictionary:
                             self.rampGeneIDdictionary[eachid] = ramp_id
                     self.rampGeneIdInWhichDatabases[ramp_id].add(database)
+                    '''
+        print("NA wiki uniprots:", countWikiNonUniProt)
         print('There are {} unique genes based on ramp id'.format(len(set(self.rampGeneIDdictionary.values()))))
         return rampGeneIDnumber
     def is_write_ok(self,*arg):
@@ -371,6 +401,7 @@ class writeToSQL(MetabolomicsData):
               exoEndo,
               tissueLocation,
               tissue,
+              inchi,
               database, 
               rampPathwayIDnumber = 0,
               rampOntologyLocationIDnumber = 0):
@@ -489,11 +520,183 @@ class writeToSQL(MetabolomicsData):
         analyteHasOntologyLocationOutFile = open("../misc/sql/" + str(database) + "analyteHasOntologyLocation.sql", "wb")
         pathwayOntologyOutFile = open("../misc/sql/" + str(database) + "PathwayOntology.sql", "wb")
         endoExoOutFile = open("../misc/sql/" + str(database) + "EndoExo.sql", "wb")
+        inchiFile = open("../misc/sql/" + str(database) + "inchi.sql", 'wb')
         
         #METABOLITE
         #analyte
         #analytehaspathway
+
+
+# hmdb - rampid
+        '''  
+        for key in self.rampCompoundIDdictionary:
+            value = self.rampCompoundIDdictionary[key]
+            for listItem in value:
+                if listItem is not None:
+                    print("ramp id : ", value, "id: ", key, "listIten", listItem)
+            #print("rampid", self.rampCompoundIDdictionary[key])
+        '''
+
+        #for key in metaboliteIDDictionary:
+        #    print("meta ", metaboliteIDDictionary[key])
+
+        myRaMp = defaultdict(list)
+        for key, value in self.rampCompoundIDdictionary.items():
+            if key.startswith("smiles"):
+                continue
+            myRaMp[value].append(key)
+        #this is for gene
+        myRaMpGene = defaultdict(list)
+        for key, value in self.rampGeneIDdictionary.items():
+            myRaMpGene[value].append(key)
+
+        with open("RaMPtoGenes.txt", "w") as file:
+            for key, value in myRaMpGene.items():
+                file.write(key + " " + " ".join(value) + "\n")
+                # print("key: ", key, "value :", "|".join(value))
+        #Ramp to source mapping. Tells how many souceids are there in each rampid
+        '''
+        with open("RaMPtoIds1.txt", "w") as file:
+            for key, value in myRaMp.items():
+                file.write(key + " "+" ".join(value)+"\n")
+                #print("key: ", key, "value :", "|".join(value))
+
+        print("HMDB")
+        hmdb =defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('hmdb'):
+                    count=count+1
+            hmdb[count]=hmdb[count]+1
+            if count > 10:
+               print(count, "Rampid ", key)
+
+        for i, val in hmdb.items():
+            print("HMDB****", i, " ", val)
+
+        print("chebi")
+        chebi = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('chebi'):
+                    count = count + 1
+            chebi[count] = chebi[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in chebi.items():
+            print("Chebi****", i, " ", val)
+
+        print("pubchem")
+        pubchem = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('hmdb'):
+                    count = count + 1
+            pubchem[count] = pubchem[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in pubchem.items():
+            print("pubchem****", i, " ", val)
+
+        print("kegg")
+        kegg = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('kegg'):
+                    count = count + 1
+            kegg[count] = kegg[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in kegg.items():
+            print("kegg****", i, " ", val)
+
+        print("wikidata")
+        wikidata = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('wikidata'):
+                    count = count + 1
+            wikidata[count] = wikidata[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in wikidata.items():
+            print("wikidata****", i, " ", val)
+
+        print("CAS")
+        CAS = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('CAS'):
+                    count = count + 1
+            CAS[count] = CAS[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in CAS.items():
+            print("CAS****", i, " ", val)
+
+        print("chemspider")
+        chemspider = defaultdict(int)
+        for key in myRaMp:
+            count = 0
+            for value in myRaMp[key]:
+                if value.startswith('chemspider'):
+                    count = count + 1
+            chemspider[count] = chemspider[count] + 1
+            if count > 10:
+                print(count, "Rampid ", key)
+
+        for i, val in chemspider.items():
+            print("chemspider****", i, " ", val)
+        '''
+
+        '''
+        for key in myRaMp:
+            value = myRaMp[key]
+            for listItem in value:
+                if listItem is not None:
+                    print("key: ", key, "value :", listItem
+        '''
+
+
+        # common chebi to hmdb, wiki, reactome
+        '''
+        for key, value in myRaMp.items():
+            chebi, hmdb, kegg, wiki, reactome = False, False, False, False, False
+            chebiId = ""
+            for item in value:
+                if item.startswith("chebi"):
+                    chebi = True
+                    chebiId = item
+                if item.startswith("hmdb"):
+                    hmdb = True
+                if item.startswith("kegg"):
+                    kegg = True
+                if item.startswith("wikidata"):
+                    wiki = True
+                if item.startswith("reactome"):
+                    reactome = True
+
+            if chebi and hmdb and kegg and wiki:
+                print("chebi id", chebiId)
+        '''
+
+
+
+
         print("I'm analyte +analytehaspathway")
+        pathwayChebi = set()
+        pathwayNotChebi = set()
         for key in metabolitesWithPathwaysDictionary:
                 value = metabolitesWithPathwaysDictionary[key]
                 for listItem in value:
@@ -503,10 +706,38 @@ class writeToSQL(MetabolomicsData):
                             if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
                                 analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
                                                                                              +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
-                                                                                             + str(database).encode('utf-8') + b"\n") 
+                                                                                             + str(database).encode('utf-8') + b"\n")
+                                flag = False
+                                if key.startswith("hmdb"):
+                                    for valueid in myRaMp[self.rampCompoundIDdictionary[key]]:
+                                        if valueid.startswith("chebi"):
+                                            #print("HMDB keys: ", key)
+                                            pathwayChebi.add(key)
+                                            flag = True
+                                    if flag is False:
+                                        pathwayNotChebi.add(key)
+
                         except KeyError:
-                            print(str(KeyError) + " When writing analytehaspathways ...")
-                            print(key)
+                            pass
+                            #print(str(KeyError) + " When writing analytehaspathways ...")
+                            #print(key)
+
+
+        for key in metabolitesWithPathwaysDictionary:
+                value = metabolitesWithPathwaysDictionary[key]
+                for listItem in value:
+                    #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
+                    if key is not "":
+
+                        try:
+                            if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
+                                inchiFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
+                                                                                             +  str(inchi[key]).encode('utf-8') + b"\t"
+                                                                                             + str(database).encode('utf-8') + b"\n")
+                        except KeyError:
+                            pass
+                            #print(str(KeyError) + " When writing analytehaspathways ...")
+                            #print(key)
         #GENE
         #analytehaspathway 
         print("Im analytehaspathway + Gene")                                                                                
@@ -516,11 +747,23 @@ class writeToSQL(MetabolomicsData):
                 try:
                     if self.is_write_ok(str(self.rampGeneIDdictionary[listItem]),str(rampPathwayIDdictionary[key]),str(database)):
                         analyteHasPathwayOutFile.write(str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\t" +  str(rampPathwayIDdictionary[key]).encode('utf-8') + b"\t" + str(database).encode('utf-8') + b"\n")
+                        '''
+                        flag = False
+                        if key.startswith("hmdb"):
+                            for valueid in myRaMp[self.rampCompoundIDdictionary[key]]:
+                                if valueid.startswith("chebi"):
+                                    pathwayChebi.add(key)
+                                    flag = True
+                            if flag is False:
+                                pathwayNotChebi.add(key)
+                        '''
 
                 except KeyError:
-                    print(str(KeyError) + " when writing genes has pathways ..." +listItem)
+                    pass
+                    #print(str(KeyError) + " when writing genes has pathways ..." +listItem)
 
-                    
+        #print("pathway chebi **** ", len(pathwayChebi))
+        #print("pathway NOt chebi **** ", len(pathwayNotChebi))
         #GENE
         #analyte
         for key in geneInfoDictionary:
@@ -567,12 +810,15 @@ class writeToSQL(MetabolomicsData):
                                       commonName)
         #GENE
         #Source
+
+
         for key in geneInfoDictionary:
             mapping = geneInfoDictionary[key]
             #key = key.replace("HMDBP","HMDB")
             
             uniprotid = mapping['UniProt']
             hmdbgeneid = mapping['HMDB_protein_accession']
+
             entrez = mapping["Entrez"]
             enzymeNomenclature = mapping["Enzyme Nomenclature"]
             ensembl = mapping["Ensembl"]
@@ -613,16 +859,19 @@ class writeToSQL(MetabolomicsData):
                                         b"\t" + b"uniprot" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
                 if hmdbgeneid is not "NA":
+
                     if type(hmdbgeneid) is str:
+
                         sourceOutFile.write(hmdbgeneid.encode('utf-8') + b"\t" +
                                              self.rampGeneIDdictionary[key].encode('utf-8') +
                                               b"\t" + b"hmdb" + b"\t" + b"gene"+
                                               b"\t" + NameForSource.encode("utf-8") + b"\n")
                     elif type(hmdbgeneid) is list:
                         for each in hmdbgeneid:
+
                             sourceOutFile.write(each.encode('utf-8') + b"\t" 
                                         + self.rampGeneIDdictionary[key].encode('utf-8') + 
-                                        b"\t" + b"uniprot" + b"\t" + b"gene"
+                                        b"\t" + b"hmdb" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                 if entrez is not "NA":
@@ -676,7 +925,8 @@ class writeToSQL(MetabolomicsData):
                                                  + b"\t" + b"kegg" + b"\t" + b"gene"
                                                   + b"\t" + NameForSource.encode("utf-8") + b"\n")  
             else:
-                print("This gene id {} does not have Ramp Gene Id".format(key))            
+                pass
+                #print("This gene id {} does not have Ramp Gene Id".format(key))
                 #time.sleep(0.1)
         #METABOLITE
         #metabolite with synonym (synonyms for the common name)
@@ -692,14 +942,13 @@ class writeToSQL(MetabolomicsData):
                     analyteSynonymOutFile.write(listItem.encode('utf-8') + b"\t" + 
                                                 self.rampCompoundIDdictionary[key].encode('utf-8') + 
                                                 b"\t" + b"compound" +b"\t"+
-                                                database.encode("utf-8") +  b"\n")
+                                                database.encode("utf-8") + b"\t" + key.encode('utf-8') +  b"\n")
         
         
         #Gene
         #gene with synonym
         for key in geneInfoDictionary:
             if key in self.rampGeneIDdictionary:
-                
                 mapping = geneInfoDictionary[key]
                 commonName = mapping['common_name']
                 if commonName is None:
@@ -709,9 +958,12 @@ class writeToSQL(MetabolomicsData):
                     commonName = commonName.replace("\n", "")
                     commonName = commonName.replace("\"", "")
                     commonName = commonName.replace(" ", "")
+                    #if database == "wiki":
+                        #print("wiki canme comm", commonName)
                     if commonName is not "NA" and self.is_write_ok(commonName,self.rampGeneIDdictionary[key],key):
+
                         analyteSynonymOutFile.write(commonName.encode('utf-8') + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') +
-                                                     b"\t" + b"gene" +b"\t"+database.encode("utf-8")+ b"\n")
+                                                     b"\t" + b"gene" +b"\t"+database.encode("utf-8")+ b"\t" + key.encode('utf-8') + b"\n")
                 else:
                     for item in commonName:
                         item = item.replace("\n", "")
@@ -720,7 +972,7 @@ class writeToSQL(MetabolomicsData):
                         if item is not "NA" and self.is_write_ok(item,self.rampGeneIDdictionary[key],key):
                             analyteSynonymOutFile.write(item.encode('utf-8') + b"\t" + 
                                                         self.rampGeneIDdictionary[key].encode('utf-8') 
-                                                        + b"\t" + b"gene"+b"\t" +database.encode("utf-8") + b"\n")
+                                                        + b"\t" + b"gene"+b"\t" +database.encode("utf-8") + b"\t" + key.encode('utf-8') + b"\n")
                         
         #PATHWAY
         #pathway name   
@@ -734,10 +986,11 @@ class writeToSQL(MetabolomicsData):
                                                                             + str(pathwayDictionary[key]).encode('utf-8') + b"\n")
                 #print("Key Right !!")
             except KeyError:
-                print('Key Error')
-                print(key)
-                print(pathwayDictionary[key])
-                time.sleep(10)
+                pass
+                #print('Key Error')
+                #print(key)
+                #print(pathwayDictionary[key])
+
         
         print("Metabolites linked to genes......................")
         for key in metabolitesLinkedToGenes:
@@ -745,7 +998,8 @@ class writeToSQL(MetabolomicsData):
             for listItem in value:
                 try:
                     if self.is_write_ok(str(self.rampCompoundIDdictionary[key],),str(self.rampGeneIDdictionary[listItem]),key,listItem):
-                        catalyzedOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t" + str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\n")
+                        catalyzedOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t" + str(self.rampGeneIDdictionary[listItem]).encode('utf-8') + b"\t"
+                                                                                                    + key.encode('utf-8')  + b"\n")
                 except:
                     pass 
 
@@ -757,41 +1011,90 @@ class writeToSQL(MetabolomicsData):
         for key in biofluidLocation:
             value = biofluidLocation[key]
             for listItem in value:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
-                                                                                                    + rampBiofluidIDdictionary[listItem].encode('utf-8') + b"\n")
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t"
+                                                                                                    + rampBiofluidIDdictionary[listItem].encode('utf-8') + b"\t"
+                                                                                                    + key.encode('utf-8') + b"\n")
+
+                except KeyError:
+                    pass
+                    #print('Key Error')
+                    #print(key)
+
         
         for key in biofluid:
-            ontologyLocationOutFile.write(rampBiofluidIDdictionary[key].encode('utf-8') + b"\t" 
+            try:
+                ontologyLocationOutFile.write(rampBiofluidIDdictionary[key].encode('utf-8') + b"\t"
                                                                            + key.encode('utf-8') + b"\t" 
                                                                     + b"biofluid" + b"\n")
+            except KeyError:
+                pass
+                #print('Key Error')
+                #print(key)
              
         for key in cellularLocation:
             value = cellularLocation[key]
             for listItem in value:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
-                                                                                                            + rampCellularIDdictionary[listItem].encode('utf-8') + b"\n")
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t"
+                                                                                                            + rampCellularIDdictionary[listItem].encode('utf-8') + b"\t"
+                                                                                                    + key.encode('utf-8')+ b"\n")
+
+                except KeyError:
+                    pass
+                    #print('Key Error')
+                    #print(key)
+
       
         for key in cellular:
-            ontologyLocationOutFile.write(rampCellularIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"cellular location" + b"\n")
+            try:
+                ontologyLocationOutFile.write(rampCellularIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"cellular location" + b"\n")
+
+            except KeyError:
+                pass
+                #print('Key Error')
+                #print(key)
+
         
         for key in pathwayOntology:
             listOfPathways =  pathwayOntology[key] 
             for listItem in listOfPathways:
                 pathwayOntologyOutFile.write(key.encode('utf-8')  + b"\t" + listItem.encode('utf-8') + b"\n")
         for key in exoEndo:
-            ontologyLocationOutFile.write(rampExoEndoIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"origins" + b"\n")  
-        
+            try:
+                ontologyLocationOutFile.write(rampExoEndoIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" + b"origins" + b"\n")
+            except KeyError:
+                pass
+                # print('Key Error')
+                # print(key)
+
         for key in exoEndoDictionary:
             listOfExoEndo = exoEndoDictionary[key]
             for item in listOfExoEndo:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampExoEndoIDdictionary[item].encode('utf-8') + b"\n" )
-        
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampExoEndoIDdictionary[item].encode('utf-8') + b"\t"
+                                                                                                    + key.encode('utf-8') + b"\n" )
+                except KeyError:
+                    pass
+                    # print('Key Error')
+                    # print(key)
         for key in tissue:
-            ontologyLocationOutFile.write(rampTissueIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" +b"tissue location" + b"\n")    
+            try:
+                ontologyLocationOutFile.write(rampTissueIDdictionary[key].encode('utf-8') + b"\t" + key.encode('utf-8') + b"\t" +b"tissue location" + b"\n")
+            except KeyError:
+                pass
+                # print('Key Error')
+                # print(key)
         for key in tissueLocation:
             listOfTissue = tissueLocation[key]
             for item in listOfTissue:
-                analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampTissueIDdictionary[item].encode('utf-8') + b"\n")
+                try:
+                    analyteHasOntologyLocationOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" + rampTissueIDdictionary[item].encode('utf-8') + b"\t"
+                                                                                                    + key.encode('utf-8') + b"\n")
+                except KeyError:
+                    pass
+                    # print('Key Error')
+                    # print(key)
         # Close all files ...
         analyteOutFile.close()
         analyteSynonymOutFile.close()

@@ -7,7 +7,7 @@ namespace mysqlBatch
 {
 	public class Program
 	{
-        public String sqlFilesLocation = "/Users/81963/Documents/workspace/RaMP/misc/sql/";
+        public String sqlFilesLocation = "/Users/pati13/Downloads/RaMP-BackEnd-manju/misc/sql/";
 
 		static void Main(string[] args)
 		{
@@ -45,7 +45,7 @@ namespace mysqlBatch
 			prog.BulkImport("keggcatalyzed.sql", "catalyzed", "SELECT rampCompoundId, rampGeneId FROM catalyzed");
 			prog.BulkImport("wikicatalyzed.sql", "catalyzed", "SELECT rampCompoundId, rampGeneId FROM catalyzed");
             //analyteHasOntology
-            prog.BulkImport("hmdbanalyteHasOntologyLocation.sql", "analyteHasOntology", "SELECT rampCompoundId, rampOntologyIdLocation FROM analyteHasOntology");
+            prog.BulkImport("hmdbanalyteHasOntologyLocation.sql", "analyteHasOntology", "SELECT rampId, rampOntologyIdLocation FROM analyteHasOntology");
             //ontology
             prog.BulkImport("hmdbOntologyLocation.sql", "ontology", "SELECT rampOntologyIdLocation, commonName, biofluidORcellular FROM ontology");
             // source Id + Origin
@@ -56,7 +56,7 @@ namespace mysqlBatch
 
         public void createDatabaseAndAllTables(){
 
-			string connStr = "server=localhost;user=root;database=mathelabramp;port=3306;password=Ehe131224";
+			string connStr = "server=localhost;user=root;database=ramp;port=3306;password=Autumn6265";
 			MySqlConnection conn = new MySqlConnection(connStr);
 
             //string stringCreateDatabase = "create database mathelabramp;";
@@ -64,9 +64,9 @@ namespace mysqlBatch
             string stringCreateTable2 = "create table analyte (rampId VARCHAR(30), type VARCHAR(30), PRIMARY KEY (rampId)) engine = InnoDB;";
             string stringCreateTable3 = "create table pathway (pathwayRampId VARCHAR(30), sourceId VARCHAR(30),type VARCHAR(30), pathwayCategory VARCHAR(30), pathwayName VARCHAR(250), PRIMARY KEY (pathwayRampId)) engine = InnoDB;";
             string stringCreateTable4 = "create table analyteHasPathway (rampId VARCHAR(30), pathwayRampId VARCHAR(30), pathwaySource VARCHAR(30)) engine = InnoDB;";
-            string stringCreateTable5 = "create table analyteSynonym (Synonym VARCHAR(500), rampId VARCHAR(30), geneOrCompound VARCHAR(30), source VARCHAR(30)) engine = InnoDB;";
-            string stringCreateTable6 = "create table catalyzed (rampCompoundId VARCHAR(30), rampGeneId VARCHAR(30)) engine = InnoDB;";
-            string stringCreateTable7 = "create table analyteHasOntology (rampCompoundId VARCHAR(30), rampOntologyIdLocation VARCHAR(30)) engine = InnoDB;";
+            string stringCreateTable5 = "create table analyteSynonym (Synonym VARCHAR(500), rampId VARCHAR(30), geneOrCompound VARCHAR(30), source VARCHAR(30), sourceId VARCHAR(30)) engine = InnoDB;";
+            string stringCreateTable6 = "create table catalyzed (rampId VARCHAR(30), rampGeneId VARCHAR(30), sourceId VARCHAR(30)) engine = InnoDB;";
+            string stringCreateTable7 = "create table analyteHasOntology (rampId VARCHAR(30), OntologyRampId VARCHAR(30), sourceId VARCHAR(30)) engine = InnoDB;";
             string stringCreateTable8 = "create table ontology (rampOntologyIdLocation VARCHAR(30), commonName VARCHAR(30), biofluidORcellular VARCHAR(30)) engine = InnoDB;";
 // string stringCreateTable9 = "create table ontologyHasOrigin (sourceId VARCHAR(30), origin VARCHAR(30)) engine = InnoDB;";
 
@@ -108,7 +108,7 @@ namespace mysqlBatch
         public void BulkImport(string fileName, string destinationTableName, string command)
 		{
 
-			string connStr = "server=localhost;user=root;database=mathelabramp;port=3306;password=Ehe131224";
+			string connStr = "server=localhost;user=root;database=ramp;port=3306;password=Autumn6265";
 			MySqlConnection conn = new MySqlConnection(connStr);
 
 

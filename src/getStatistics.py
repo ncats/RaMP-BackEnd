@@ -72,12 +72,13 @@ class getStatistics():
         
         khrwSet = set(["kegg", "hmdb", "wiki", "reactome"])
         
-        
+        #if analyteType is "Gene":
+
         if writeToFiles:
             rampIDtoanalyteIdDictionary = {}
             num = 0
             for rampID in rampIdInWhichDatabases:
-                print("processing analyte number: " + str(num) + "/" + str(len(rampIdInWhichDatabases)))
+                #print("processing analyte number: " + str(num) + "/" + str(len(rampIdInWhichDatabases)))
                 num = num + 1
                 analyteList = []
                 for analyteID in rampIdDictionary:
@@ -85,7 +86,12 @@ class getStatistics():
                         analyteList.append(analyteID)
             
                 rampIDtoanalyteIdDictionary[rampID] = analyteList
-        
+
+        hwF = open("HmdbWiki.txt", "w")
+        hrF = open("HmdbReactome.txt", "w")
+        wrF = open("WikiReactome.txt", "w")
+        hwrF = open("HmdbWikiReactome.txt", "w")
+
         for rampID in rampIdInWhichDatabases:
             
             rampSet = rampIdInWhichDatabases[rampID]
@@ -99,7 +105,6 @@ class getStatistics():
             
             elif rampSet == hmdbSet:
                 hmdb = hmdb + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hmdb\n")
@@ -117,10 +122,9 @@ class getStatistics():
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",wiki\n")
-            
+
             elif rampSet == khSet:
                 kh = kh + 1
-                
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",kh\n")
@@ -141,21 +145,21 @@ class getStatistics():
             
             elif rampSet == hrSet:
                 hr = hr + 1
-                
+                hrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hr\n")
             
             elif rampSet == hwSet:
                 hw = hw + 1
-                
+                hwF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hw\n")
             
             elif rampSet == rwSet:
                 rw = rw + 1
-                
+                wrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",rw\n")
@@ -176,7 +180,7 @@ class getStatistics():
             
             elif rampSet == hrwSet:
                 hrw = hrw + 1
-                
+                hwrF.write(rampID + "\n")
                 if writeToFiles:
                     value = rampIDtoanalyteIdDictionary[rampID]
                     statisticsOutFile.write(":".join(value).encode("utf-8") + b",hrw\n")
@@ -198,6 +202,10 @@ class getStatistics():
         
         if writeToFiles:
             statisticsOutFile.close()
+        hwF.close()
+        hrF.close()
+        wrF.close()
+        hwrF.close()
         
         wiki = wiki + kw + hw + rw + krw + hrw + khw +  khrw
         hmdb = hmdb + kh + hr + hw + khr + hrw + khw + khrw
@@ -236,7 +244,7 @@ class getStatistics():
         
         for each in [kegg, hmdb, reactome, wiki, kh, kr, kw, hr, hw, rw, khr, krw, hrw, khw, khrw]:
            bash = str(bash) + str(each) + " " 
-            
+        print("values for each:", kegg, hmdb, reactome, wiki, kh, kr, kw, hr, hw, rw, khr, krw, hrw, khw, khrw)
         print(bash)
         
         bash = "Rscript ../__init__/fourVenn.R " + str(bash) + str(analyteType)
@@ -520,7 +528,7 @@ class getStatistics():
         
                 wikiGenes = pathwaysWithGenesDictionaryWiki["WP254"]
                 reactomeGenes = pathwaysWithGenesDictionaryReactome["R-HSA-109581"]
-                keggGenes = pathwaysWithGenesDictionaryKegg["04210"]
+                #keggGenes = pathwaysWithGenesDictionaryKegg["04210"]
                 
                 wikiGenesRamp = set()
                 reactomeGenesRamp = set()
@@ -534,24 +542,24 @@ class getStatistics():
                     rampID = rampIdDictionary[item]
                     reactomeGenesRamp.add(rampID)
                 
-                for item in keggGenes:
-                    rampID = rampIdDictionary[item]
-                    keggGenesRamp.add(rampID)
+                #for item in keggGenes:
+                #    rampID = rampIdDictionary[item]
+                #    keggGenesRamp.add(rampID)
                 
                 
                 
                 w=len(wikiGenesRamp)
                 r=len(reactomeGenesRamp)
-                k=len(keggGenesRamp)
+                #k=len(keggGenesRamp)
                 wr=len(wikiGenesRamp.intersection(reactomeGenesRamp))
-                rk=len(reactomeGenesRamp.intersection(keggGenesRamp))
-                kw=len(keggGenesRamp.intersection(wikiGenesRamp))
-                rwk=len(keggGenesRamp.intersection(wikiGenesRamp).intersection(reactomeGenesRamp))
+                #rk=len(reactomeGenesRamp.intersection(keggGenesRamp))
+                #kw=len(keggGenesRamp.intersection(wikiGenesRamp))
+                #rwk=len(keggGenesRamp.intersection(wikiGenesRamp).intersection(reactomeGenesRamp))
                 
 
                 bash = ""
-        
-                for each in [w, r, k, wr, rk, kw, rwk]:
+                for each in [w, r, 0, wr, 0, 0, 0]:
+                #for each in [w, r, k, wr, rk, kw, rwk]:
                     bash = str(bash) + str(each) + " " 
             
                 print(bash)
