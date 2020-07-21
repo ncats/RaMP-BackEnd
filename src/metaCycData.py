@@ -22,16 +22,16 @@ class metaCycData():
         for child in root:
             tagtext = self.removeNameSpace(child.tag,'2')
             text = self.removeNameSpace(child.text,'2')
-            print(child.tag +"|"+ child.text)
-            print("After clearning ..." + tagtext)
+            #print(child.tag +"|"+ child.text)
+            #print("After clearning ..." + tagtext)
             #for child2 in child.iter()
             for organism in child.iter("{http://www.biopax.org/release/biopax-level2.owl#}ORGANISM"):
-                print("Found ...")
-                print(self.removeNameSpace(organism.tag,'2'))
+                #print("Found ...")
+                #print(self.removeNameSpace(organism.tag,'2'))
                 for name in organism.iter("{http://www.biopax.org/release/biopax-level2.owl#}NAME"):
-                    print("Have name !")
+                    #print("Have name !")
                     nametext = name.text
-                    print("The organism's name is "+ nametext)
+                    #print("The organism's name is "+ nametext)
                     if nametext not in self.organism:
                         self.organism[nametext] = 1
                     else:
@@ -74,17 +74,17 @@ class metaCycData():
         for child in root:
             tagtext = self.removeNameSpace(child.tag,'3')
             text = self.removeNameSpace(child.text,'3')
-            print(child.tag +"|"+ child.text)
-            print("After clearning ..." + tagtext)
+            #print(child.tag +"|"+ child.text)
+            #print("After clearning ..." + tagtext)
             #time.sleep(3)
             #for child2 in child.iter()
             for organism in child.iter("{http://www.biopax.org/release/biopax-level3.owl#}organism"):
-                print("Found ...")
-                print(self.removeNameSpace(organism.tag,'3'))
+                #print("Found ...")
+                #print(self.removeNameSpace(organism.tag,'3'))
                 for name in organism.iter("{http://www.biopax.org/release/biopax-level3.owl#}name"):
-                    print("Have name !")
+                    #print("Have name !")
                     nametext = name.text
-                    print("The organism's name is "+ nametext)
+                    #print("The organism's name is "+ nametext)
                     if nametext not in self.organism:
                         self.organism[nametext] = 1
                     else:
@@ -95,7 +95,7 @@ class metaCycData():
             number = self.organism[key]
             organismName.write(key.encode('utf-8') +b'\t'+str(number).encode('utf-8') +b'\n')
             
-        print("Total organisms: "+ str(len(self.organism)))
+        #print("Total organisms: "+ str(len(self.organism)))
         
     '''
     Find all pathways then add them to dictionary
@@ -125,7 +125,7 @@ class metaCycData():
         
         ns = {"bp":"http://www.biopax.org/release/biopax-level2.owl#"} 
         for child in root.findall('bp:physicalEntityParticipant',ns):
-            print(child.tag)
+            #print(child.tag)
             physical = child.find('bp:PHYSICAL-ENTITY',ns)
             metabolite = physical.find('bp:smallMolecule',ns)
             protein = physical.find('bp:protein',ns)

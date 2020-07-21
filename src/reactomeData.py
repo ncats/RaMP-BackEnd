@@ -81,11 +81,16 @@ class reactomeData(MetabolomicsData):
         print("Getting common names for genes ...")
         
         self.getGenes()
-        self.downloadCommonNameFromUniprot()
-        self.getCommonNameFromUniprot()
-        if writeToFile:
-            self.write_myself_files('reactome')  
+        print("Getting common names for genes1 ...")
 
+        self.downloadCommonNameFromUniprot()
+        print("Getting common names for genes 2...")
+        self.getCommonNameFromUniprot()
+        print("Getting common names for genes 3...")
+        if writeToFile:
+            self.write_myself_files('reactome')
+
+        print("Done with ReactomeT ...")
     def getDatabaseFiles(self):
         
         '''This function gets the files that make up reactome and places them into the reactome folder. 
@@ -97,7 +102,7 @@ class reactomeData(MetabolomicsData):
         url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
                                                               "../misc/data/reactome/",
                                                               "ChEBI2Reactome_All_Levels.txt")
-        
+        existed = os.listdir(dir_proteins)
         if self.check_path(dir_proteins) :  
             
             if file_metabolites not in existed or file_proteins not in existed:                                                
@@ -125,8 +130,12 @@ class reactomeData(MetabolomicsData):
             if len(splitline) > 2:
                 if "Homo sapiens" in splitline[5]:
                     gene = splitline[0]
+                    #gene = 'uniprot:'+gene
+                    #print("gene:", gene)
                     pathwayID = splitline[1]
+                    #print("pathwayID:", pathwayID)
                     pathwayName = splitline[3]
+                    #print("pathwayName:", pathwayName)
                     
                     mapping = { 'kegg': 'NA',
                                 'common_name': 'NA',
@@ -144,15 +153,15 @@ class reactomeData(MetabolomicsData):
                                 'Enzyme Nomenclature': 'NA'}
 
                     if pathwayID not in self.pathwaysWithGenesDictionary:
-                        self.pathwaysWithGenesDictionary[pathwayID] = [gene]
+                        self.pathwaysWithGenesDictionary[pathwayID] = ['uniprot:'+gene]
                         self.pathwayDictionary[pathwayID] = pathwayName
                         self.pathwayCategory[pathwayID] = "NA"
-                        self.geneInfoDictionary[gene] = mapping
-                         
+                        self.geneInfoDictionary['uniprot:'+gene] = mapping
+                        #'uniprot:'+
                     else: 
                         listOfGenes = self.pathwaysWithGenesDictionary[pathwayID]
-                        listOfGenes.append(gene)
-                        self.geneInfoDictionary[gene] = mapping
+                        listOfGenes.append('uniprot:'+gene)
+                        self.geneInfoDictionary['uniprot:'+gene] = mapping
                         self.pathwaysWithGenesDictionary[pathwayID] = listOfGenes
                  
     
@@ -259,13 +268,15 @@ class reactomeData(MetabolomicsData):
             "wiki": wikidict,
             }
         for key in self.geneInfoDictionary:
-            reactGeneIds.append(key)
-        print("Total " + str(len(reactGeneIds)) +" without a common name")
+            splitline = key.split(":")
+            reactGeneIds.append(splitline[1])
+        #print("Total " + str(len(reactGeneIds)) +" without a common name")
         uniprot_commonName = dict()
         for key in otherdatabase:
             geneInfo = otherdatabase[key]
             if geneInfo is not None:
                 for key2 in geneInfo:
+                    #print("gene uniprot takeawy:", key)
                     mapping = geneInfo[key2]
                     uniprot = mapping["UniProt"]
                     commonName = mapping["common_name"]
@@ -273,16 +284,17 @@ class reactomeData(MetabolomicsData):
                         for id in uniprot:
                             if commonName != "NA":
                                 uniprot_commonName[id] = commonName
-            print("Found Uniprot in " + key +": "+ str(len(uniprot_commonName)))
+            #print("Found Uniprot in " + key +": "+ str(len(uniprot_commonName)))
         for id in reactGeneIds:
+            #print("********id", id)
             if id in uniprot_commonName:
                 name = uniprot_commonName[id]
-                mapping = self.geneInfoDictionary[id]
+                mapping = self.geneInfoDictionary['uniprot:'+id]
                 mapping["common_name"] = name
-                self.geneInfoDictionary[id] = mapping
+                self.geneInfoDictionary['uniprot:'+id] = mapping
                 reactGeneIds.remove(id)
         
-        print("Unfound genes for name are " + str(len(reactGeneIds))) 
+        #print("Unfound genes for name are " + str(len(reactGeneIds)))
         
         Ids = reactGeneIds
         url ="http://www.uniprot.org/uniprot/"
@@ -296,12 +308,12 @@ class reactomeData(MetabolomicsData):
         for id in Ids:
            
             if id + ".xml" not in files:
-                print("Downloading ..." + id)
+                #print("Downloading ..." + id)
                 query.append(url + id +".xml")
                 file_dir.append(dir)
                 files_name.append(id+".xml")
                 #self.download_files(query, dir + id + ".xml")
-                print( str(num) +"/" +str(len(Ids)))
+                #print( str(num) +"/" +str(len(Ids)))
                 num = num + 1
         with Pool(50) as p:
             p.starmap(self.download_files,
@@ -314,11 +326,11 @@ class reactomeData(MetabolomicsData):
         files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
         i = 0
-        print('Parsing UniProt files ...')
+        #print('Parsing UniProt files ...')
         for f in files:
             i = i + 1
-            if i % 1000 == 0:
-                print('Processing {} files'.format(i))
+            #if i % 1000 == 0:
+                #print('Processing {} files'.format(i))
             try:
                 tree = ET.parse(path + f)
                 geneid = f.replace(".xml","")
@@ -334,7 +346,7 @@ class reactomeData(MetabolomicsData):
                                 if type == "primary":
                                     #print(geneid+":"+name.text)
                                     try:
-                                        mapping = self.geneInfoDictionary[geneid]
+                                        mapping = self.geneInfoDictionary['uniprot:'+geneid]
                                         mapping["common_name"] = name.text
                                     except KeyError:
                                         print("Raw data does not have this ID ...")
