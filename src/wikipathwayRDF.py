@@ -83,7 +83,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20190210-rdf-wp.zip'
+        filename = 'wikipathways-20200710-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
@@ -199,6 +199,7 @@ class WikipathwaysRDF(MetabolomicsData):
             # get pathways id
             this_pathway = each.replace('.ttl','')
             #print('{}/{} ID:{}'.format(i,total_files,this_pathway))
+            #print('Path '+path + " Each "+each)
             g = Graph()
             g.parse(path + each,format = 'n3')
             
@@ -219,7 +220,8 @@ class WikipathwaysRDF(MetabolomicsData):
             'uniprot':'Uniprot',
             'ec-code':'Enzyme Nomenclature',
             'wikidata':'WikiData',
-            'ncbiprotein':'NCBI-ProteinID'
+            'ncbiprotein':'NCBI-ProteinID',
+	    'chebi':'ChEBI'
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
@@ -320,6 +322,10 @@ class WikipathwaysRDF(MetabolomicsData):
             genesource = protein.split('/')[-2]
             geneid = protein.split('/')[-1]
             geneid = self.prependID(genesource, geneid)
+            if genesource == 'chebi':
+                print ("chebi gene error " + genesource + " id = " + geneid)
+                print ("protein: " + protein)
+                print ("pathway: " + this_pathway)
             if genesource not in not_retrieved:
                 geneMapping[possible_source[genesource]] = [geneid]
                 genelist.add(geneid)
@@ -354,7 +360,8 @@ class WikipathwaysRDF(MetabolomicsData):
             'chemspider':'chemspider_id',
             'wikidata':'WikiData',
             'cas':'CAS',
-            'lipidmaps':'LIPIDMAPS'
+            'lipidmaps':'LIPIDMAPS',
+            'kegg.glycan':'kegg_glycan'
             }
         metabolite_list = set()
         for metabolites in g.subjects(type_predicate,metabolite_object):
@@ -394,7 +401,8 @@ class WikipathwaysRDF(MetabolomicsData):
                               "hmdb_id": "NA",
                               "CAS": "NA",
                               'LIPIDMAPS':'NA',
-                              'WikiData':'NA'}
+                              'WikiData':'NA',
+                              'kegg_glycan':'NA'}
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
             if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug']:
