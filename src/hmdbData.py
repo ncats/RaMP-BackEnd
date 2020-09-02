@@ -8,6 +8,7 @@ import os
 from MetabolomicsData import MetabolomicsData
 import pandas as pd
 
+
 class hmdbData(MetabolomicsData):
     
     '''
@@ -326,7 +327,7 @@ class hmdbData(MetabolomicsData):
                  #   biological_properties = metabolite.find('{http://www.hmdb.ca}biological_properties')
                   #  pathwayd = biological_properties.find('{http://www.hmdb.ca}pathways')
                    # #smpdb_id = pathwayd.find('{http://www.hmdb.ca}smpdb_id')
-                    #print("pathway test  for:",accessiontag.text,"is", pathwayd)
+                    #print("pathway hmdbTest  for:",accessiontag.text,"is", pathwayd)
 
                 #secondary_accessions = metabolite.find('{http://www.hmdb.ca}secondary_accessions')
                 #accession = secondary_accessions.find('{http://www.hmdb.ca}accession')
