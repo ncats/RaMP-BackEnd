@@ -10,7 +10,7 @@ import rdflib.namespace
 from rdflib.namespace import RDF, FOAF,RDFS,DC,DCTERMS
 from builtins import str
 
-
+from writeToSQL import writeToSQL
 
 class WikipathwaysRDF(MetabolomicsData):
     def __init__(self):
@@ -83,7 +83,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20200710-rdf-wp.zip'
+        filename = 'wikipathways-20200810-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
@@ -365,6 +365,10 @@ class WikipathwaysRDF(MetabolomicsData):
             }
         metabolite_list = set()
         for metabolites in g.subjects(type_predicate,metabolite_object):
+            
+            if(this_pathway == "WP78"):
+                print("WP78 Metabolite!!!")
+                
             source = metabolites.split('/')
             source = source[len(source) - 2]
             # last items by split is retrieved
@@ -372,6 +376,11 @@ class WikipathwaysRDF(MetabolomicsData):
             #metabolites_id = self.getIDFromGraphLinks(g, metabolites)
             metabolites_id = self.prependID(source, metabolites_id)
             # predicate in RDF is defined here, this the subject/object with these predicates are extracted.
+
+            if(this_pathway == "WP78"):
+                print("WP78 Metabolite!!! source= "+source+" id = "+metabolites_id)
+
+            
             id_mapping = {
                 'chebi_id':'http://vocabularies.wikipathways.org/wp#bdbChEBI',
                 'hmdb_id':'http://vocabularies.wikipathways.org/wp#bdbHmdb',
@@ -424,6 +433,13 @@ class WikipathwaysRDF(MetabolomicsData):
                 #print(metaboliteMapping)
                 self.pathwaysWithMetabolitesDictionary[this_pathway] = list(metabolite_list)
                 self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+                
+                # JCB populate metabolites to pathway dictionary, this was not previously populated              
+                if metabolites_id in self.metabolitesWithPathwaysDictionary:
+                    self.metabolitesWithPathwaysDictionary[metabolites_id].append(this_pathway)
+                else:
+                    self.metabolitesWithPathwaysDictionary[metabolites_id] = list(this_pathway)
+                
         '''
         print('At pathway {}:{}, there are {} metabolites'\
               .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))
@@ -500,4 +516,37 @@ class WikipathwaysRDF(MetabolomicsData):
             
             
         return id
-               
+
+# test
+wikipathways = WikipathwaysRDF()
+wikipathways.getEverything()
+wikipathways.write_myself_files(database ="wiki")
+
+sql = writeToSQL()
+wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
+wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", wikicompoundnum)
+
+wikipathwaysnumbers = sql.write(
+        wikipathways.metaboliteCommonName,
+        wikipathways.pathwayDictionary, 
+         wikipathways.pathwayCategory,
+#         wikipathways.pathwaysWithMetabolitesDictionary,
+         wikipathways.metabolitesWithPathwaysDictionary,
+         wikipathways.metabolitesWithSynonymsDictionary,
+         wikipathways.metaboliteIDDictionary,
+         wikipathways.pathwaysWithGenesDictionary,
+         wikipathways.metabolitesLinkedToGenes,
+         wikipathways.geneInfoDictionary,
+         wikipathways.biofluidLocation,
+         wikipathways.biofluid,
+         wikipathways.cellularLocation,
+         wikipathways.cellular,
+         wikipathways.pathwayOntology,
+         wikipathways.exoEndoDictionary,
+         wikipathways.exoEndo,
+         wikipathways.tissueLocation,
+         wikipathways.tissue,
+         dict(),
+         "wiki",
+         0,wikigenenum)
+  
