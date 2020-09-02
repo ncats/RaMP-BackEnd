@@ -4,7 +4,7 @@ from sqlalchemy import *
 from sqlalchemy_utils import *
 from schema import RaMP_schema
 import pandas as pd
-from bokeh.plotting.tests.test_figure import source
+#from bokeh.plotting.tests.test_figure import source
 class RampUpdater():
     def __init__(self,dbSource):
         '''
@@ -556,7 +556,7 @@ class QualityControl():
         sess = sche.session
         Source = sche.Source
         prepended_ids = sess.query(Source).filter(~Source.sourceId.like('%:%'))
-        len(prepended_ids.all()
+        len(prepended_ids.all())
         for each in prepended_ids.all():
             print('Updating {} ...'.format(each))
             if ' ' not in each.sourceId:

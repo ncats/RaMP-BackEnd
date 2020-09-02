@@ -107,21 +107,21 @@ class writeToSQL(MetabolomicsData):
            
             
             listOfIDs = set()
-            if entrez is not "NA":
+            if entrez != "NA":
                 listOfIDs.add(str(entrez))
-            if enzymeNomenclature is not "NA":
+            if enzymeNomenclature != "NA":
                 listOfIDs.add(enzymeNomenclature)
-            if hmdbgeneid is not "NA":
+            if hmdbgeneid != "NA":
                 listOfIDs.add(hmdbgeneid)
-            if ensembl is not "NA":
+            if ensembl != "NA":
                 for eachid in ensembl:
-                    if ensembl is not "NA":
+                    if ensembl != "NA":
                         listOfIDs.add(eachid)
-            if uniprotid is not "NA":
+            if uniprotid != "NA":
                 for eachid in uniprotid:
-                    if uniprotid is not "NA":
+                    if uniprotid != "NA":
                         listOfIDs.add(eachid)
-            if kegggeneid is not "NA":
+            if kegggeneid != "NA":
                 listOfIDs.add(kegggeneid)
 
             
@@ -277,13 +277,13 @@ class writeToSQL(MetabolomicsData):
                         flag = True
                 if key2 == 'common_name':
                     continue
-                if ids is not 'NA' and type(ids) is list:
+                if ids != 'NA' and type(ids) is list:
                     if database == "reactome":
                         for each in ids:
                             listOfIDs.append("uniprot:"+each)
                     else:
                         listOfIDs.extend([id for id in ids])
-                elif ids is not 'NA' and type(ids) is str:
+                elif ids != 'NA' and type(ids) is str:
                     if database == "reactome":
                         listOfIDs.append("uniprot:"+ids)
                     else:
@@ -695,15 +695,21 @@ class writeToSQL(MetabolomicsData):
 
 
         print("I'm analyte +analytehaspathway")
+        print("HEy... just how big is my metabolitesWithPathwaysDictionary???? Hmmmmm size is... I'm thinking.. "+str(len(metabolitesWithPathwaysDictionary)))
+        
         pathwayChebi = set()
         pathwayNotChebi = set()
         for key in metabolitesWithPathwaysDictionary:
                 value = metabolitesWithPathwaysDictionary[key]
+
+                print("Hey wiki analyte to pathway sql write ???   key = " + key +"***")
+
                 for listItem in value:
                     #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
-                    if key is not "":
+                    if key != "":
                         try:
                             if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
+                                print(" HEYYYYYY writing ramp_comound_id to ramp_pathway_ID analyteHasPathway for metabolites!!!!!!!!!!!!!!!!!")
                                 analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
                                                                                              +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
                                                                                              + str(database).encode('utf-8') + b"\n")
@@ -719,15 +725,15 @@ class writeToSQL(MetabolomicsData):
 
                         except KeyError:
                             pass
-                            #print(str(KeyError) + " When writing analytehaspathways ...")
-                            #print(key)
+                            print(str(KeyError) + " When writing analytehaspathways ...")
+                            print(key)
 
 
         for key in metabolitesWithPathwaysDictionary:
                 value = metabolitesWithPathwaysDictionary[key]
                 for listItem in value:
                     #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
-                    if key is not "":
+                    if key != "":
 
                         try:
                             if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
@@ -774,7 +780,7 @@ class writeToSQL(MetabolomicsData):
         
         for key in metaboliteIDDictionary: 
             #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
-            if key is not "":
+            if key != "":
                 if self.is_write_ok(self.rampCompoundIDdictionary[key],key):
                     analyteOutFile.write(self.rampCompoundIDdictionary[key].encode('utf-8') + b"\t" 
                                          + b"compound" + b"\n")
@@ -801,7 +807,7 @@ class writeToSQL(MetabolomicsData):
                            'chemspider_id':'chemspider',
                            'LIPIDMAPS':'LIPIDMAPS'}
             for id_key in id_to_write:
-                if mapping[id_key] is not 'NA':
+                if mapping[id_key] != 'NA':
                     self.write_source(sourceOutFile, 
                                       mapping[id_key], 
                                       self.rampCompoundIDdictionary[key], 
@@ -831,7 +837,7 @@ class writeToSQL(MetabolomicsData):
                 commonName = commonName.replace("\n", "")
                 commonName = commonName.replace("\"", "")
                 commonName = commonName.replace(" ", "")
-                if commonName is not "NA":
+                if commonName != "NA":
                     NameForSource = commonName
                 else:
                     NameForSource = "NA"
@@ -841,24 +847,24 @@ class writeToSQL(MetabolomicsData):
                 item = item.replace("\n", "")
                 item = item.replace("\"", "")
                 item = item.replace(" ", "")
-                if item is not "NA":
+                if item != "NA":
                     NameForSource = item
                 else:
                     NameForSource = "NA"
                             
             if key in self.rampGeneIDdictionary:
-                if uniprotid is not "NA" and type(uniprotid) is not list:
+                if uniprotid != "NA" and type(uniprotid) is not list:
                     sourceOutFile.write(uniprotid.encode('utf-8') + b"\t" 
                                         + self.rampGeneIDdictionary[key].encode('utf-8') + 
                                         b"\t" + b"uniprot" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                elif uniprotid is not 'NA' and type(uniprotid) is list:
+                elif uniprotid != 'NA' and type(uniprotid) is list:
                     for each in uniprotid:
                         sourceOutFile.write(each.encode('utf-8') + b"\t" 
                                         + self.rampGeneIDdictionary[key].encode('utf-8') + 
                                         b"\t" + b"uniprot" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
-                if hmdbgeneid is not "NA":
+                if hmdbgeneid != "NA":
 
                     if type(hmdbgeneid) is str:
 
@@ -874,7 +880,7 @@ class writeToSQL(MetabolomicsData):
                                         b"\t" + b"hmdb" + b"\t" + b"gene"
                                         + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
-                if entrez is not "NA":
+                if entrez != "NA":
                     if type(entrez) is str:
                         sourceOutFile.write(str(entrez).encode('utf-8') + b"\t" + 
                                             self.rampGeneIDdictionary[key].encode('utf-8')
@@ -888,14 +894,14 @@ class writeToSQL(MetabolomicsData):
                                                  + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
                     
-                if enzymeNomenclature is not "NA":
+                if enzymeNomenclature != "NA":
                     if type(enzymeNomenclature) is str:
                         sourceOutFile.write(enzymeNomenclature.encode('utf-8') + 
                                             b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') 
                                             + b"\t" + b"enzymeNomenclature" + b"\t" + b"gene"
                                              + b"\t" + NameForSource.encode("utf-8") + b"\n")
                     
-                if ensembl is not "NA":
+                if ensembl != "NA":
                     if type(ensembl) is list:
                         for eachid in ensembl:
                             sourceOutFile.write(eachid.encode('utf-8') + b"\t"
@@ -909,7 +915,7 @@ class writeToSQL(MetabolomicsData):
                                                 b"\t" + NameForSource.encode("utf-8") + b"\n")
                         
                     
-                if kegggeneid is not "NA":
+                if kegggeneid != "NA":
                     if type(kegggeneid) is not list:
                         if self.is_write_ok(kegggeneid,self.rampGeneIDdictionary[key],NameForSource,key):
                         #kegggeneid = "hsa:" + kegggeneid
@@ -938,7 +944,7 @@ class writeToSQL(MetabolomicsData):
                 listItem = listItem.replace(" ", "")
                 listItem = listItem.replace(";", "")
                 listItem.lower()
-                if listItem is not "NA" :
+                if listItem != "NA" :
                     analyteSynonymOutFile.write(listItem.encode('utf-8') + b"\t" + 
                                                 self.rampCompoundIDdictionary[key].encode('utf-8') + 
                                                 b"\t" + b"compound" +b"\t"+
@@ -960,7 +966,7 @@ class writeToSQL(MetabolomicsData):
                     commonName = commonName.replace(" ", "")
                     #if database == "wiki":
                         #print("wiki canme comm", commonName)
-                    if commonName is not "NA" and self.is_write_ok(commonName,self.rampGeneIDdictionary[key],key):
+                    if commonName != "NA" and self.is_write_ok(commonName,self.rampGeneIDdictionary[key],key):
 
                         analyteSynonymOutFile.write(commonName.encode('utf-8') + b"\t" + self.rampGeneIDdictionary[key].encode('utf-8') +
                                                      b"\t" + b"gene" +b"\t"+database.encode("utf-8")+ b"\t" + key.encode('utf-8') + b"\n")
@@ -969,7 +975,7 @@ class writeToSQL(MetabolomicsData):
                         item = item.replace("\n", "")
                         item = item.replace("\"", "")
                         item = item.replace(" ", "")
-                        if item is not "NA" and self.is_write_ok(item,self.rampGeneIDdictionary[key],key):
+                        if item != "NA" and self.is_write_ok(item,self.rampGeneIDdictionary[key],key):
                             analyteSynonymOutFile.write(item.encode('utf-8') + b"\t" + 
                                                         self.rampGeneIDdictionary[key].encode('utf-8') 
                                                         + b"\t" + b"gene"+b"\t" +database.encode("utf-8") + b"\t" + key.encode('utf-8') + b"\n")

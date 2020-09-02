@@ -1,3 +1,4 @@
+import os
 import pymysql.cursors
 from fileinput import close
 import pandas as pd
