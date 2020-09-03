@@ -376,6 +376,10 @@ class hmdbData(MetabolomicsData):
                                 self.pathwayDictionary[smpid] = pathwayName
                                 self.pathwayCategory[smpid] = 'NA'
                                 # add pathways to metabolites With pathway dictionary
+                                
+                            # JCB: The above IF addes pathway to the pathway dictionary if not in there...
+                            # JCB: But this addition to the M2P dictionary won't happen if the smp1d isn't in the dict.?
+                            # JCB: Consider moving this if statement down, this should be run if the pathway is in the dictionary. 
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
                                     
@@ -400,6 +404,13 @@ class hmdbData(MetabolomicsData):
                                 self.pathwayDictionary[smpid] = pathwayName
                                 self.pathwayCategory[smpid] = 'NA'
                                 # add pathways to metabolites With pathway dictionary
+                                
+                                
+                            # JCB: The above IF addes pathway to the pathway dictionary if not in there...
+                            # JCB: But this addition to the M2P dictionary won't happen if the smp1d isn't in the dict.?
+                            # JCB: Consider moving this if statement down, this should be run if the pathway is in the dictionary.     
+                            # JCB: Added 'if smpid is not None:' to bring down to add mapping for all smp-path ids
+                            if smpid is not None:
                                 if smpid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(smpid)
 
@@ -410,6 +421,12 @@ class hmdbData(MetabolomicsData):
                                 self.pathwayDictionary[keggid] = pathwayName
                                 self.pathwayCategory[keggid] = 'kegg'
                                 # add pathways to metabolites With pathway dictionary
+                                
+                            # JCB: The above IF addes pathway to the pathway dictionary if not in there...
+                            # JCB: But this addition to the M2P dictionary won't happen if the smp1d isn't in the dict.?
+                            # JCB: Consider moving this if statement down, this should be run if the pathway is in the dictionary.                                     
+                            # JCB: Added 'if keggid is not None:' to bring down to add all keggmaps
+                            if keggid is not None:
                                 if keggid not in self.metabolitesWithPathwaysDictionary[metabohmdbid]:
                                     self.metabolitesWithPathwaysDictionary[metabohmdbid].append(keggid)
 
