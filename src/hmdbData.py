@@ -8,7 +8,6 @@ import os
 from MetabolomicsData import MetabolomicsData
 import pandas as pd
 
-
 class hmdbData(MetabolomicsData):
     
     '''
@@ -227,7 +226,7 @@ class hmdbData(MetabolomicsData):
                          }
                 
                 commonName = metabolite.find('{http://www.hmdb.ca}name').text
-                
+                commonName = commonName.strip()
 
                 #find other ids for metabolite
                 # prefix is the id we collect and would like to store it in RamP 
@@ -242,7 +241,7 @@ class hmdbData(MetabolomicsData):
                     childtag = child.tag.replace("{http://www.hmdb.ca}", "")
                     #print(childtag)
                     if childtag == "accession":
-                        metabohmdbid = 'hmdb:' + child.text
+                        metabohmdbid = 'hmdb:' + child.text.strip()
                         mapping['hmdb_id']  = metabohmdbid
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
@@ -250,10 +249,10 @@ class hmdbData(MetabolomicsData):
                         # if has id in the tag, append it to the list 
                         if type(mapping[source]) is not list and child.text is not None:
                             if source in prefix:
-                                mapping[source] = [prefix[source] + child.text]
+                                mapping[source] = [prefix[source] + child.text.strip()]
                         elif type(mapping[source]) is list and child.text is not None:
                             if source in prefix:
-                                mapping[source].append(prefix[source] + child.text)
+                                mapping[source].append(prefix[source] + child.text.strip())
                 #place all id information in this mapping        
                 if metabohmdbid not in self.metaboliteIDDictionary:
                     self.metaboliteIDDictionary[metabohmdbid] = mapping
