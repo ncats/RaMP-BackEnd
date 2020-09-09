@@ -221,7 +221,7 @@ class WikipathwaysRDF(MetabolomicsData):
             'ec-code':'Enzyme Nomenclature',
             'wikidata':'WikiData',
             'ncbiprotein':'NCBI-ProteinID',
-	    'chebi':'ChEBI'
+	        'chebi':'ChEBI'
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
@@ -365,9 +365,6 @@ class WikipathwaysRDF(MetabolomicsData):
             }
         metabolite_list = set()
         for metabolites in g.subjects(type_predicate,metabolite_object):
-            
-            if(this_pathway == "WP78"):
-                print("WP78 Metabolite!!!")
                 
             source = metabolites.split('/')
             source = source[len(source) - 2]
@@ -376,10 +373,9 @@ class WikipathwaysRDF(MetabolomicsData):
             #metabolites_id = self.getIDFromGraphLinks(g, metabolites)
             metabolites_id = self.prependID(source, metabolites_id)
             # predicate in RDF is defined here, this the subject/object with these predicates are extracted.
-
-            if(this_pathway == "WP78"):
-                print("WP78 Metabolite!!! source= "+source+" id = "+metabolites_id)
-
+            
+            # JCB Lets get the commonName...
+            commonName = g.label(metabolites, default="NA")            
             
             id_mapping = {
                 'chebi_id':'http://vocabularies.wikipathways.org/wp#bdbChEBI',
@@ -436,10 +432,13 @@ class WikipathwaysRDF(MetabolomicsData):
                 
                 # JCB populate metabolites to pathway dictionary, this was not previously populated              
                 if metabolites_id in self.metabolitesWithPathwaysDictionary:
-                    self.metabolitesWithPathwaysDictionary[metabolites_id].append(this_pathway)
+                    if(not(this_pathway in self.metabolitesWithPathwaysDictionary[metabolites_id])):
+                        self.metabolitesWithPathwaysDictionary[metabolites_id].append(this_pathway)
                 else:
-                    self.metabolitesWithPathwaysDictionary[metabolites_id] = list(this_pathway)
+                    self.metabolitesWithPathwaysDictionary[metabolites_id] = [this_pathway]
                 
+                # JCB grep the 'label' as common name
+                self.metaboliteCommonName[metabolites_id] = commonName
         '''
         print('At pathway {}:{}, there are {} metabolites'\
               .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))

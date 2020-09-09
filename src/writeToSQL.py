@@ -691,25 +691,17 @@ class writeToSQL(MetabolomicsData):
                 print("chebi id", chebiId)
         '''
 
-
-
-
-        print("I'm analyte +analytehaspathway")
-        print("HEy... just how big is my metabolitesWithPathwaysDictionary???? Hmmmmm size is... I'm thinking.. "+str(len(metabolitesWithPathwaysDictionary)))
-        
         pathwayChebi = set()
         pathwayNotChebi = set()
         for key in metabolitesWithPathwaysDictionary:
                 value = metabolitesWithPathwaysDictionary[key]
 
-                print("Hey wiki analyte to pathway sql write ???   key = " + key +"***")
-
                 for listItem in value:
                     #This if statement is kinda a "hacky" fix...not sure why there is an empty key in this dictionary in the first place
                     if key != "":
                         try:
-                            if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):
-                                print(" HEYYYYYY writing ramp_comound_id to ramp_pathway_ID analyteHasPathway for metabolites!!!!!!!!!!!!!!!!!")
+                                                        
+                            if self.is_write_ok(str(self.rampCompoundIDdictionary[key]),str(rampPathwayIDdictionary[listItem]),str(database)):            
                                 analyteHasPathwayOutFile.write(str(self.rampCompoundIDdictionary[key]).encode('utf-8') + b"\t"
                                                                                              +  str(rampPathwayIDdictionary[listItem]).encode('utf-8') + b"\t"
                                                                                              + str(database).encode('utf-8') + b"\n")
