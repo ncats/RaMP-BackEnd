@@ -69,8 +69,8 @@ class reactomeData(MetabolomicsData):
         
         '''
         self.getDatabaseFiles()
-        print("Getting genes...")
-        self.getGenes()
+        # print("Getting genes...")
+        # self.getGenes()
         print("Getting metabolites...")
         self.getMetabolites()
         
@@ -78,11 +78,10 @@ class reactomeData(MetabolomicsData):
         self.getCommonNameForChebi()
         
         
-        print("Getting common names for genes ...")
-        
+        print("Getting genes ...")        
         self.getGenes()
+        
         print("Getting common names for genes1 ...")
-
         self.downloadCommonNameFromUniprot()
         print("Getting common names for genes 2...")
         self.getCommonNameFromUniprot()
@@ -119,6 +118,8 @@ class reactomeData(MetabolomicsData):
                 print("Already downloaded ...")
             
         time.sleep(1)
+        
+        
     def getGenes(self): 
             
         reactomeFile = open("../misc/data/reactome/UniProt2Reactome_All_Levels.txt", encoding="utf-8")
@@ -130,7 +131,7 @@ class reactomeData(MetabolomicsData):
             if len(splitline) > 2:
                 if "Homo sapiens" in splitline[5]:
                     gene = splitline[0]
-                    #gene = 'uniprot:'+gene
+                    # gene = 'uniprot:'+gene
                     #print("gene:", gene)
                     pathwayID = splitline[1]
                     #print("pathwayID:", pathwayID)
@@ -145,7 +146,7 @@ class reactomeData(MetabolomicsData):
                                 'NCBI-GeneID': 'NA', 
                                 'NCBI-ProteinID': 'NA', 
                                 'OMIM': 'NA', 
-                                'UniProt': [gene], 
+                                'UniProt': ['uniprot:'+gene], 
                                 'Vega': 'NA', 
                                 'miRBase': 'NA', 
                                 'HMDB_protein_accession': 'NA',
@@ -228,6 +229,13 @@ class reactomeData(MetabolomicsData):
             for each in chebi:
                 try:
                     chebiToSearch = str(each)
+                    # do we have 'chebi:' prefix?
+                    chebi = chebiToSearch.split(":")
+                    if(len(chebi) > 1):
+                        chebiToSearch = chebi[1]
+                    else:
+                        chebiToSearch = chebi[0]
+                    
                     chebiToSearch2 = libchebipy.ChebiEntity(chebiToSearch)
                     name = chebiToSearch2.get_name()
                     commonName = name
