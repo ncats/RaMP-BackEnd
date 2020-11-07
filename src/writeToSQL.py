@@ -349,7 +349,7 @@ class writeToSQL(MetabolomicsData):
         return is_okay_to_write
             
             
-    def write_source(self,file,source_id,rampId,database,geneOrCompound,commonName):
+    def write_source(self,file,source_id,rampId,database,geneOrCompound,commonName, dataSource):
         '''
         This functions write the input to the designated source file
         param _io.BufferedWriter file the file-like object that open the designated file
@@ -368,14 +368,14 @@ class writeToSQL(MetabolomicsData):
                     file.write(id.encode("utf-8") +
                                b'\t'+rampId.encode('utf-8')+
                                b'\t'+database.encode('utf-8') +b'\t' + geneOrCompound.encode('utf-8') +
-                               b'\t' + commonName.encode('utf-8') + b'\n')
+                               b'\t' + commonName.encode('utf-8') + b'\t' + dataSource.encode('utf-8') + b'\n')
         else:
             if(self.is_write_ok(source_id,rampId,database,geneOrCompound,commonName)):
                 file.write(source_id.encode("utf-8") +
                            b'\t'+rampId.encode('utf-8')+
                            b'\t'+database.encode('utf-8') +b'\t' + 
                            geneOrCompound.encode('utf-8') +
-                           b'\t' + commonName.encode('utf-8') + b'\n')        
+                           b'\t' + commonName.encode('utf-8') + b'\t' + dataSource.encode('utf-8') + b'\n')        
         
             
         
@@ -805,10 +805,11 @@ class writeToSQL(MetabolomicsData):
                                       self.rampCompoundIDdictionary[key], 
                                       id_to_write[id_key], 
                                       'compound', 
-                                      commonName)
+                                      commonName,
+                                      database)
         #GENE
         #Source
-
+                   
 
         for key in geneInfoDictionary:
             mapping = geneInfoDictionary[key]

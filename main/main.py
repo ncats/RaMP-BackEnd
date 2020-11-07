@@ -25,13 +25,12 @@ class Main():
 
         #kegg.getEverything(False)
         #print("KEGG Wonder")
+        print("Getting hmdb...")
         hmdb.getEverything(True)
-        print("Getting wikipathways...")
+        print("Getting wiki...")
         wikipathways.getEverything(True)
         print("Getting reactome...")
         reactome.getEverything(True)
-        print("Getting kegg...")
-
 
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
