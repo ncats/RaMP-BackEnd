@@ -898,6 +898,43 @@ class hmdbData(MetabolomicsData):
                 SMPDB2.append(line.rstrip('\n'))
         return SMPDB2
     
+    def getExoEndo(self, tree=None, file = 'hmdb_metabolites.xml'):
+        self.exoEndoDictionary = dict()
+        endoExoList = [
+            'Endogenous',
+            'Exogenous',
+            'Microbial',
+            'Drug or steroid metabolite',
+            'Drug metabolite',
+            'Toxin/Pollutant',
+            'Food',
+            'Cosmetic'
+            'Plant',
+            'Drug',
+            'Environmental',
+            'Saccharomyces cerevisiae',
+            'Synthetic',
+            'Animal',
+            'Fungi',
+            'Microbe']
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/' + file)
+        root = tree.getroot()
+        prefix = '{http://www.hmdb.ca}'
+        for metabolite in root.findall(prefix+'metabolite'):
+            hmdbid = metabolite.find(prefix+'accession')
+            id = hmdbid.text
+            source = metabolite.find(prefix+'source')
+            terms = metabolite.find(prefix+'term')
+            for term in terms:
+                if term in endoExoList:
+                    if id in self.exoEndoDictionary:
+                        self.exoEndoDictionary[id].append(term.text.strip())
+                    else:
+                        self.endoEndoDictionary[id] = [term.text.strip()]
+                        
+                    
+    
     def getMetabolitesClasses(self,tree = None,file = 'hmdb_metabolites.xml'):
         # if the source file is not parsed yet
         cols = ['hmdb_id','super_class','class','sub_class']
