@@ -4,6 +4,8 @@ Created on Nov 16, 2020
 @author: braistedjc
 '''
 import os
+from rampEntity.Gene import Gene
+from rampEntity.GeneList import GeneList
 from rampEntity.Metabolite import Metabolite
 from rampEntity.MetaboliteList import MetaboliteList
 from rampEntity.Pathway import Pathway
@@ -26,6 +28,8 @@ class EntityBuilder(object):
         Constructor
         '''
         self.metaboliteList = MetaboliteList()
+        
+        self.geneList = GeneList()
         
         self.pathList = PathwayList()
         
@@ -146,6 +150,8 @@ class EntityBuilder(object):
             
         self.metaboliteList.generateMetaboliteSourceStats()    
         
+        
+        
     def addMetaboliteCommonName(self):
         
         for src in self.sourceList:
@@ -197,6 +203,7 @@ class EntityBuilder(object):
             return "RAMP_P_" + (str(self.__rampPathStartId)).zfill(9)
 
 
+
     def loadPathways(self):
         print("loading pathways")
         
@@ -227,6 +234,7 @@ class EntityBuilder(object):
         if p is not None:
             p.printPathway()    
     
+        
         
     def buildMetaboliteToPathwayConnections(self):
         
@@ -302,6 +310,82 @@ class EntityBuilder(object):
         
 
 
+    def loadGeneList(self, eqMetric = 0):
+
+        Metabolite.__equalityMetric = eqMetric
+        
+        for src in self.sourceList:
+            print(src.sourceName);
+            
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.sourceName + "geneInfoDictionary.txt"
+            
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            df = pd.DataFrame(data)
+                
+            for i,row in df.iterrows():
+                currSourceId = row[0]
+                altId = row[2]
+                gene = self.geneList.getGeneById(currSourceId)
+                if(gene is None):
+                    gene = Gene()
+                    gene.sourceId = currSourceId
+                    gene.addSource(source)
+                    gene.addId(altId, source)
+                    gene.rampId = self.generateRampId("G")
+                    self.geneList.addGene(currSourceId, gene)
+                
+                    # this is a sourceId lets add 
+                else:
+                    # need to check if the alt id already exists as a key id
+                    gene2 = self.geneList.getGeneById(altId)
+                    if gene2 is not None:
+                        gene2.addId(altId, source)
+                        gene2.addSource(source)
+                        gene2.addId(currSourceId, source)
+                        #metaboliteList.addMataboliteByAltId(altId, met2)
+                        # this reasigns the primary source id and strands the 'metabolite' record
+                        self.geneList.addGene(currSourceId, gene2)
+                        
+                        # we have two metabolites, with the same altID
+                        # met2 already exists for the altId, 
+                        # metabolite exits for the source id
+                        # 
+                        # if met2 != metabolite - we have two rampIds
+                        # we don't want two records
+                        # we need to consolidate metabolites... I think
+                        if(gene2 is not gene):
+                            # keep the original metabolite (met2) and transfer info
+                            gene2.subsumeGene(gene)
+                            
+                            # now we need to point references to metabolite to met2
+                            #metabolite = met2
+                            for id in gene.idList:
+                                self.geneList.addGene(id, gene2)
+                            
+                        
+                    else:
+                        gene.addId(altId, source)
+                        # lets add the metabolite back in based on the id
+                        self.geneList.addGene(altId, gene)
+                        # safe add, adds unique source to metabolite
+                        gene.addSource(source)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 class DataSource(object):
     
@@ -313,29 +397,37 @@ class DataSource(object):
 
     
 builder = EntityBuilder()
-builder.loadMetaboList()
-builder.addMetaboliteCommonName()
-builder.loadPathways()
-builder.addMetaboliteSynonyms()
-builder.buildMetaboliteToPathwayConnections()
-met = builder.metaboliteList.getMetaboliteBySourceId("chebi:13705")
-if met is not None:
-    met.printMet()
-else:
-    print("Hey... no chebi:13705 metabolite...")
-    
-
-met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000060")
-if met is not None:
-    met.printMet()
-else:
-    print("Hey... no hmdb:HMDB0000060 metabolite...")
-    
-met = builder.metaboliteList.getMetaboliteBySourceId("kegg:C00164")
-if met is not None:
-    met.printMet()
-else:
-    print("Hey... no kegg:C00164 metabolite...")
+builder.loadGeneList()
+print(str(builder.geneList.length()))
+print(str(len(builder.geneList.getUniqueGenes())))
+gene = builder.geneList.getGeneById("GAPDH")
+if gene is not None:
+    print(gene.rampId)
+    for id in gene.idList:
+        print(id)
+# builder.loadMetaboList()
+# builder.addMetaboliteCommonName()
+# builder.loadPathways()
+# builder.addMetaboliteSynonyms()
+# builder.buildMetaboliteToPathwayConnections()
+# met = builder.metaboliteList.getMetaboliteBySourceId("chebi:13705")
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("Hey... no chebi:13705 metabolite...")
+#     
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000060")
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("Hey... no hmdb:HMDB0000060 metabolite...")
+#     
+# met = builder.metaboliteList.getMetaboliteBySourceId("kegg:C00164")
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("Hey... no kegg:C00164 metabolite...")
     
 
 # met = builder.metaboliteList.getMetaboliteByAltId("chebi:13705")
