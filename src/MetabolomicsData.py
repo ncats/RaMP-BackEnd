@@ -5,7 +5,7 @@ import time
 import datetime 
 
 from builtins import str
-class MetabolomicsData():
+class MetabolomicsData(object):
 	'''
 	This class is a super class for hmdb, kegg, wiki, Reactome database,
 	which has the general functions defined for all other classes
