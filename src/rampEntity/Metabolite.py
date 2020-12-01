@@ -30,7 +30,7 @@ class Metabolite(object):
                 
         self.primarySource = ""
 
-        self.pathways = list()
+        self.pathways = dict()
                 
         self.smiles = ""
         
@@ -90,11 +90,12 @@ class Metabolite(object):
             for syn in self.synonymDict[src]:
                 s = s + "source: " + src + " syn: " + syn + "\n"
         
-                
         print("pathways")
-        for pathway in self.pathways:
-            pathway.printPathway()
-        
+        for source in self.pathways.keys():
+            print(source + " pathways")
+            for pathway in self.pathways[source]:
+                pathway.printPathway()
+            print("")
         
     def addSource(self, sourceName):
         # maintain as a unique list
@@ -112,9 +113,11 @@ class Metabolite(object):
         for src in otherMet.sources:
             self.sources.append(src)
             
-    def addPathway(self, pathway):
-        if pathway not in self.pathways:
-            self.pathways.append(pathway)
+    def addPathway(self, pathway, source):
+        if source not in self.pathways:
+            self.pathways[source] = list()
+        if pathway not in self.pathways[source]:
+            self.pathways[source].append(pathway)
             
     def addCommonName(self, id, commonName, source):
         if source not in self.commonNameDict:            
@@ -140,4 +143,8 @@ class Metabolite(object):
         for source in metabolite.synonymDict:
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
+                
+    
+    
+                
         
