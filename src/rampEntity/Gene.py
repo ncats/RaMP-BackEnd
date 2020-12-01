@@ -8,7 +8,8 @@ import pandas as pd
 
 class Gene(object):
     '''
-    classdocs
+    The Gene class holds key fields used for defining a gene within ramp.
+    This entity class was specifically created to hold a collection of ids, common names and synonyms.    
     '''
     
     def __init__(self):
@@ -32,7 +33,8 @@ class Gene(object):
                 
         self.primarySource = ""
 
-        self.pathways = list()
+        # [source]:list(pathway)
+        self.pathways = dict()
                         
         self.sources = list()
         
@@ -75,9 +77,11 @@ class Gene(object):
         if synonym not in self.synonymList:
             self.synonymList.append(synonym)
             
-    def addPathway(self, pathway):
-        if pathway not in self.pathways:
-            self.pathways.append(pathway)        
+    def addPathway(self, pathway, source):
+        if source not in self.pathways:
+            self.pathways[source] = list()
+        if pathway not in self.pathways[source]:
+            self.pathways[source].append(pathway)
         
     def printGene(self):
         s = "rampId: " + self.rampId + "\n"        
@@ -94,8 +98,9 @@ class Gene(object):
         
         print("pathway count: " + str(len(self.pathways)))
         
-        for pathway in self.pathways:
-            pathway.printPathway()
+        for source in self.pathways.keys():
+            for pathway in self.pathways[source]:
+                pathway.printPathway()
             
              
     
