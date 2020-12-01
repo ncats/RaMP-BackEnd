@@ -32,7 +32,7 @@ class Pathway(object):
         s = s + "rampId: " + self.pathRampId + "\n"
         s = s + "source: " + self.pathSource + "\n"
         s = s + "sourceId: " + self.pathSourceId + "\n"
-        s = s + "pathwayName: " + self.pathName + "\n"
+        s = s + "pathwayName: " + self.pathName
         print(s)
         
         

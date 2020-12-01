@@ -42,6 +42,7 @@ class EntityBuilder(object):
         self.dataSource2 = DataSource()
         
         self.dataSource2.sourceName = 'reactome'
+        self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.sourceLocPath = '../../misc/output/reactome';
         
         self.sourceList.append(self.dataSource2)
@@ -49,7 +50,8 @@ class EntityBuilder(object):
         self.dataSource3 = DataSource()
         
         self.dataSource3.sourceName = 'wiki'
-        self.dataSource3.sourceLocPath = '../../misc/output/wiki';
+        self.dataSource3.filePrefix = 'wikipathwayRDF'
+        self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';
         
         self.sourceList.append(self.dataSource3)
     
@@ -61,7 +63,7 @@ class EntityBuilder(object):
             print(src.sourceName);
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "metaboliteIDDictionary.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteIDDictionary.txt"
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
@@ -158,7 +160,7 @@ class EntityBuilder(object):
             print(src.sourceName);
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "metaboliteCommonName.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteCommonName.txt"
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
@@ -176,7 +178,7 @@ class EntityBuilder(object):
             print(src.sourceName);
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "metabolitesWithSynonymsDictionary.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithSynonymsDictionary.txt"
             
             if not os.path.exists(file) or os.path.getsize(file) < 1:
                 return
@@ -206,15 +208,13 @@ class EntityBuilder(object):
 
     def loadPathways(self):
         print("loading pathways")
-        
-        
 
         for src in self.sourceList:
 
             #Load Pathway Dictionary First
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "pathwayDictionary.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "pathwayDictionary.txt"
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
@@ -230,9 +230,9 @@ class EntityBuilder(object):
         
         print("Hey we have pathwaaays... how many?.. "+str(self.pathList.length()))        
         
-        p = self.pathList.getPathwayBySourceId("WP554")        
-        if p is not None:
-            p.printPathway()    
+#         p = self.pathList.getPathwayBySourceId("WP554")        
+#         if p is not None:
+#             p.printPathway()    
     
         
         
@@ -246,7 +246,7 @@ class EntityBuilder(object):
             #Load Pathway Dictionary First
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "metabolitesWithPathwaysDictionary.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithPathwaysDictionary.txt"
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
@@ -318,7 +318,7 @@ class EntityBuilder(object):
             print(src.sourceName);
             
             source = src.sourceName
-            file = src.sourceLocPath + "/" + src.sourceName + "geneInfoDictionary.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
@@ -373,14 +373,80 @@ class EntityBuilder(object):
 
 
 
+    def addGeneCommonName(self):
+        
+        for src in self.sourceList:
+            print(src.sourceName);
+            
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
+            
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            df = pd.DataFrame(data)
+                
+            for i,row in df.iterrows():
+                if row[1] == "common_name":
+                    gene = self.geneList.getGeneById(row[0])
+                    if gene is not None:
+                        gene.addCommonName(row[0], row[2], source)
+
+        # resolve common name for ids without corresponding common names
+        genes = self.geneList.getUniqueGenes()
+        for gene in genes:
+            gene.resolveCommonNames()
 
 
 
 
+    def buildGeneToPathwayConnections(self):
+        
+        strandedGeneSourceIds = list()
+        strandedGeneSourceIds = list()
 
+        for src in self.sourceList:
 
+            #Load Pathway Dictionary First
+            
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.filePrefix + "pathwaysWithGenesDictionary.txt"
+    
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            df = pd.DataFrame(data)
+            
+            print("Number of pathway associations = " + str(data.shape[0]))
+        
+            map = dict()    
+            for i,row in df.iterrows():
+                
+                if row[1] in map:                   
+                    map[row[1]].append(row[0])
+                else:
+                    newlist = list()
+                    newlist.append(row[0])
+                    map[row[1]] = newlist
 
-
+            
+            i = 0
+            assocCount = 0
+            for geneId in map.keys():
+                gene = self.geneList.getGeneById(geneId)
+                if gene is not None and len(map[geneId]) < 25000:
+                    for pathId in map[geneId]:
+                        pathway = self.pathList.getPathwayBySourceId(pathId)
+                        if pathway is not None:
+                            gene.addPathway(pathway)
+                            assocCount = assocCount + 1
+                            if(assocCount % 1000 == 0):
+                                print("associations processsed = " + str(assocCount), flush = True)
+                                
+                
+                else:
+                    print("high pathway metab: " + geneId + " pathway count = " + str(len(map[geneId])))
+#                else:
+#                    print("we have a met without a MET")
+                i = i + 1     
+                if(i % 1000 == 0):
+                    print("genes processed = " + str(i), flush=True)
 
 
 
@@ -392,22 +458,29 @@ class DataSource(object):
     def __init__(self):
         
         self.sourceName = "hmdb"
+        self.filePrefix = "hmdb"
         self.sourceLocPath = "../../misc/output/hmdb"
         
 
     
 builder = EntityBuilder()
 builder.loadGeneList()
+builder.addGeneCommonName()
 print(str(builder.geneList.length()))
 print(str(len(builder.geneList.getUniqueGenes())))
+builder.loadPathways()
+builder.buildGeneToPathwayConnections()
+
+
 gene = builder.geneList.getGeneById("GAPDH")
 if gene is not None:
-    print(gene.rampId)
-    for id in gene.idList:
-        print(id)
+    gene.printGene()
+
+
+    
 # builder.loadMetaboList()
 # builder.addMetaboliteCommonName()
-# builder.loadPathways()
+
 # builder.addMetaboliteSynonyms()
 # builder.buildMetaboliteToPathwayConnections()
 # met = builder.metaboliteList.getMetaboliteBySourceId("chebi:13705")
