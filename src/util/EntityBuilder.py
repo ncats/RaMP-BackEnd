@@ -54,6 +54,9 @@ class EntityBuilder(object):
         self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';
         
         self.sourceList.append(self.dataSource3)
+        
+        self.geneToPathAssocSourceTallies = dict()
+        self.metToPathAssocSourceTallies = dict()
     
     def loadMetaboList(self, eqMetric = 0):
 
@@ -120,37 +123,36 @@ class EntityBuilder(object):
         # refine the list...
         # metaboliteList.idBasedMetaboliteMerge()
         
-        print("Finished hmdb test")
-        print("list size = "+str(self.metaboliteList.length()))
-        print("unique met list size = " + str(len(self.metaboliteList.getUniqueMetabolites())))
-                
-        met = self.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0038650")
-        if met is not None:
-            met.printMet()
-        
-        met = self.metaboliteList.getMetaboliteBySourceId("pubchem:13592840")
-        if met is not None:
-            met.printMet()
-        
-        met = self.metaboliteList.getMetaboliteBySourceId("CAS:103541-16-8")
-        if met is not None:
-            met.printMet()
-        
-        met = self.metaboliteList.getMetaboliteBySourceId("pubchem:278")
-        if met is not None:
-            met.printMet()
-        else:
-            print("Not a distinct source id:" + "pubchem:278")
+#         print("Finished hmdb test")
+#         print("list size = "+str(self.metaboliteList.length()))
+#         print("unique met list size = " + str(len(self.metaboliteList.getUniqueMetabolites())))
+#                 
+#         met = self.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0038650")
+#         if met is not None:
+#             met.printMet()
+#         
+#         met = self.metaboliteList.getMetaboliteBySourceId("pubchem:13592840")
+#         if met is not None:
+#             met.printMet()
+#         
+#         met = self.metaboliteList.getMetaboliteBySourceId("CAS:103541-16-8")
+#         if met is not None:
+#             met.printMet()
+#         
+#         met = self.metaboliteList.getMetaboliteBySourceId("pubchem:278")
+#         if met is not None:
+#             met.printMet()
+#         else:
+#             print("Not a distinct source id:" + "pubchem:278")
+#             
+#         print("record based on wikidata..."+"\n")
+#         met = self.metaboliteList.getMetaboliteBySourceId("wikidata:Q424409")
+#         if met is not None:
+#             met.printMet()
+#         else:
+#             print("Not a distinct source id:" + "wikidata:Q424409")
             
-        print("record based on wikidata..."+"\n")
-        met = self.metaboliteList.getMetaboliteBySourceId("wikidata:Q424409")
-        if met is not None:
-            met.printMet()
-        else:
-            print("Not a distinct source id:" + "wikidata:Q424409")
-            
-            
-        self.metaboliteList.generateMetaboliteSourceStats()    
+
         
         
         
@@ -253,7 +255,10 @@ class EntityBuilder(object):
             
             print("Number of pathway associations = " + str(data.shape[0]))
         
-            map = dict()    
+            map = dict()
+            
+            self.metToPathAssocSourceTallies[source] = 0
+            
             for i,row in df.iterrows():
                 
                 if row[0] in map:                   
@@ -272,9 +277,10 @@ class EntityBuilder(object):
                     for pathId in map[metId]:
                         pathway = self.pathList.getPathwayBySourceId(pathId)
                         if pathway is not None:
-                            met.addPathway(pathway)
+                            met.addPathway(pathway, source)
                             assCount = assCount + 1
-                            if(assCount % 1000 == 0):
+                            self.metToPathAssocSourceTallies[source] = self.metToPathAssocSourceTallies[source] + 1
+                            if(assCount % 10000 == 0):
                                 print("associations processsed = " + str(assCount), flush = True)
                                 
                 
@@ -402,7 +408,8 @@ class EntityBuilder(object):
         
         strandedGeneSourceIds = list()
         strandedGeneSourceIds = list()
-
+        noPathwayGenes = 0
+        
         for src in self.sourceList:
 
             #Load Pathway Dictionary First
@@ -414,6 +421,8 @@ class EntityBuilder(object):
             df = pd.DataFrame(data)
             
             print("Number of pathway associations = " + str(data.shape[0]))
+            
+            self.geneToPathAssocSourceTallies[source] = 0
         
             map = dict()    
             for i,row in df.iterrows():
@@ -434,25 +443,59 @@ class EntityBuilder(object):
                     for pathId in map[geneId]:
                         pathway = self.pathList.getPathwayBySourceId(pathId)
                         if pathway is not None:
-                            gene.addPathway(pathway)
+                            gene.addPathway(pathway, source)
+                            self.geneToPathAssocSourceTallies[source] = self.geneToPathAssocSourceTallies[source] + 1
                             assocCount = assocCount + 1
-                            if(assocCount % 1000 == 0):
+                            if(assocCount % 10000 == 0):
                                 print("associations processsed = " + str(assocCount), flush = True)
                                 
                 
                 else:
-                    print("high pathway metab: " + geneId + " pathway count = " + str(len(map[geneId])))
+                    #print("high pathway metab: " + geneId + " pathway count = " + str(len(map[geneId])))
+                    noPathwayGenes = noPathwayGenes + 1
 #                else:
 #                    print("we have a met without a MET")
                 i = i + 1     
                 if(i % 1000 == 0):
                     print("genes processed = " + str(i), flush=True)
+                
+        print("Pathways are Done for Genes. "+str(noPathwayGenes)+ " genes have no associated pathways")
 
 
+    def fullBuild(self):
+        
+        self.loadPathways()
+        
+        self.loadGeneList()
+        self.addGeneCommonName()
+        self.buildGeneToPathwayConnections()
 
+        self.loadMetaboList()
+        self.addMetaboliteCommonName()      
+        self.addMetaboliteSynonyms()
+        self.buildMetaboliteToPathwayConnections()
 
+        metSourceSummary = self.metaboliteList.generateMetaboliteSourceStats(self.sourceList)
+        
+        geneSourceSummary = self.geneList.generateGeneSourceStats(self.sourceList)
+        
+        pathwaySourceSummary = self.pathList.gereratePathwaySourceSummaryStats(self.sourceList)
+                
+        for source in metSourceSummary.keys():
+            print(source + " metabolite count " + str(metSourceSummary[source]))
+        
+        for source in geneSourceSummary.keys():
+            print(source + " gene count " + str(geneSourceSummary[source]))
 
-    
+        for source in pathwaySourceSummary.keys():
+            print(source + " pathway count " + str(pathwaySourceSummary[source]))
+            
+        for source in self.metToPathAssocSourceTallies.keys():
+            print(source + " metabolite to pathway association count " + str(self.metToPathAssocSourceTallies[source]))
+
+        for source in self.geneToPathAssocSourceTallies.keys():
+            print(source + " gene to pathway association count " + str(self.geneToPathAssocSourceTallies[source]))
+
 class DataSource(object):
     
     def __init__(self):
@@ -460,53 +503,52 @@ class DataSource(object):
         self.sourceName = "hmdb"
         self.filePrefix = "hmdb"
         self.sourceLocPath = "../../misc/output/hmdb"
-        
-
-    
+            
 builder = EntityBuilder()
-builder.loadGeneList()
-builder.addGeneCommonName()
-print(str(builder.geneList.length()))
-print(str(len(builder.geneList.getUniqueGenes())))
-builder.loadPathways()
-builder.buildGeneToPathwayConnections()
+builder.fullBuild()
 
-
-gene = builder.geneList.getGeneById("GAPDH")
-if gene is not None:
-    gene.printGene()
-
-
-    
+# builder.loadGeneList()
+# builder.addGeneCommonName()
+# print(str(builder.geneList.length()))
+# print(str(len(builder.geneList.getUniqueGenes())))
+# builder.loadPathways()
+# builder.buildGeneToPathwayConnections()
+# 
+# 
+# gene = builder.geneList.getGeneById("GAPDH")
+# if gene is not None:
+#     gene.printGene()
+# 
 # builder.loadMetaboList()
 # builder.addMetaboliteCommonName()
-
+#       
 # builder.addMetaboliteSynonyms()
 # builder.buildMetaboliteToPathwayConnections()
 # met = builder.metaboliteList.getMetaboliteBySourceId("chebi:13705")
+# 
 # if met is not None:
 #     met.printMet()
 # else:
 #     print("Hey... no chebi:13705 metabolite...")
-#     
-# 
+#      
+#  
 # met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000060")
 # if met is not None:
 #     met.printMet()
 # else:
 #     print("Hey... no hmdb:HMDB0000060 metabolite...")
-#     
+#      
 # met = builder.metaboliteList.getMetaboliteBySourceId("kegg:C00164")
 # if met is not None:
 #     met.printMet()
 # else:
 #     print("Hey... no kegg:C00164 metabolite...")
-    
-
+#           
+#       
 # met = builder.metaboliteList.getMetaboliteByAltId("chebi:13705")
 # if met is not None:
 #     print("have metabolite by alt id query")
 #     met.printMet()
 # else:
 #     print("Hey... no chebi:13705 metabolite...")
-        
+#         

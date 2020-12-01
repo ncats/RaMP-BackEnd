@@ -16,6 +16,8 @@ class MetaboliteList(object):
         Constructor
         '''
         self.metaboliteSourceIdList = dict()
+        
+        self.sourceSummary = dict()
                 
     def contains(self, metabolite):
         return (self.metaboliteSourceIdList[metabolite.sourceId] != None)
@@ -35,41 +37,38 @@ class MetaboliteList(object):
     def getUniqueMetabolites(self):
         return list(set(self.metaboliteSourceIdList.values()))
     
-    def generateMetaboliteSourceStats(self):
-        mets = self.getUniqueMetabolites()
-        sourceDict = dict()
-        
-
-        for met in mets:
-            sources = ','.join(met.getSortedSources())
-            
-            if sources in sourceDict:
-                sourceDict[sources] = sourceDict[sources] + 1
-            else:
-                sourceDict[sources] = 1
-                
-        combos = list(sourceDict.keys())
-        combos.sort()
-        
-        for combo in combos:
-            print(combo + "  " + str(sourceDict[combo]) + "\n")
+#     def generateMetaboliteSourceStats(self):
+#         mets = self.getUniqueMetabolites()
+#         sourceDict = dict()
+#         
+# 
+#         for met in mets:
+#             sources = ','.join(met.getSortedSources())
+#             
+#             if sources in sourceDict:
+#                 sourceDict[sources] = sourceDict[sources] + 1
+#             else:
+#                 sourceDict[sources] = 1
+#                 
+#         combos = list(sourceDict.keys())
+#         combos.sort()
+#         
+#         for combo in combos:
+#             print(combo + "  " + str(sourceDict[combo]) + "\n")
         
     
-#     def idBasedMetaboliteMerge(self):
-#         mets = self.getUniqueMetabolites()
-#         
-#         iters = len(mets)*len(mets)
-#         print("met squared..." + str(iters))
-#         checkCnt = 0
-#         for met in mets:
-#             for met2 in mets:
-#                 checkCnt = checkCnt + 1
-#                 if(checkCnt % 10000000 == 0):
-#                     print("iter: "+str(checkCnt)+ " %done: " + str((checkCnt/iters)*100))
-#                 if(met2.shareAltIds(met)):
-#                     if(met2.rampId != met.rampId):
-#                         met.mergeMets(met2)
-#                         self.metaboliteSourceIdList[met2.sourceId] = met
+    def generateMetaboliteSourceStats(self, sourceList):
+        
+        for source in sourceList:
+            self.sourceSummary[source.sourceName] = 0
+        
+        mets = self.getUniqueMetabolites()
+        
+        for met in mets:
+            for source in met.sources:
+                self.sourceSummary[source] = self.sourceSummary[source] + 1
+    
+        return self.sourceSummary
                         
                     
         
