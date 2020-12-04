@@ -11,8 +11,14 @@ from rampEntity.MetaboliteList import MetaboliteList
 from rampEntity.Pathway import Pathway
 from rampEntity.PathwayList import PathwayList
 
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+import numpy as np
+from pandas.io.common import file_path_to_url
+from pandas.api.types import is_string_dtype
+from pandas.io.html import _remove_whitespace
+from sqlalchemy.sql.expression import false
 
 class EntityBuilder(object):
     '''
@@ -57,6 +63,9 @@ class EntityBuilder(object):
         
         self.geneToPathAssocSourceTallies = dict()
         self.metToPathAssocSourceTallies = dict()
+        
+        self.mappingExclustionList = MappingExclusionList()
+        self.mappingExclustionList.populateExclusionList("../../misc/resourceConfig/curation_mapping_issues_list.txt")
     
     def loadMetaboList(self, eqMetric = 0):
 
@@ -70,20 +79,40 @@ class EntityBuilder(object):
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
-                
+            df = self.remove_whitespace(df)
+         
             for i,row in df.iterrows():
+            
+                if row[1] == "smiles":
+                    continue
+
                 currSourceId = row[0]
+                            
                 altId = row[2]
+                
+                excludeMappingConnection = False
+                
+                # check exclusion mapping list
+                excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
+                
                 metabolite = self.metaboliteList.getMetaboliteBySourceId(currSourceId)
+                
+                # if the source id isn't already captured, make a metabolite
                 if(metabolite is None):
                     metabolite = Metabolite()
                     metabolite.sourceId = currSourceId
                     metabolite.addSource(source)
-                    metabolite.addId(altId, source)
+                    metabolite.addId(currSourceId, source)
+                    
                     metabolite.rampId = self.generateRampId("C")
-                    self.metaboliteList.addMetabolite(metabolite)
+                    self.metaboliteList.addMetaboliteByAltId(currSourceId, metabolite)
+                    
+                    # check that the id mapping is not to be excluded
+                    if not excludeMappingConnection:            
+                        metabolite.addId(altId, source)
+                        self.metaboliteList.addMetaboliteByAltId(altId, metabolite)
                 
-                    # this is a sourceId lets add 
+                    # this is a sourceId that already exists
                 else:
                     # need to check if the alt id already exists as a key id
                     met2 = self.metaboliteList.getMetaboliteBySourceId(altId)
@@ -91,33 +120,39 @@ class EntityBuilder(object):
                         met2.addId(altId, source)
                         met2.addSource(source)
                         met2.addId(currSourceId, source)
-                        #metaboliteList.addMataboliteByAltId(altId, met2)
-                        # this reasigns the primary source id and strands the 'metabolite' record
-                        self.metaboliteList.addMetaboliteByAltId(currSourceId, met2)
-                        
-                        # we have two metabolites, with the same altID
-                        # met2 already exists for the altId, 
-                        # metabolite exits for the source id
-                        # 
-                        # if met2 != metabolite - we have two rampIds
-                        # we don't want two records
-                        # we need to consolidate metabolites... I think
-                        if(met2 is not metabolite):
-                            # keep the original metabolite (met2) and transfer info
-                            met2.subsumeMetabolite(metabolite)
+                       
+                        if not excludeMappingConnection:
+                            # this reasigns the primary source id and strands the 'metabolite' record
+                            self.metaboliteList.addMetaboliteByAltId(currSourceId, met2)
                             
-                            # now we need to point references to metabolite to met2
-                            #metabolite = met2
-                            for id in metabolite.idList:
-                                self.metaboliteList.addMetaboliteByAltId(id, met2)
-                            
+                            # we have two metabolites, with the same altID
+                            # met2 already exists for the altId, 
+                            # metabolite exits for the source id
+                            # 
+                            # if met2 != metabolite - we have two rampIds
+                            # we don't want two records
+                            # we need to consolidate metabolites... I think
+                            if(met2 is not metabolite):
+                                # keep the original metabolite (met2) and transfer info
+                                met2.subsumeMetabolite(metabolite)
+                                
+                                # now we need to point references to metabolite to met2
+                                #metabolite = met2
+                                for id in metabolite.idList:
+                                    self.metaboliteList.addMetaboliteByAltId(id, met2)
+                                
                         
                     else:
-                        metabolite.addId(altId, source)
-                        # lets add the metabolite back in based on the id
-                        self.metaboliteList.addMetaboliteByAltId(altId, metabolite)
-                        # safe add, adds unique source to metabolite
-                        metabolite.addSource(source)
+                        # now we have a case where the altId is not already a metabolite
+                        # we do have the source id metabolite
+                        # we check if the altId should be added or not based on exclusion list 
+                        
+                        if not excludeMappingConnection:
+                            metabolite.addId(altId, source)
+                            # lets add the metabolite back in based on the id
+                            self.metaboliteList.addMetaboliteByAltId(altId, metabolite)
+                            # safe add, adds unique source to metabolite
+                            metabolite.addSource(source)
                     
         
         # refine the list...
@@ -166,13 +201,17 @@ class EntityBuilder(object):
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
                 met = self.metaboliteList.getMetaboliteBySourceId(row[0])
                 if met is not None:
                     met.addCommonName(row[0], row[1], source)
     
-    
+        # resolve common name for ids without corresponding common names
+        mets = self.metaboliteList.getUniqueMetabolites()
+        for met in mets:
+            met.resolveCommonNames()
     
     def addMetaboliteSynonyms(self):
         
@@ -187,6 +226,7 @@ class EntityBuilder(object):
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
                 met = self.metaboliteList.getMetaboliteBySourceId(row[0])
@@ -220,6 +260,7 @@ class EntityBuilder(object):
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
                         
             for i,row in df.iterrows():
                 pathway = Pathway()
@@ -236,6 +277,24 @@ class EntityBuilder(object):
 #         if p is not None:
 #             p.printPathway()    
     
+    def addPathwayCategory(self):
+
+        for src in self.sourceList:
+            
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.filePrefix + "pathwayCategory.txt"
+            
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            #df = pd.DataFrame(data)
+            #df = self.remove_whitespace(df)
+            
+            for i,row in data.iterrows():
+                pathway = self.pathList.getPathwayBySourceId(row[0])
+                if pathway is not None:
+                    if row[1] != np.nan:
+                        pathway.pathCategory = row[1]
+                    else:
+                        pathway.pathCategory = "NA"
         
         
     def buildMetaboliteToPathwayConnections(self):
@@ -252,6 +311,7 @@ class EntityBuilder(object):
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
             
             print("Number of pathway associations = " + str(data.shape[0]))
         
@@ -310,9 +370,6 @@ class EntityBuilder(object):
         print("Finished met to path mapping stranded counts (mets and paths)")
         print(str(len(strandedMetSourceIds)))
         print(str(len(strandedPathSourceIds)))
-    
-    def loadCommonName(self):
-        print("loading common name")
         
 
 
@@ -328,6 +385,7 @@ class EntityBuilder(object):
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
                 currSourceId = row[0]
@@ -379,7 +437,7 @@ class EntityBuilder(object):
 
 
 
-    def addGeneCommonName(self):
+    def addGeneCommonNameAndSynonyms(self):
         
         for src in self.sourceList:
             print(src.sourceName);
@@ -389,12 +447,15 @@ class EntityBuilder(object):
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
                 if row[1] == "common_name":
                     gene = self.geneList.getGeneById(row[0])
                     if gene is not None:
-                        gene.addCommonName(row[0], row[2], source)
+                        gene.addCommonNameAndSynonym(row[0], row[2], source)
+                        if row[2] == 'GAPDH':
+                            print("\n\n"+"HEYYYYYYYYYYYYYYYYYYYYYYYYYYYY adding GAPDH CN and SYN, id="+row[0]+"\n\n")
 
         # resolve common name for ids without corresponding common names
         genes = self.geneList.getUniqueGenes()
@@ -402,7 +463,23 @@ class EntityBuilder(object):
             gene.resolveCommonNames()
 
 
-
+#     def addGeneSynonyms(self):
+#         
+#         for src in self.sourceList:
+#             print(src.sourceName);
+#             
+#             source = src.sourceName
+#             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
+#             
+#             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+#             df = pd.DataFrame(data)
+#                 
+#             for i,row in df.iterrows():
+#                 if row[1] == "common_name":
+#                     gene = self.geneList.getGeneById(row[0])
+#                     if gene is not None:
+#                         gene.addSynony
+            
 
     def buildGeneToPathwayConnections(self):
         
@@ -419,6 +496,7 @@ class EntityBuilder(object):
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
             df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
             
             print("Number of pathway associations = " + str(data.shape[0]))
             
@@ -465,9 +543,10 @@ class EntityBuilder(object):
     def fullBuild(self):
         
         self.loadPathways()
-        
+        self.addPathwayCategory()
         self.loadGeneList()
-        self.addGeneCommonName()
+        # handles synonyms too
+        self.addGeneCommonNameAndSynonyms()
         self.buildGeneToPathwayConnections()
 
         self.loadMetaboList()
@@ -475,27 +554,105 @@ class EntityBuilder(object):
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
 
-        metSourceSummary = self.metaboliteList.generateMetaboliteSourceStats(self.sourceList)
-        
-        geneSourceSummary = self.geneList.generateGeneSourceStats(self.sourceList)
-        
-        pathwaySourceSummary = self.pathList.gereratePathwaySourceSummaryStats(self.sourceList)
-                
-        for source in metSourceSummary.keys():
-            print(source + " metabolite count " + str(metSourceSummary[source]))
-        
-        for source in geneSourceSummary.keys():
-            print(source + " gene count " + str(geneSourceSummary[source]))
-
-        for source in pathwaySourceSummary.keys():
-            print(source + " pathway count " + str(pathwaySourceSummary[source]))
+#         metSourceSummary = self.metaboliteList.generateMetaboliteSourceStats(self.sourceList)
+#         
+#         geneSourceSummary = self.geneList.generateGeneSourceStats(self.sourceList)
+#         
+#         pathwaySourceSummary = self.pathList.gereratePathwaySourceSummaryStats(self.sourceList)
+#                 
+#         for source in metSourceSummary.keys():
+#             print(source + " metabolite count " + str(metSourceSummary[source]))
+#         
+#         for source in geneSourceSummary.keys():
+#             print(source + " gene count " + str(geneSourceSummary[source]))
+# 
+#         for source in pathwaySourceSummary.keys():
+#             print(source + " pathway count " + str(pathwaySourceSummary[source]))
+#             
+#         for source in self.metToPathAssocSourceTallies.keys():
+#             print(source + " metabolite to pathway association count " + str(self.metToPathAssocSourceTallies[source]))
+# 
+#         for source in self.geneToPathAssocSourceTallies.keys():
+#             print(source + " gene to pathway association count " + str(self.geneToPathAssocSourceTallies[source]))
+# 
+#         gene = self.geneList.getGeneById("GAPDH")
+#         if gene is not None:
+#             gene.printGene()
+#         
+#         print("check GAPDH via main uniprot")
+#         gene = self.geneList.getGeneById("uniprot:P04406")
+#         if gene is not None:
+#             gene.printGene()
+#             
+#         gene = self.geneList.getGeneById("GAPDXYZ")
+#         if gene is not None:
+#             gene.printGene()
             
-        for source in self.metToPathAssocSourceTallies.keys():
-            print(source + " metabolite to pathway association count " + str(self.metToPathAssocSourceTallies[source]))
 
-        for source in self.geneToPathAssocSourceTallies.keys():
-            print(source + " gene to pathway association count " + str(self.geneToPathAssocSourceTallies[source]))
 
+    def writeMetaboliteSource(self):
+
+        sourcefile  = open("../../misc/sql/rampsource.txt", "w+", encoding='utf-8') 
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        print("Starting Write of metabolites: size = " + str(len(mets)))
+        
+        for met in mets:
+            s = met.toSourceString()
+
+            try:
+                sourcefile.write(s)
+            except:
+                print("Error writing this record:"+met.rampId)
+                print("Error writing this record:"+met.idList[0])
+                #print(s)
+                pass
+         
+           
+        sourcefile.close()
+        
+    
+    def writeMetaboliteToPathway(self):
+        
+        sourcefile  = open("../../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        for met in mets:
+            sourcefile.write(met.toPathwayMapString())
+        
+        sourcefile.close()    
+            
+    def writePathways(self):
+        
+        sourcefile  = open("../../misc/sql/pathway.txt", "w+", encoding='utf-8')
+
+        for pathway in self.pathList.getPathwaysAsList():
+            sourcefile.write(pathway.toPathwayString())
+            
+        sourcefile.close()    
+
+
+    def writeAnalyte(self):
+        sourcefile  = open("../../misc/sql/analyte.txt", "w+", encoding='utf-8')
+
+        for met in self.metaboliteList.getUniqueMetabolites():
+            sourcefile.write(met.rampId + "\tcompound\n")
+            
+        for met in self.geneList.getUniqueGenes():
+            sourcefile.write(met.rampId + "\tgene\n")
+                        
+        sourcefile.close() 
+        
+
+    def remove_whitespace(self, dF):     
+        for colName in dF.columns:
+            if is_string_dtype(dF[colName]):
+                dF[colName] = dF[colName].str.strip()
+                print("fixing column...")
+        return dF
+    
 class DataSource(object):
     
     def __init__(self):
@@ -503,9 +660,86 @@ class DataSource(object):
         self.sourceName = "hmdb"
         self.filePrefix = "hmdb"
         self.sourceLocPath = "../../misc/output/hmdb"
+        self.exportPath = "../../misc/sql"
+        
+'''
+ This class holds a collection of improperly associated metabolite ids.
+ This list is one means to check associations and skip those that are in error from the source
+'''        
+class MappingExclusionList(object):        
+    
+    def __init__(self):
+    
+        # sourceId : extID List
+        self.sourceIdToExtIdDict = dict()
+        
+    def isMappingProblem(self, sourceId, extId):    
+
+        if sourceId in self.sourceIdToExtIdDict and extId in self.sourceIdToExtIdDict[sourceId]:
+            return True
+
+        if extId in self.sourceIdToExtIdDict and sourceId in self.sourceIdToExtIdDict[extId]:
+            return True
+
+        return False
+    
+    def populateExclusionList(self, filePath):
+
+        data = pd.read_csv(filePath, delimiter=r'\t+', header=0, index_col=None)
+        df = pd.DataFrame(data)
             
+        for i,row in df.iterrows():
+            sourceId = row[1]
+            extId = row[3]
+        
+            print("exclusions: " + sourceId + "\t" + extId)
+        
+            if sourceId not in self.sourceIdToExtIdDict:
+                self.sourceIdToExtIdDict[sourceId] = list()
+            if extId not in self.sourceIdToExtIdDict:
+                self.sourceIdToExtIdDict[extId] = list()
+            
+            self.sourceIdToExtIdDict[sourceId].append(extId)   
+            self.sourceIdToExtIdDict[extId].append(sourceId)                    
+        
+        print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
+        
+        
 builder = EntityBuilder()
 builder.fullBuild()
+
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0128442")
+# if met is not None:
+#     met.printMet()
+
+builder.writeMetaboliteSource()
+builder.writeMetaboliteToPathway()
+builder.writePathways()
+builder.writeAnalyte()
+
+met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0002306")
+ 
+if met is not None:
+    met.printMet()
+else:
+    print("No metabolite HCl record for hmdb:HMDB0002306")
+
+met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0029225")
+ 
+if met is not None:
+    met.printMet()
+else:
+    print("No metabolite Coumeric acid record for HMDB0029225")
+
+
+met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000122")
+ 
+if met is not None:
+    met.printMet()
+else:
+    print("No metabolite record for glucose hmdb:HMDB0000122")
+    
+    
 
 # builder.loadGeneList()
 # builder.addGeneCommonName()

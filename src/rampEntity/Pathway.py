@@ -34,5 +34,7 @@ class Pathway(object):
         s = s + "sourceId: " + self.pathSourceId + "\n"
         s = s + "pathwayName: " + self.pathName
         print(s)
-        
-        
+    
+    def toPathwayString(self):
+        s = self.pathRampId + "\t" + self.pathSourceId + "\t" + self.pathSource + "\t" + str(self.pathCategory) + "\t" + self.pathName + "\n"
+        return s
