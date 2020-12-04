@@ -145,6 +145,49 @@ class Metabolite(object):
                 self.addSynonym(syn, source)
                 
     
+    def resolveCommonNames(self):
+        for source in self.idDict:
+            for id in self.idDict[source]:
+                if source in self.commonNameDict and id not in self.commonNameDict[source]:
+                    # now we know we have a common name dictionary for the source
+                    # and our id doesn't have a commmon name entry.
+                    
+                    #grab a key
+                    keyId = list(self.commonNameDict[source].keys())[0]
+                    self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
+
     
+    
+    def toSourceString(self):
+        lines = 0
+        s = ""
+        for source in self.commonNameDict:
+            for id in self.commonNameDict[source]:
+                idSplit = id.split(":")
+                if len(idSplit) > 1:
+                    idType = idSplit[0]
+                else:
+                    idType = "None"
+                lines = lines + 1                    
+                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + str(source) + "\n"
+            #s = s.strip()
+
+#         for source in self.idDict:
+#             for id in self.idDict[source]:
+#                 idSplit = id.split(":")
+#                 if len(idSplit) > 1:
+#                   idType = idSplit[0]
+#                 else:
+#                     idType = "NA"
+#                 s = s + str(id) + "\t" + str(self.rampId) + "\tcompound\t" + str(idType) + "\t" + "CommonNamePlaceHolder" + "\t" + str(source) +"\n"'''
+        return s;    
+
                 
-        
+    def toPathwayMapString(self):
+        s = ""
+        for source in self.pathways:
+            for pathway in self.pathways[source]:
+                s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + source + "\n"
+        return s
+    
+    

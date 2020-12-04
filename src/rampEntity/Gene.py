@@ -29,7 +29,7 @@ class Gene(object):
         # keys are source, values are dictiontaries of source id to commonName
         self.commonNameDict = dict()
         
-        self.synonymList = list()
+        self.synonymDict = dict()
                 
         self.primarySource = ""
 
@@ -67,21 +67,29 @@ class Gene(object):
         if sourceName not in self.sources:
             self.sources.append(sourceName)
             
-    def addCommonName(self, id, commonName, source):
+    def addCommonNameAndSynonym(self, id, commonName, source):
         if source not in self.commonNameDict:            
             self.commonNameDict[source] = dict()
         self.commonNameDict[source][id] = commonName
-        self.addSynonym(commonName)
-        
-    def addSynonym(self, synonym):
-        if synonym not in self.synonymList:
-            self.synonymList.append(synonym)
+        self.addSynonym(commonName, source)
             
     def addPathway(self, pathway, source):
         if source not in self.pathways:
             self.pathways[source] = list()
         if pathway not in self.pathways[source]:
             self.pathways[source].append(pathway)
+            
+    def addSynonym(self, synonym, source):
+        if synonym == 'GAPDH':
+            print("HHHHHHHHHHHHHHHHEEEEY in addSynonym for GAPDH in GENE!!! self.rampId=" + self.rampId)
+        
+        if source not in self.synonymDict:
+            self.synonymDict[source] = list()
+        if synonym not in self.synonymDict[source]:
+            self.synonymDict[source].append(synonym) 
+            if synonym == 'GAPDH':           
+                print("HHHHHHHHHHHHHHHHEEEEY (part2) Actually ADDING!!!!!! in addSynonym for GAPDH in GENE!!! self.rampId=" + self.rampId)
+     
         
     def printGene(self):
         s = "rampId: " + self.rampId + "\n"        
@@ -91,9 +99,11 @@ class Gene(object):
         for source in self.commonNameDict:
             for id in self.commonNameDict[source].keys():
                 s = s + "id: " + id + ", source: " + source + ", name:" + self.commonNameDict[source][id]+ "\n"
-        for syn in self.synonymList:
-            s = s + "syn: " + syn + "\n"
         
+        for source in self.synonymDict:
+            for syn in self.synonymDict[source]:
+                s = s + "synonym: " + syn + ", source: " + source + "\n"
+                
         print(s)
         
         print("pathway count: " + str(len(self.pathways)))
@@ -135,6 +145,7 @@ class Gene(object):
                 self.addCommonName(id, gene.commonNameDict[source][id] ,source)
         for source in gene.sources:
             self.addSource(source)
-        for syn in gene.synonymList:
-            self.addSynonym(syn)        
+        for source in gene.synonymDict:
+            for syn in gene.synonymDict[source]:
+                self.addSynonym(syn, source)        
             
