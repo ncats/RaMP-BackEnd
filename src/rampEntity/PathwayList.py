@@ -34,6 +34,9 @@ class PathwayList(object):
     def length(self):
         return (len(self.pathwayDict))
     
+    def getPathwaysAsList(self):
+        return self.pathwayDict.values()
+    
     def gereratePathwaySourceSummaryStats(self, sourceList):
            
         for source in self.pathwayBySourceDict.keys():
