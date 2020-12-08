@@ -496,6 +496,8 @@ class WikipathwaysRDF(MetabolomicsData):
             id = prefix.lower()+':'+id
         elif prefix == 'chemspider_id':
             id = 'chemspider:'+id
+        elif prefix == 'chemspider':
+            id = 'chemspider:'+id
         elif prefix == 'kegg.compound' or prefix == 'kegg':
             id = 'kegg:' +id
         elif prefix == 'cas':
