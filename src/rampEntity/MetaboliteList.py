@@ -71,7 +71,26 @@ class MetaboliteList(object):
         return self.sourceSummary
                         
                     
+    def generateChemPropSummaryStats(self):
+
+        mets = self.getUniqueMetabolites()
+        
+        haveMolCount = 0
+        molRecords = 0;
+
+        for met in mets:
+            if len(met.chemPropsMolecules) > 0:
+                haveMolCount = haveMolCount + 1
+                
+                for source in met.chemPropsMolecules:
+                    molRecords = molRecords + len(met.chemPropsMolecules[source])
+                    
+        print("\nChemistry Property Stats")
+        print("Tot Mets: " + str(len(mets)))
+        print("Tot Mets with ChemProps: " + str(haveMolCount))
+        print("Tot Mets: " + str(molRecords))
         
         
+                    
         
     
