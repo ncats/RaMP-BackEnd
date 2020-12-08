@@ -10,6 +10,8 @@ from rampEntity.Metabolite import Metabolite
 from rampEntity.MetaboliteList import MetaboliteList
 from rampEntity.Pathway import Pathway
 from rampEntity.PathwayList import PathwayList
+from chemprop.ChemWrangler import ChemWrangler
+from rampEntity.Molecule import Molecule
 
 from pathlib import Path
 
@@ -67,6 +69,8 @@ class EntityBuilder(object):
         self.mappingExclustionList = MappingExclusionList()
         self.mappingExclustionList.populateExclusionList("../../misc/resourceConfig/curation_mapping_issues_list.txt")
     
+        self.chemSourceRecords = dict()
+        
     def loadMetaboList(self, eqMetric = 0):
 
         Metabolite.__equalityMetric = eqMetric
@@ -544,10 +548,10 @@ class EntityBuilder(object):
         
         self.loadPathways()
         self.addPathwayCategory()
-        self.loadGeneList()
-        # handles synonyms too
-        self.addGeneCommonNameAndSynonyms()
-        self.buildGeneToPathwayConnections()
+#         self.loadGeneList()
+#         # handles synonyms too
+#         self.addGeneCommonNameAndSynonyms()
+#         self.buildGeneToPathwayConnections()
 
         self.loadMetaboList()
         self.addMetaboliteCommonName()      
@@ -644,7 +648,18 @@ class EntityBuilder(object):
             sourcefile.write(met.rampId + "\tgene\n")
                         
         sourcefile.close() 
+
+       
+    def writeChemProps(self):
         
+        chemPropsFile  = open("../../misc/sql/chemProps.txt", "w+", encoding='utf-8')
+        mets = self.metaboliteList.getUniqueMetabolites()
+        for met in mets:
+            if len(met.chemPropsMolecules) > 0:
+                chemPropsFile.write(met.toChemPropsString())
+
+        chemPropsFile.close()
+
 
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
@@ -652,6 +667,26 @@ class EntityBuilder(object):
                 dF[colName] = dF[colName].str.strip()
                 print("fixing column...")
         return dF
+    
+    
+    def loadChemstry(self):
+        cw = ChemWrangler()
+        sources = ["hmdb","chebi"]
+        cw.loadRampChemRecords(sources)
+        self.chemSourceRecords = cw.getChemSourceRecords()
+        
+    def resolveChemistry(self, sourceOrder):
+        for source in sourceOrder:
+            chemRecords = self.chemSourceRecords[source]
+            for key in chemRecords:
+                met = self.metaboliteList.getMetaboliteBySourceId(key)
+                if met is not None:
+                    mol = chemRecords[key]
+                    met.addChemProps(mol)
+                     
+        
+        self.metaboliteList.generateChemPropSummaryStats()
+        
     
 class DataSource(object):
     
@@ -708,37 +743,40 @@ class MappingExclusionList(object):
 builder = EntityBuilder()
 builder.fullBuild()
 
+builder.loadChemstry()
+builder.resolveChemistry(["hmdb", "chebi"])
+builder.writeChemProps()
 # met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0128442")
 # if met is not None:
 #     met.printMet()
 
-builder.writeMetaboliteSource()
-builder.writeMetaboliteToPathway()
-builder.writePathways()
-builder.writeAnalyte()
+# builder.writeMetaboliteSource()
+# builder.writeMetaboliteToPathway()
+# builder.writePathways()
+# builder.writeAnalyte()
 
-met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0002306")
- 
-if met is not None:
-    met.printMet()
-else:
-    print("No metabolite HCl record for hmdb:HMDB0002306")
-
-met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0029225")
- 
-if met is not None:
-    met.printMet()
-else:
-    print("No metabolite Coumeric acid record for HMDB0029225")
-
-
-met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000122")
- 
-if met is not None:
-    met.printMet()
-else:
-    print("No metabolite record for glucose hmdb:HMDB0000122")
-    
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0002306")
+#  
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("No metabolite HCl record for hmdb:HMDB0002306")
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0029225")
+#  
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("No metabolite Coumeric acid record for HMDB0029225")
+# 
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000122")
+#  
+# if met is not None:
+#     met.printMet()
+# else:
+#     print("No metabolite record for glucose hmdb:HMDB0000122")
+#     
     
 
 # builder.loadGeneList()
