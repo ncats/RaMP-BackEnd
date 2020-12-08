@@ -31,16 +31,11 @@ class Metabolite(object):
         self.primarySource = ""
 
         self.pathways = dict()
-                
-        self.smiles = ""
-        
-        self.inchi = ""
-        
-        self.inchikey = ""
-        
+     
         self.sources = list()
         
-        self.lychi = ""
+        # source: [source_id: Molecule]  Molecule = molecule props
+        self.chemPropsMolecules = dict()
                
     def __eq__(self, other):
         if self.rampId and other.rampId:
@@ -157,6 +152,10 @@ class Metabolite(object):
                     self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
 
     
+    def addChemProps(self, molecule):
+        if molecule.source not in self.chemPropsMolecules:
+           self.chemPropsMolecules[molecule.source] = dict()
+        self.chemPropsMolecules[molecule.source][molecule.id] = molecule
     
     def toSourceString(self):
         lines = 0
@@ -182,12 +181,23 @@ class Metabolite(object):
 #                 s = s + str(id) + "\t" + str(self.rampId) + "\tcompound\t" + str(idType) + "\t" + "CommonNamePlaceHolder" + "\t" + str(source) +"\n"'''
         return s;    
 
-                
+    
     def toPathwayMapString(self):
         s = ""
         for source in self.pathways:
             for pathway in self.pathways[source]:
                 s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + source + "\n"
+        return s
+    
+    
+    def toChemPropsString(self):
+        s = ""
+        for source in self.chemPropsMolecules:
+            for id in self.chemPropsMolecules[source]:
+                mol = self.chemPropsMolecules[source][id]                
+                chemProps = mol.toChemPropsString()
+                if chemProps is not None:
+                    s = s + self.rampId + "\t" + chemProps
         return s
     
     
