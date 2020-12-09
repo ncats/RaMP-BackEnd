@@ -79,30 +79,66 @@ class Gene(object):
         if pathway not in self.pathways[source]:
             self.pathways[source].append(pathway)
             
+            
     def addSynonym(self, synonym, source):
-        if synonym == 'GAPDH':
-            print("HHHHHHHHHHHHHHHHEEEEY in addSynonym for GAPDH in GENE!!! self.rampId=" + self.rampId)
         
         if source not in self.synonymDict:
             self.synonymDict[source] = list()
         if synonym not in self.synonymDict[source]:
-            self.synonymDict[source].append(synonym) 
-            if synonym == 'GAPDH':           
-                print("HHHHHHHHHHHHHHHHEEEEY (part2) Actually ADDING!!!!!! in addSynonym for GAPDH in GENE!!! self.rampId=" + self.rampId)
-     
+            self.synonymDict[source].append(synonym)  
+    
+    
+    def toSourceString(self):
+        lines = 0
+        s = ""
+        for source in self.commonNameDict:
+            for id in self.commonNameDict[source]:
+                
+                if isinstance(id, float) or isinstance(id, int):
+                    print("Heyyyyyyyyy we have a numeric id!!!  Printing Gene")
+                    print(self.printGene())
+                
+                
+                
+                idSplit = id.split(":")
+                if len(idSplit) > 1:
+                    idType = idSplit[0]
+                else:
+                    idType = "Other"
+                lines = lines + 1                    
+                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + str(self.commonNameDict[source][id]) + "\t" + str(source) + "\n"
+
+        return s
+       
+       
+    def toPathwayMapString(self):
+        s = ""
+        for source in self.pathways:
+            for pathway in self.pathways[source]:
+                s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + source + "\n"
+        return s
+       
+    def toSynonymsString(self):
+        s = ""
+        for source in self.synonymDict:
+            for syn in self.synonymDict[source]:
+                s = s + syn + "\t" + self.rampId + "\tgene\t" + source + "\n" 
         
+        return s
+    
+    
     def printGene(self):
         s = "rampId: " + self.rampId + "\n"        
         for source in self.idDict:
             for id in self.idDict[source]:
-                s = s + "id: " + id + ", source: " + source + "\n"
+                s = s + "id: " + str(id) + ", source: " + source + "\n"
         for source in self.commonNameDict:
             for id in self.commonNameDict[source].keys():
-                s = s + "id: " + id + ", source: " + source + ", name:" + self.commonNameDict[source][id]+ "\n"
+                s = s + "id: " + str(id) + ", source: " + str(source) + ", name:" + str(self.commonNameDict[source][id]) + "\n"
         
         for source in self.synonymDict:
             for syn in self.synonymDict[source]:
-                s = s + "synonym: " + syn + ", source: " + source + "\n"
+                s = s + "synonym: " + str(syn) + ", source: " + str(source) + "\n"
                 
         print(s)
         

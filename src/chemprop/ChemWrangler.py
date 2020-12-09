@@ -3,9 +3,12 @@ Created on Dec 7, 2020
 
 @author: braistedjc
 '''
-import sys
+import sys, os
 from rampEntity.Molecule import Molecule
-
+from MetabolomicsData import MetabolomicsData
+import zipfile
+import gzip
+import shutil
 
 class ChemWrangler(object):
     '''
@@ -16,6 +19,38 @@ class ChemWrangler(object):
         Constructor
         '''
         self.chemLibDict = dict()
+
+
+        
+    def fetchCompoundPropertiesFiles(self):
+        
+        print(os.getcwd())
+        
+        metData = MetabolomicsData()
+        print("fetching chem props")
+        dir = "../../misc/data/chemprops/"
+        url = "https://hmdb.ca/system/downloads/current/structures.zip"
+        remoteFile = "structures.zip"
+                
+        metData.download_files(url, dir+remoteFile)
+        
+        
+        with zipfile.ZipFile(dir+remoteFile,"r") as zip_ref:
+            zip_ref.extractall(dir)
+        
+         
+        dir = "../../misc/data/chemprops/"
+        url = "ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete_3star.sdf.gz"
+        remoteFile = "ChEBI_complete_3star.sdf.gz"
+        extractFile = "ChEBI_complete_3star.sdf"
+                 
+        metData.download_files(url, dir+remoteFile)
+        
+        with gzip.open(dir+remoteFile, 'rb') as f_in:
+            with open(dir+extractFile, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+
+
             
     def readHMDBSDF(self, source, filePath):
         print(sys.getdefaultencoding())
@@ -45,7 +80,7 @@ class ChemWrangler(object):
                 mol.smiles = sdfDB.readline().strip()
             if line == '> <INCHI_KEY>':
                 mol.inchiKey = sdfDB.readline().strip()
-            if line == '> <INCHI>':
+            if line == '> <INCHI_IDENTIFIER>':
                 mol.inchi = sdfDB.readline().strip()                                          
             if line == '> <MOLECULAR_WEIGHT>':
                 mol.mw = sdfDB.readline().strip()
@@ -56,6 +91,7 @@ class ChemWrangler(object):
 
         print("have chem props = " + str(len(molDict)))
         self.chemLibDict[source] = molDict
+       
         
     def readChebiSDF(self, source, filePath):
         print(sys.getdefaultencoding())
@@ -86,7 +122,7 @@ class ChemWrangler(object):
                 mol.smiles = sdfDB.readline().strip()
             if line == '> <InChiKey>':
                 mol.inchiKey = sdfDB.readline().strip()
-            if line == '> <InChi>':
+            if line == '> <InChI>':
                 mol.inchi = sdfDB.readline().strip()                                          
             if line == '> <MASS>':
                 mol.mw = sdfDB.readline().strip()
@@ -107,10 +143,10 @@ class ChemWrangler(object):
     def loadRampChemRecords(self, sources):
         for source in sources:
             if source == 'hmdb':
-                file = "C:/Users/braistedjc/Desktop/Analysis/RaMP/RaMP2_Stats/accounting_id_match/chebi_resources/structures.sdf"
+                file = "../../misc/data/chemprops/structures.sdf"
                 self.readSDF('hmdb', file)
             if source == 'chebi':
-                file = "C:/Users/braistedjc/Desktop/Analysis/RaMP/RaMP2_Stats/accounting_id_match/chebi_resources/ChEBI_complete_3star.sdf"
+                file = "../../misc/data/chemprops/ChEBI_complete_3star.sdf"
                 self.readSDF('chebi', file)
                 
     def getChemSourceRecords(self):
@@ -133,7 +169,8 @@ class ChemWrangler(object):
 
 
 
-# cw = ChemWrangler()
+#cw = ChemWrangler()
+#cw.fetchCompoundPropertiesFiles()
 #         
 # file = "C:/Users/braistedjc/Desktop/Analysis/RaMP/RaMP2_Stats/accounting_id_match/chebi_resources/structures.sdf"
 # cw.readSDF('hmdb', file)

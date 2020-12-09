@@ -189,6 +189,16 @@ class Metabolite(object):
                 s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + source + "\n"
         return s
     
+
+    def toSynonymsString(self):
+        s = ""
+        for source in self.synonymDict:
+            for syn in self.synonymDict[source]:
+                s = s + str(syn) + "\t" + self.rampId + "\tcompound\t" + source + "\n" 
+        
+        return s
+    
+    
     
     def toChemPropsString(self):
         s = ""
