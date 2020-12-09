@@ -21,6 +21,7 @@ from pandas.io.common import file_path_to_url
 from pandas.api.types import is_string_dtype
 from pandas.io.html import _remove_whitespace
 from sqlalchemy.sql.expression import false
+from collections import defaultdict
 
 class EntityBuilder(object):
     '''
@@ -81,7 +82,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteIDDictionary.txt"
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
          
@@ -90,9 +91,9 @@ class EntityBuilder(object):
                 if row[1] == "smiles":
                     continue
 
-                currSourceId = row[0]
-                            
-                altId = row[2]
+                currSourceId = str(row[0])
+                                            
+                altId = str(row[2])
                 
                 excludeMappingConnection = False
                 
@@ -203,7 +204,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteCommonName.txt"
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -228,7 +229,7 @@ class EntityBuilder(object):
             if not os.path.exists(file) or os.path.getsize(file) < 1:
                 return
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -262,7 +263,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayDictionary.txt"
         
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                         
@@ -313,7 +314,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithPathwaysDictionary.txt"
     
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
@@ -387,7 +388,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -449,7 +450,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -458,8 +459,6 @@ class EntityBuilder(object):
                     gene = self.geneList.getGeneById(row[0])
                     if gene is not None:
                         gene.addCommonNameAndSynonym(row[0], row[2], source)
-                        if row[2] == 'GAPDH':
-                            print("\n\n"+"HEYYYYYYYYYYYYYYYYYYYYYYYYYYYY adding GAPDH CN and SYN, id="+row[0]+"\n\n")
 
         # resolve common name for ids without corresponding common names
         genes = self.geneList.getUniqueGenes()
@@ -498,7 +497,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwaysWithGenesDictionary.txt"
     
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
@@ -546,17 +545,37 @@ class EntityBuilder(object):
 
     def fullBuild(self):
         
+        # load pathways
         self.loadPathways()
         self.addPathwayCategory()
-#         self.loadGeneList()
-#         # handles synonyms too
-#         self.addGeneCommonNameAndSynonyms()
-#         self.buildGeneToPathwayConnections()
 
+        # load genes
+        self.loadGeneList()
+        self.addGeneCommonNameAndSynonyms()
+        self.buildGeneToPathwayConnections()
+        
+        gene = self.geneList.getGeneById("TFAP2E")
+        if gene is not None:
+            gene.printGene()
+
+        # load metabolite list, over all sources and hamonization during build
         self.loadMetaboList()
-        self.addMetaboliteCommonName()      
+        self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
+        
+        # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
+        self.loadChemstry()
+        self.resolveChemistry(["hmdb", "chebi"])      
+        
+        # loader file writes
+        self.writePathways()
+        self.writeAnalyteSource()
+        self.writeAnalyteSynonyms()
+        self.writeAnalyteToPathway()
+        self.writeAnalyte()
+        self.writeChemProps()
+
 
 #         metSourceSummary = self.metaboliteList.generateMetaboliteSourceStats(self.sourceList)
 #         
@@ -594,9 +613,9 @@ class EntityBuilder(object):
             
 
 
-    def writeMetaboliteSource(self):
+    def writeAnalyteSource(self):
 
-        sourcefile  = open("../../misc/sql/rampsource.txt", "w+", encoding='utf-8') 
+        sourcefile  = open("../../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
         mets = self.metaboliteList.getUniqueMetabolites()
         
@@ -604,7 +623,7 @@ class EntityBuilder(object):
         
         for met in mets:
             s = met.toSourceString()
-
+            
             try:
                 sourcefile.write(s)
             except:
@@ -613,11 +632,27 @@ class EntityBuilder(object):
                 #print(s)
                 pass
          
+         
+        genes = self.geneList.getUniqueGenes()
+        
+        print("Starting Write of genes: size = " + str(len(genes)))
+        
+        for gene in genes:
+            s = gene.toSourceString()
+
+            try:
+                sourcefile.write(s)
+            except Exception as err:
+                print("Error writing this record:"+gene.rampId)
+                print("Error writing this record:"+gene.idList[0])
+                print(err)
+                gene.printGene()
+                pass 
            
         sourcefile.close()
         
     
-    def writeMetaboliteToPathway(self):
+    def writeAnalyteToPathway(self):
         
         sourcefile  = open("../../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
         
@@ -625,8 +660,14 @@ class EntityBuilder(object):
         
         for met in mets:
             sourcefile.write(met.toPathwayMapString())
+            
+        genes = self.geneList.getUniqueGenes()
         
+        for gene in genes:
+            sourcefile.write(gene.toPathwayMapString())
+                    
         sourcefile.close()    
+            
             
     def writePathways(self):
         
@@ -644,8 +685,8 @@ class EntityBuilder(object):
         for met in self.metaboliteList.getUniqueMetabolites():
             sourcefile.write(met.rampId + "\tcompound\n")
             
-        for met in self.geneList.getUniqueGenes():
-            sourcefile.write(met.rampId + "\tgene\n")
+        for gene in self.geneList.getUniqueGenes():
+            sourcefile.write(gene.rampId + "\tgene\n")
                         
         sourcefile.close() 
 
@@ -660,6 +701,24 @@ class EntityBuilder(object):
 
         chemPropsFile.close()
 
+    def writeAnalyteSynonyms(self):
+        
+        synonymfile  = open("../../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        for met in mets:
+            s = met.toSynonymsString()        
+            synonymfile.write(s)
+            
+        genes = self.geneList.getUniqueGenes()
+        
+        for gene in genes:
+            s = gene.toSynonymsString()
+            synonymfile.write(s)
+           
+        synonymfile.close()
+                
 
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
@@ -743,9 +802,7 @@ class MappingExclusionList(object):
 builder = EntityBuilder()
 builder.fullBuild()
 
-builder.loadChemstry()
-builder.resolveChemistry(["hmdb", "chebi"])
-builder.writeChemProps()
+
 # met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0128442")
 # if met is not None:
 #     met.printMet()
