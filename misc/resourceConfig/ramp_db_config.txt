@@ -1,0 +1,27 @@
+data_fetch_and_parse									
+load_status	source	source_name	url	file_count	file	met_file	gene_file	local_data_dir	parsed_data_dir
+include	hmdb	hmdb	http://www.hmdb.ca/system/downloads/current/	2		hmdb_metabolites.zip	hmdb_proteins.zip	../misc/data/hmdb/	../misc/output/hmdb
+include	reactome	reactome	http://www.reactome.org/download/current/	1		ChEBI2Reactome_All_Levels.txt	UniProt2Reactome_All_Levels.txt	../misc/data/reactome/	../misc/output/reactome
+include	wikiPathways	wiki	http://data.wikipathways.org/current/rdf/	1	wikipathways-20201110-rdf-wp.zip			../misc/data/wikiPathwaysRDF/	../misc/output/wikiPathwaysRDF
+///									
+chem_props									
+load_status	source	source_name	url	file	file_compression	local_data_dir	local_output_dir		
+include	hmdb	hmdb	https://hmdb.ca/system/downloads/current/	structures.zip	zip	../misc/data/chemprops/	../misc/output/chemprops		
+include	chebi	chebi	ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/	ChEBI_complete_3star.sdf.gz	gz	../misc/data/chemprops/	../misc/output/chemprops		
+///									
+db_load									
+status	file	table	loadType	primaryKey	colNames				
+ready	pathway.txt	pathway	bulk	pathwayRampId	"pathwayRampId,sourceId,type,pathwayCategory,pathwayName"				
+ready	analyte.txt	analyte	bulk	rampId	"rampId,type"				
+ready	analytesource.txt	source_name	bulk	None	"sourceId,rampId,IDtype,geneOrCompound,commonName,source"				
+ready	analytetopathway.txt	analytehaspathway	bulk	None	"rampId,pathwayRampId,pathwaySource"				
+ready	analytesynonym.txt	analytesynonym	bulk	None	"Synonym,rampId,geneOrCompound,source"				
+ready	hmdbOntologyLocation.sql	ontology	bulk	None	"rampOntologyIdLocation,commonName,biofluidOrCellular"				
+empty	reactomeOntologyLocation.sql	ontology	bulk	None	"rampOntologyIdLocation,commonName,biofluidOrCellular"				
+empty	wikiOntologyLocation.sql	ontology	bulk	None	"rampOntologyIdLocation,commonName,biofluidOrCellular"				
+ready	hmdbanalyteHasOntologyLocation.sql	analytehasontology	bulk	None	"rampCompoundId,rampOntologyIdLocation"				
+empty	reactomeanalyteHasOntologyLocation.sql	analytehasontology	bulk	None	"rampCompoundId,rampOntologyIdLocation"				
+empty	wikianalyteHasOntologyLocation.sql	analytehasontology	bulk	None	"rampCompoundId,rampOntologyIdLocation"				
+ready	hmdbcatalyzed.sql	catalyzed	bulk	None	"rampCompoundId,rampGeneId"				
+empty	reactomecatalyzed.sql	catalyzed	bulk	None	"rampCompoundId,rampGeneId"				
+empty	wikicatalyzed.sql	catalyzed	bulk	None	"rampCompoundId,rampGeneId"				
