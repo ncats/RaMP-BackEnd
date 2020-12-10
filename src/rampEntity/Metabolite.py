@@ -211,3 +211,44 @@ class Metabolite(object):
         return s
     
     
+    def checkMWParity(self, mwTolerance, pctOrAbs):
+        
+        mwList = list() 
+        
+        for source in self.chemPropsMolecules:
+            for id in self.chemPropsMolecules[source]:
+                mol = self.chemPropsMolecules[source][id]
+                if mol.mw is not None and len(mol.mw) > 0:
+                    mwList.append(float(mol.mw))
+        
+        if len(mwList) < 2:
+            return 0.0
+        
+        if pctOrAbs == "pct":
+            pct = (max(mwList) - min(mwList))/min(mwList)
+            if pct > mwTolerance:
+                return pct
+            else:
+                return 0.0
+        
+        if (max(mwList) - min(mwList)) > mwTolerance:
+            return (max(mwList) - min(mwList))
+        else:
+            return 0
+    
+    def checkInchiBaseParity(self):
+        
+        inchiDict = dict() 
+        
+        for source in self.chemPropsMolecules:
+            for id in self.chemPropsMolecules[source]:
+                mol = self.chemPropsMolecules[source][id]
+                if mol.inchiKey is not None and len(mol.inchiKey) > 10:
+                    inchiBase = mol.inchiKey.split("-")[0]
+                    inchiDict[inchiBase] = inchiBase
+        
+        return len(inchiDict)
+    
+    
+    
+    

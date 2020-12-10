@@ -23,6 +23,9 @@ from pandas.io.html import _remove_whitespace
 from sqlalchemy.sql.expression import false
 from collections import defaultdict
 
+import pubchempy as pcp
+import time
+
 class EntityBuilder(object):
     '''
     classdocs
@@ -745,7 +748,200 @@ class EntityBuilder(object):
                      
         
         self.metaboliteList.generateChemPropSummaryStats()
+     
+    
+    
+    def crosscheckChemPropsMW(self, mwTolerance = 0.1, pctOrAbs = 'pct'):
         
+        problemMets = list()
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        for met in mets:
+            dev = met.checkMWParity(mwTolerance, pctOrAbs)
+            if dev > 0.0:
+                problemMets.append(met)
+        
+        return problemMets        
+
+
+    def crosscheckChemPropsInchiBase(self):
+
+        problemMets = list()
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        for met in mets:
+            uniqueInchiBaseCnt = met.checkInchiBaseParity()
+            if uniqueInchiBaseCnt > 1:
+                problemMets.append(met)
+        
+        return problemMets    
+    
+    
+
+    def crossCheckMetaboliteHarmony(self, buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct'):
+        
+        self.loadMetaboList()
+        self.addMetaboliteCommonName()
+        self.addMetaboliteSynonyms()
+        
+        # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
+        self.loadChemstry()
+        self.resolveChemistry(["hmdb", "chebi"])  
+
+        problemMWMets = self.crosscheckChemPropsMW(tolerance, pctOrAbs)
+
+        print("Check mw on mets, problem mets..." + str(len(problemMWMets)))
+
+        problemInchiMets = self.crosscheckChemPropsInchiBase()
+
+        print("Check inChI base on mets, problem mets..." + str(len(problemInchiMets)))
+
+        probMets = list(set(problemMWMets + problemInchiMets))
+        
+        print("Union of problem mets..." + str(len(probMets)))
+        
+        moleculeCount = 0;
+        for met in probMets:
+            for source in met.chemPropsMolecules:
+                for id in met.chemPropsMolecules[source]:
+                    moleculeCount = moleculeCount + 1
+                    
+        print("Total molecule records " + str(moleculeCount))
+        
+        moleculeCount = 0;
+        for met in problemMWMets:
+            for source in met.chemPropsMolecules:
+                for id in met.chemPropsMolecules[source]:
+                    moleculeCount = moleculeCount + 1
+                    
+        print("Total molecule records (only having MW issue) " + str(moleculeCount))
+        
+        metCnt = 0
+        totalMismatches = list()
+        
+        if criteria == "MW":
+            badMets = problemMWMets
+        else:
+            badMets = problemInchiMets
+            
+        for met in badMets:
+            
+            # s = met.toSourceString()
+            # print(s+"\n")
+            metCnt = metCnt + 1
+            
+            if(criteria == "MW"):
+                mismatchList = self.getMetaboliteIDMismatchMW(met, tolerance, pctOrAbs)                
+            else:
+                mismatchList = self.getMetaboliteIDMismatchInchiBase(met)
+            
+            totalMismatches.extend(mismatchList)
+            
+            if metCnt % 25 == 0:
+                print("problem metabolites processed = " + str(metCnt))
+    
+        with open("../../misc/resourceConfig/metMappingIssuesReport.txt", "w") as outfile:
+            outfile.write("\n".join(totalMismatches))
+        outfile.close()
+    
+        
+    def getMetaboliteIDMismatchInchiBase(self, met):
+        chebiIds = dict()
+        hmdbIds = dict()
+        pubchemIds = dict()
+        
+        for source in met.chemPropsMolecules:
+            for id in met.chemPropsMolecules[source]:
+                mol = met.chemPropsMolecules[source][id]
+                if mol.id.startswith("hmdb"):
+                    if mol.inchiKey and len(mol.inchiKey) > 10:
+                        hmdbIds[mol.id] = mol.inchiKey.split("-")[0]
+                if mol.id.startswith("chebi"):
+                    if mol.inchiKey and len(mol.inchiKey) > 10:
+                        chebiIds[mol.id] = mol.inchiKey.split("-")[0]
+
+        for id in met.idList:
+            if id.startswith("pubchem"):
+                
+                if id not in pubchemIds:
+                    try:
+                        c = pcp.Compound.from_cid(id.split(":")[1])
+                    except:
+                        continue
+                        print("Cid lacks a record at pubchem: " + id)
+                    
+                    # give pubchem a rest
+                    time.sleep(0.5)
+                    if c is not None and c.inchikey is not None:
+                        pubchemIds[id] = c.inchikey.split("-")[0]
+                        print("Retrieved inchikey for pubchem id: " + id)
+                
+    
+        # now reconcile the differences, pubchem to hmdb
+        misMatchList = list()
+        for pid in pubchemIds:
+            for hid in hmdbIds:
+                if pubchemIds[pid] != hmdbIds[hid]:
+                    misMatchList.append(hid + "\t" + hmdbIds[hid] + "\t" + pid + "\t" + pubchemIds[pid])
+            for cid in chebiIds:
+                if pubchemIds[pid] != chebiIds[cid]:
+                    misMatchList.append(cid + "\t" + chebiIds[cid] + "\t" + pid + "\t" + pubchemIds[pid])        
+              
+        return misMatchList
+       
+       
+    def getMetaboliteIDMismatchMW(self, met, tolerance = 0.1, pctOrAbs = 'pct'):
+        chebiMW = dict()
+        hmdbMW = dict()
+        pubchemMW = dict()
+        
+        for source in met.chemPropsMolecules:
+            for id in met.chemPropsMolecules[source]:
+                mol = met.chemPropsMolecules[source][id]
+                if mol.id.startswith("hmdb"):
+                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                        hmdbMW[mol.id] = float(mol.monoisotopicMass)
+                if mol.id.startswith("chebi"):
+                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                        chebiMW[mol.id] = float(mol.monoisotopicMass)
+
+        for id in met.idList:
+            if id.startswith("pubchem"):
+                
+                if id not in pubchemMW:
+                    try:
+                        c = pcp.Compound.from_cid(id.split(":")[1])
+                    except:
+                        continue
+                        print("Cid lacks a record at pubchem: " + id)
+                    
+                    # give pubchem a rest
+                    time.sleep(0.5)
+                    if c is not None and c.inchikey is not None:
+                        pubchemMW[id] = c.monoisotopic_mass
+                        print("Retrieved MASS for pubchem id: " + id)
+                    
+        # now reconcile the differences, pubchem to hmdb
+        misMatchList = list()
+        for pid in pubchemMW:
+
+            pubchemMass = pubchemMW[pid]
+            
+            for hid in hmdbMW:
+                                
+                hmdbMass = hmdbMW[hid]
+                
+                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance:
+                    misMatchList.append(hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass))
+
+            for cid in chebiMW:
+                chebiMass = chebiMW[cid]
+                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance:
+                    misMatchList.append(cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass))        
+              
+        return misMatchList
     
 class DataSource(object):
     
@@ -800,7 +996,8 @@ class MappingExclusionList(object):
         
         
 builder = EntityBuilder()
-builder.fullBuild()
+builder.crossCheckMetaboliteHarmony(True, "MW", 0.2, 'pct')
+#builder.fullBuild()
 
 
 # met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0128442")
