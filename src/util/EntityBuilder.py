@@ -25,6 +25,7 @@ from collections import defaultdict
 
 import pubchempy as pcp
 import time
+#from builtins import True
 
 class EntityBuilder(object):
     '''
@@ -75,6 +76,8 @@ class EntityBuilder(object):
     
         self.chemSourceRecords = dict()
         
+        self.sourceIdToIDDict = dict()
+        
     def loadMetaboList(self, eqMetric = 0):
 
         Metabolite.__equalityMetric = eqMetric
@@ -97,6 +100,13 @@ class EntityBuilder(object):
                 currSourceId = str(row[0])
                                             
                 altId = str(row[2])
+                
+                # add the sourceId and altId to the support dictionary
+                if currSourceId not in self.sourceIdToIDDict:
+                    self.sourceIdToIDDict[currSourceId] = list()
+                
+                self.sourceIdToIDDict[currSourceId].append(altId)
+
                 
                 excludeMappingConnection = False
                 
@@ -163,6 +173,10 @@ class EntityBuilder(object):
                             metabolite.addSource(source)
                     
         
+        print(" primary id cnt in id mapping dict"+str(len(self.sourceIdToIDDict)))
+        for id in self.sourceIdToIDDict["hmdb:HMDB0010338"]:
+            print("checking mapped ids for hmdb:HMDB0010338: "+id)
+        
         # refine the list...
         # metaboliteList.idBasedMetaboliteMerge()
         
@@ -195,9 +209,9 @@ class EntityBuilder(object):
 #         else:
 #             print("Not a distinct source id:" + "wikidata:Q424409")
             
-
-        
-        
+    def isaPrimaryIdMapping(self, sourceId, altId):
+        return sourceId in self.sourceIdToIDDict and altId in self.sourceIdToIDDict[sourceId]
+         
         
     def addMetaboliteCommonName(self):
         
@@ -733,19 +747,22 @@ class EntityBuilder(object):
     
     def loadChemstry(self):
         cw = ChemWrangler()
-        sources = ["hmdb","chebi"]
+        sources = ["hmdb","chebi","kegg","pubchem"]
         cw.loadRampChemRecords(sources)
         self.chemSourceRecords = cw.getChemSourceRecords()
         
     def resolveChemistry(self, sourceOrder):
         for source in sourceOrder:
-            chemRecords = self.chemSourceRecords[source]
+            chemRecords = self.chemSourceRecords[source]            
+            
             for key in chemRecords:
                 met = self.metaboliteList.getMetaboliteBySourceId(key)
                 if met is not None:
                     mol = chemRecords[key]
                     met.addChemProps(mol)
-                     
+                    
+                    if met.rampId == "RAMP_C_000044109" and key == "kegg:C13828":
+                        print("\n*\n*\n*\nHeyyyyy in resolve chemistry RAMP 44109 and kegg:C13828\n*\n*\n*\n")
         
         self.metaboliteList.generateChemPropSummaryStats()
      
@@ -788,7 +805,7 @@ class EntityBuilder(object):
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         self.loadChemstry()
-        self.resolveChemistry(["hmdb", "chebi"])  
+        self.resolveChemistry(["hmdb", "chebi", "kegg", "pubchem"])  
 
         problemMWMets = self.crosscheckChemPropsMW(tolerance, pctOrAbs)
 
@@ -799,6 +816,8 @@ class EntityBuilder(object):
         print("Check inChI base on mets, problem mets..." + str(len(problemInchiMets)))
 
         probMets = list(set(problemMWMets + problemInchiMets))
+        
+        # probMets = problemMWMets
         
         print("Union of problem mets..." + str(len(probMets)))
         
@@ -842,7 +861,9 @@ class EntityBuilder(object):
             if metCnt % 25 == 0:
                 print("problem metabolites processed = " + str(metCnt))
     
-        with open("../../misc/resourceConfig/metMappingIssuesReport.txt", "w") as outfile:
+        
+    
+        with open("../../misc/resourceConfig/metMappingIssuesReport_withKegg_ONLY_primaryMappings_nowPCQ.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
     
@@ -851,6 +872,7 @@ class EntityBuilder(object):
         chebiIds = dict()
         hmdbIds = dict()
         pubchemIds = dict()
+        rampId = met.rampId
         
         for source in met.chemPropsMolecules:
             for id in met.chemPropsMolecules[source]:
@@ -879,16 +901,22 @@ class EntityBuilder(object):
                         print("Retrieved inchikey for pubchem id: " + id)
                 
     
-        # now reconcile the differences, pubchem to hmdb
+        # now reconcile the differences, hmdb to pubchem cid, and chebi to pubchem, and hmdb to chebi 
         misMatchList = list()
         for pid in pubchemIds:
             for hid in hmdbIds:
                 if pubchemIds[pid] != hmdbIds[hid]:
-                    misMatchList.append(hid + "\t" + hmdbIds[hid] + "\t" + pid + "\t" + pubchemIds[pid])
+                    misMatchList.append(rampId + "\t" + hid + "\t" + hmdbIds[hid] + "\t" + pid + "\t" + pubchemIds[pid] + "\t" + met.toCommonNameJoinString())
             for cid in chebiIds:
                 if pubchemIds[pid] != chebiIds[cid]:
-                    misMatchList.append(cid + "\t" + chebiIds[cid] + "\t" + pid + "\t" + pubchemIds[pid])        
-              
+                    misMatchList.append(rampId + "\t" + cid + "\t" + chebiIds[cid] + "\t" + pid + "\t" + pubchemIds[pid] + "\t" + met.toCommonNameJoinString())        
+        
+        # check hmdb to chebi
+        for hid in hmdbIds:
+            for cid in chebiIds:
+                if hmdbIds[hid] != chebiIds[cid]:
+                   misMatchList.append(rampId + "\t" + hid + "\t" + hmdbIds[hid] + "\t" + cid + "\t" + chebiIds[cid] + "\t" + met.toCommonNameJoinString())
+                                       
         return misMatchList
        
        
@@ -896,6 +924,18 @@ class EntityBuilder(object):
         chebiMW = dict()
         hmdbMW = dict()
         pubchemMW = dict()
+        keggMW = dict()
+        myFriend = False
+        
+        rampId = met.rampId
+        
+        if "hmdb:HMDB0010338" in met.idList:
+          #if met.rampId == "RAMP_C_000056372": # old case RAMP_C_000044109
+            print("Evaluating my test case") 
+            print(met.toSourceString())
+            myFriend = True
+        else:
+            myFriend = False
         
         for source in met.chemPropsMolecules:
             for id in met.chemPropsMolecules[source]:
@@ -906,42 +946,187 @@ class EntityBuilder(object):
                 if mol.id.startswith("chebi"):
                     if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                         chebiMW[mol.id] = float(mol.monoisotopicMass)
-
-        for id in met.idList:
-            if id.startswith("pubchem"):
-                
-                if id not in pubchemMW:
-                    try:
-                        c = pcp.Compound.from_cid(id.split(":")[1])
-                    except:
-                        continue
-                        print("Cid lacks a record at pubchem: " + id)
+                if mol.id.startswith("kegg"):
+                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                        keggMW[mol.id] = float(mol.monoisotopicMass)
+                        if myFriend:
+                            print("have my bad case, getting my kegg mass " + mol.id + " " + str(mol.monoisotopicMass))
+                if mol.id.startswith("pubchem"):
+                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                        pubchemMW[mol.id] = float(mol.monoisotopicMass)
+                        
+#         for id in met.idList:
+#              #this will accumulate pubchem monoisotopic masses
+#             if id.startswith("pubchem"):
+#                 
+#                           
+#                 if id not in pubchemMW:
+#                     try:
+#                         c = pcp.Compound.from_cid(id.split(":")[1])
+#                     except:
+#                         continue
+#                         print("Cid lacks a record at pubchem: " + id)
+#                     
+#                     # give pubchem a rest
+#                     time.sleep(0.75)
+#                     if c is not None and c.inchikey is not None:
+#                         pubchemMW[id] = c.monoisotopic_mass
+#                         if c.inchikey is not None:
+#                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey)
+                        
                     
-                    # give pubchem a rest
-                    time.sleep(0.5)
-                    if c is not None and c.inchikey is not None:
-                        pubchemMW[id] = c.monoisotopic_mass
-                        print("Retrieved MASS for pubchem id: " + id)
                     
-        # now reconcile the differences, pubchem to hmdb
+        # now reconcile the differences, hmdb to pubchem and chebi to pubchem, also hmdb and chebi to kegg
         misMatchList = list()
         for pid in pubchemMW:
 
             pubchemMass = pubchemMW[pid]
             
             for hid in hmdbMW:
-                                
-                hmdbMass = hmdbMW[hid]
-                
+                hmdbMass = hmdbMW[hid] 
+                if myFriend:
+                    print("Test case comparing hmdb to pubchem " + hid + " " + pid )               
                 if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance:
-                    misMatchList.append(hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass))
+                    if myFriend:
+                        print("hmdbmass to pubchem mass (passed cutoffs)" + str(hmdbMass) + " " + str(pubchemMass))                
+                    if self.isaPrimaryIdMapping(hid, pid) or self.isaPrimaryIdMapping(pid, hid):
+                        if myFriend:
+                            print("\n****passed cutoffs AND is a primary mapping***\n")
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString())
 
             for cid in chebiMW:
                 chebiMass = chebiMW[cid]
                 if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance:
-                    misMatchList.append(cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass))        
-              
+                    if self.isaPrimaryIdMapping(cid, pid) or self.isaPrimaryIdMapping(pid, cid):
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString())        
+        
+        # checking hmdb to chebi    
+        for hid in hmdbMW:
+            hmdbMass = hmdbMW[hid]
+            
+            # compare chebi to hmdb
+            for cid in chebiMW:
+                chebiMass = chebiMW[cid]
+                if myFriend:
+                    print("comparing " + hid + " to " + cid)
+                    print(str(hmdbMass) + " " + str(chebiMass))
+                        
+                if abs(chebiMass-hmdbMass)/min(chebiMass, hmdbMass) > tolerance:
+                    if myFriend:
+                        print("test case meets tolerance")
+                    if self.isaPrimaryIdMapping(hid, cid) or self.isaPrimaryIdMapping(cid, hid):  
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + cid + "\t" + str(chebiMass) + "\t" + met.toCommonNameJoinString())
+                        if myFriend:
+                            print("test case is a primary mapping, meets criteria, being added")
+            # compare kegg to hmdb         
+            for keggId in keggMW:
+                keggMass = keggMW[keggId]
+                if myFriend:
+                    print("comparing " + hid + " to " + keggId)
+                    print(str(hmdbMass) + " " + str(keggMass))
+                if abs(keggMass-hmdbMass)/min(keggMass, hmdbMass) > tolerance:
+                    if myFriend:
+                        print("*****Should be adding hmdb to kegg problem case to bad list.")
+                    if self.isaPrimaryIdMapping(hid, keggId) or self.isaPrimaryIdMapping(keggId, hid):  
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString())
+        
+        # finish with chebi to kegg                     
+        for cid in chebiMW:
+            chebiMass = chebiMW[cid]
+            
+            for keggId in keggMW:
+                keggMass = keggMW[keggId]
+
+                if abs(keggMass-chebiMass)/min(keggMass, chebiMass) > tolerance:
+                    if self.isaPrimaryIdMapping(cid, keggId) or self.isaPrimaryIdMapping(keggId, cid):  
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString())
+     
+                          
         return misMatchList
+    
+    def utilCheckHMDBMappingValidity(self):
+        '''
+        This method checks all mappings from HMDB ids to KEGG and ChEBI Ids.
+        In this method to report is meant to capture the number of HMDB IDs that map to old/stale KEGG or ChEBI ids.
+        The precondition is that we have loaded metabolites from all sources AND we have loaded chemistry from all sources.
+        Each HMDB ID to alternate ID is checked to verify that the ID is valid, in particular against chebi and kegg where
+        we have complete records for chemistry.
+        '''
+        keggTotalMappings = 0
+        keggBadMappings = 0
+        uniqueBadKegg = dict()
+
+        chebiTotalMappings = 0
+        chebiBadMappings = 0
+        uniqueBadChebi = dict()
+        
+        allChebiIds = dict()
+        allstarChebiIds = dict()
+        uniqueInvalidChebi = dict()
+        
+        uniqueKegg = dict()
+        uniqueChebi = dict()
+        
+        allChebiFile = "C:\\Tools\\git_projects\\ramp\\RaMP-BackEnd\\misc\\data\\chemprops\\compounds_3star.tsv"
+        with open(allChebiFile, "r", encoding='utf-8') as chebiFile:
+            for line in chebiFile:
+                chebiId = line.split("\t")[0]
+                chebiId = chebiId.strip()
+                chebiId = "chebi:"+chebiId
+                allChebiIds[chebiId] = chebiId
+                                
+        chebiFile.close()
+        
+        allChebiFile = "C:\\Tools\\git_projects\\ramp\\RaMP-BackEnd\\misc\\data\\chemprops\\compounds_allstar.tsv"
+        with open(allChebiFile, "r", encoding='utf-8') as chebiFile:
+            for line in chebiFile:
+                chebiId = line.split("\t")[0]
+                chebiId = chebiId.strip()
+                chebiId = "chebi:"+chebiId
+                allstarChebiIds[chebiId] = chebiId
+                                
+        chebiFile.close()
+        
+        for id in self.sourceIdToIDDict:
+            if id.startswith("hmdb:"):
+                for altId in self.sourceIdToIDDict[id]:
+                    
+                    if altId.startswith("kegg"):
+                        keggTotalMappings = keggTotalMappings + 1
+                        uniqueKegg[altId] = altId
+                        if altId not in self.chemSourceRecords["kegg"]:
+                            keggBadMappings = keggBadMappings + 1
+                            uniqueBadKegg[altId] = altId
+                            # print("bad kegg..." + altId)
+ 
+                    if altId.startswith("chebi"):
+                        chebiTotalMappings = chebiTotalMappings + 1
+                        uniqueChebi[altId] = altId
+                        if altId not in self.chemSourceRecords["chebi"]:                            
+                            # check that the chebi isn't just a chebi that lacks a structure in sdf
+                            if altId not in allChebiIds:
+                                chebiBadMappings = chebiBadMappings + 1
+                                uniqueBadChebi[altId] = altId
+                                
+                                
+                            if altId not in allstarChebiIds:
+                                uniqueInvalidChebi[altId] = altId    
+                                # print("bad chebi..." + altId)
+                                
+        print("\n\nCheck of HMDB to KEGG and CHEBI, are the alt ids valid?")
+        print("Total mappings to KEGG IDs: " + str(keggTotalMappings))
+        print("Unique KEGG ids:" + str(len(uniqueKegg)))
+        print("Total mapping to invalid KEGG IDs: "+str(keggBadMappings))
+        print("Unique invalid KEGG IDs: "+str(len(uniqueBadKegg)))
+
+        print("\nTotal mappings to ChEBI IDs: " + str(chebiTotalMappings))
+        print("Unique Chebi IDs: "+ str(len(uniqueChebi)))
+        print("Total mapping to non-3-star ChEBI IDs: "+str(chebiBadMappings))
+        print("Unique non-3-star ChEBI IDs: "+str(len(uniqueBadChebi)))
+        print("Unique invalid ChEBI IDs: "+str(len(uniqueInvalidChebi)))
+
+
+                        
     
 class DataSource(object):
     
@@ -996,7 +1181,9 @@ class MappingExclusionList(object):
         
         
 builder = EntityBuilder()
-builder.crossCheckMetaboliteHarmony(True, "MW", 0.2, 'pct')
+builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
+builder.utilCheckHMDBMappingValidity()
+
 #builder.fullBuild()
 
 

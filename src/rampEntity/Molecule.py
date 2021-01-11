@@ -22,9 +22,13 @@ class Molecule(object):
         
         self.inchiKey = ""
         
-        self.inchi = ""
+        self.inchiKeyPrefix = ""
+                
+        self.inchi = ""        
         
         self.mw = ""
+        
+        self.formula = ""
         
         self.monoisotopicMass = ""
         
@@ -32,7 +36,7 @@ class Molecule(object):
         
         
     def toChemPropsString(self):
-        s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchi + "\t" + self.inchiKey + "\t" 
-        s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + self.name + "\n"
+        s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchi + "\t" + self.inchiKey + "\t" 
+        s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + self.name + "\t" + self.formula+ "\n"
         return s
         

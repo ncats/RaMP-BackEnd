@@ -249,6 +249,14 @@ class Metabolite(object):
         
         return len(inchiDict)
     
-    
+    def toCommonNameJoinString(self):
+        cname = list()
+        for source in self.commonNameDict:
+            for id in self.commonNameDict[source]:
+                cname.append(self.commonNameDict[source][id])
+                
+        return "; ".join(cname)        
+            
+                
     
     
