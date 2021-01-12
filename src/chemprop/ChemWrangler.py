@@ -11,9 +11,12 @@ import gzip
 import shutil
 import re
 
+from ftplib import FTP
+
 class ChemWrangler(object):
     '''
-    classdocs
+    The ChemWrangler class has production and utility methods for working with molecular information
+    associated with RaMP Metabolites.
     '''
     def __init__(self):
         '''
@@ -22,13 +25,14 @@ class ChemWrangler(object):
         self.chemLibDict = dict()
 
 
-        
+    """
+    Fetch compound properties
+    """    
     def fetchCompoundPropertiesFiles(self):
         
         print(os.getcwd())
         
         metData = MetabolomicsData()
-        print("fetching chem props")
         dir = "../../misc/data/chemprops/"
         url = "https://hmdb.ca/system/downloads/current/structures.zip"
         remoteFile = "structures.zip"
@@ -38,12 +42,11 @@ class ChemWrangler(object):
         
         with zipfile.ZipFile(dir+remoteFile,"r") as zip_ref:
             zip_ref.extractall(dir)
-        
-         
+                 
         dir = "../../misc/data/chemprops/"
-        url = "ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete_3star.sdf.gz"
-        remoteFile = "ChEBI_complete_3star.sdf.gz"
-        extractFile = "ChEBI_complete_3star.sdf"
+        url = "ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz"
+        remoteFile = "ChEBI_complete.sdf.gz"
+        extractFile = "ChEBI_complete.sdf"
                  
         metData.download_files(url, dir+remoteFile)
         
@@ -51,11 +54,11 @@ class ChemWrangler(object):
             with open(dir+extractFile, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
 
-
-            
+        
     def readHMDBSDF(self, source, filePath):
-        print(sys.getdefaultencoding())
-        print("HMDB SDF")
+        """
+        Utility method to read HMDB SDF file for specific data types to populate Molecule objects.
+        """
         i = 0
         sdfDB = open(filePath, 'r+', encoding="utf-8")
         molDict = dict()
@@ -95,11 +98,13 @@ class ChemWrangler(object):
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
 
-        print("have chem props = " + str(len(molDict)))
         self.chemLibDict[source] = molDict
        
         
     def readChebiSDF(self, source, filePath):
+        """
+        Utility method to read Chebi SDF file for specific data types to populate Molecule objects.
+        """        
         print(sys.getdefaultencoding())
         print("ChEBI SDF")
 
@@ -142,15 +147,13 @@ class ChemWrangler(object):
             if line == '> <Formulae>':
                 mol.formula = sdfDB.readline().strip()
 
-
-        print("have chem props = " + str(len(molDict)))
         self.chemLibDict[source] = molDict
 
 
     def readKEGGCompound(self, source, filePath):
-        print(sys.getdefaultencoding())
-        print("KEGG Compound")
-
+        """
+        Utility method to read KEGG 2021 Compound file for specific data types to populate Molecule objects.
+        """
         i = 0
         sdfDB = open(filePath, 'r+', encoding="utf-8")
         molDict = dict()
@@ -192,13 +195,13 @@ class ChemWrangler(object):
         # add to to full dictionary
         self.chemLibDict[source] = molDict
 
-        print("kegg length " + str(len(molDict)))
-        mol = molDict["kegg:C13828"]
-        if mol is not None:
-            print(mol.toChemPropsString())
+            
             
     def readPubchemTabIdMiInchikey(self, source, file):
-        
+        """
+        Utility method to read a small subset of pubchem to evaluate harmonization
+        This includes pubchem id, inchikey, monoisotopic mass and formula (12/2021)
+        """
         sdfDB = open(file, 'r+', encoding="utf-8")
         
         molDict = dict()
@@ -225,10 +228,13 @@ class ChemWrangler(object):
         sdfDB.close()
         
         self.chemLibDict[source] = molDict
-        print("pubchem length " + str(len(molDict)))
+
 
 
     def readSDF(self, source, file):
+        """
+        Reads SDF for specified data source and file
+        """
         if source == 'hmdb':
             self.readHMDBSDF(source, file)
         if source == 'chebi':
@@ -240,6 +246,9 @@ class ChemWrangler(object):
             
 
     def loadRampChemRecords(self, sources):
+        """
+        Populates the chemical record list for the list of passed sources.
+        """
         for source in sources:
             if source == 'hmdb':
                 file = "../../misc/data/chemprops/structures.sdf"
@@ -257,11 +266,12 @@ class ChemWrangler(object):
            
          
     def getChemSourceRecords(self):
+        """
+        Returns the chemical library dictionary. Molecule objects associated with input data sources.
+        """
         return self.chemLibDict
        
-    
-    
-    
+
                                
     def evaluateMolecularCollisions(self, source):
         '''
@@ -316,10 +326,7 @@ class ChemWrangler(object):
                 currList = list()
                 currList.append(mol.id)
                 formulaToIdDict[mol.formula] = currList
-        
-        print("Hey formulaToIdList length ="+str(len(formulaToIdDict)))
-        print("Distinct structurs (inchikey prefix):" + str(len(distinctInchiPrefixList)))
-                                                
+                                      
         file  = open("../../misc/data/chemprops/constituativeIsomerList.txt", "w+", encoding='utf-8')
          
         for key in formulaToInchiPrefixListDict:
@@ -336,44 +343,24 @@ class ChemWrangler(object):
                 file.write(s)
           
         file.close()
-       
-                    
-                    
-cw = ChemWrangler(); 
-sources = ["kegg", "pubchem"]
-cw.loadRampChemRecords(sources)
-# cw.evaluateMolecularCollisions("chebi")                   
-                    
-                
+
+
+    def testDownloadKeggFile(self):
+        ftpUrl = "ftp.kegg.net"
+        user = "BJ2383"
+        pw = "Nc@tskegg2**"
+        remPath = "kegg/ligand"
+        file = "README.ligand"
+        localPath = "C:/Tools/"
         
+        ftp = FTP(ftpUrl)
+        ftp.login(user,pw)
+        ftp.cwd(remPath)
+        with open(localPath+file, 'wb') as testReadme:
+            ftp.retrbinary("RETR "+file, testReadme.write)
+        ftp.quit()
+        testReadme.close()
+            
         
-                                        
-# > <INCHI_IDENTIFIER>
-# InChI=1S/C4H6O3/c1-2-3(5)4(6)7/h2H2,1H3,(H,6,7)
-# 
-# > <INCHI_KEY>
-# TYEYBOSBBBHJIV-UHFFFAOYSA-N
-# 
-# > <FORMULA>
-# C4H6O3
-# 
-# > <MOLECULAR_WEIGHT>
-# 102.0886
-# 
-# > <EXACT_MASS>
-# 102.031694058
 
-
-
-#cw = ChemWrangler()
-#cw.fetchCompoundPropertiesFiles()
-#         
-# file = "C:/Users/braistedjc/Desktop/Analysis/RaMP/RaMP2_Stats/accounting_id_match/chebi_resources/structures.sdf"
-# cw.readSDF('hmdb', file)
-# 
-# file = "C:/Users/braistedjc/Desktop/Analysis/RaMP/RaMP2_Stats/accounting_id_match/chebi_resources/ChEBI_complete_3star.sdf"
-# cw.readSDF('chebi', file)
-
-# cw.readSDF('chebi', file)
-        
         
