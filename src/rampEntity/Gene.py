@@ -7,17 +7,19 @@ Created on Nov 24, 2020
 import pandas as pd
 
 class Gene(object):
-    '''
+    """
     The Gene class holds key fields used for defining a gene within ramp.
     This entity class was specifically created to hold a collection of ids, common names and synonyms.    
-    '''
+    """
     
     def __init__(self):
         '''
         Constructor
         '''
+        # data source id for the gene
         self.sourceId = ""
         
+        # gene ramp id
         self.rampId = ""
         
         # uniuqe list of ids
@@ -29,31 +31,49 @@ class Gene(object):
         # keys are source, values are dictiontaries of source id to commonName
         self.commonNameDict = dict()
         
+        # synonym dictionary, organized by source, id, synonym
         self.synonymDict = dict()
-                
+               
+        # primary data source for the gene entity.        
         self.primarySource = ""
 
-        # [source]:list(pathway)
+        # pathway objects organized by source, [source]:list(pathway)
         self.pathways = dict()
-                        
+        
+        # list of sources associated with the gene.          
         self.sources = list()
         
     
     def __eq__(self, other):
+        """
+        Returns true if the genes either share ramp id, or if the associated ids have at least one overlap
+        """
         if self.rampId and other.rampId:
             return self.rampId == other.rampId
         return len(set(self.idList).intersection(set(other.idList))) > 0
     
+    
     def shareAltIds(self, other):
-            return len(set(self.idList).intersection(set(other.idList))) > 0
+        """
+        Returns true if two genes share an associaetd id
+        """
+        return len(set(self.idList).intersection(set(other.idList))) > 0
+       
        
     def __hash__(self):
+        """
+        Returns a hashcode value used for evaluating equality in python collection methods.
+        """
         if self.rampId:
             return hash(str(self.rampId))
         else:
             return hash("&".join(self.idList))
         
+        
     def addId(self, id, source):
+        """
+        Adds an id to the general id list and the source-specific id lists
+        """
         # keep this a unique id list
         if id not in self.idList:
             self.idList.append(id)
@@ -61,19 +81,31 @@ class Gene(object):
             self.idDict[source] = list()
         if id not in self.idDict[source]:
             self.idDict[source].append(id)
+        
             
     def addSource(self, sourceName):
+        """
+        Adds a new source on the gene.
+        """
         # maintain as a unique list
         if sourceName not in self.sources:
             self.sources.append(sourceName)
+        
             
     def addCommonNameAndSynonym(self, id, commonName, source):
+        """
+        Adds common names as a <source | id | common_name> triple.
+        """
         if source not in self.commonNameDict:            
             self.commonNameDict[source] = dict()
         self.commonNameDict[source][id] = commonName
         self.addSynonym(commonName, source)
+        
             
     def addPathway(self, pathway, source):
+        """
+        Adds a pathway record object and associated source to the gene.
+        """
         if source not in self.pathways:
             self.pathways[source] = list()
         if pathway not in self.pathways[source]:
@@ -81,7 +113,9 @@ class Gene(object):
             
             
     def addSynonym(self, synonym, source):
-        
+        """
+        Adds a gene synonym and related source to the gene
+        """
         if source not in self.synonymDict:
             self.synonymDict[source] = list()
         if synonym not in self.synonymDict[source]:
@@ -89,16 +123,17 @@ class Gene(object):
     
     
     def toSourceString(self):
+        """
+        Utility method to create a string suitable for source data output to file.
+        The format is suitable for populating the source table.
+        """
         lines = 0
         s = ""
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
                 
                 if isinstance(id, float) or isinstance(id, int):
-                    print("Heyyyyyyyyy we have a numeric id!!!  Printing Gene")
                     print(self.printGene())
-                
-                
                 
                 idSplit = id.split(":")
                 if len(idSplit) > 1:
@@ -112,6 +147,9 @@ class Gene(object):
        
        
     def toPathwayMapString(self):
+        """
+        Utility method that returns a string for outputing pathway map information.
+        """
         s = ""
         for source in self.pathways:
             for pathway in self.pathways[source]:
@@ -119,6 +157,9 @@ class Gene(object):
         return s
        
     def toSynonymsString(self):
+        """
+        Utility method to return a string for outputting synonyms information prior to db upload.
+        """
         s = ""
         for source in self.synonymDict:
             for syn in self.synonymDict[source]:
@@ -128,6 +169,9 @@ class Gene(object):
     
     
     def printGene(self):
+        """
+        Utility to print a gene summary to standard output
+        """
         s = "rampId: " + self.rampId + "\n"        
         for source in self.idDict:
             for id in self.idDict[source]:
@@ -151,13 +195,13 @@ class Gene(object):
              
     
     
-    '''
-    The original code in writeToSQL would steal the commonName for a gene
-    from another common name when one instance of the gene (from the same source) lacked a common name.
-    It's a bit of a hack but for genes it will complete this field for the source table.
-    Also, all common names will have distinct rows with the same rampId.
-    This means that common name will resolve to a ramp id from any common name available.
-    '''
+    
+#     The original code in writeToSQL would steal the commonName for a gene
+#     from another common name when one instance of the gene (from the same source) lacked a common name.
+#     It's a bit of a hack but for genes it will complete this field for the source table.
+#     Also, all common names will have distinct rows with the same rampId.
+#     This means that common name will resolve to a ramp id from any common name available.
+#     
     def resolveCommonNames(self):
         for source in self.idDict:
             for id in self.idDict[source]:
@@ -170,8 +214,12 @@ class Gene(object):
                     self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
         
     
-    
+        
     def subsumeGene(self, gene):
+        """
+        Copies data/objects from the passed gene into the invoking gene object.
+        This method is used when merging gene entities.
+        """
         # copy ids
         for source in gene.idDict:
             for id in gene.idDict[source]:

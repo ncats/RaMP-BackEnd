@@ -6,6 +6,10 @@ Created on Nov 6, 2020
 import pandas as pd
 
 class Metabolite(object):
+    '''
+    Ramp metabolite object data container. A ramp metabolite represents one or more chemical entities representing
+    a metabolite or metabolite class.
+    '''
     
     # Class variable to indicate the equality policy
     # 0 = ID based, 1 = full lychi-based, 2 = lychi H3 based, 3 = full InchiKey based, 4 = InchiKey prefix match
@@ -36,22 +40,38 @@ class Metabolite(object):
         
         # source: [source_id: Molecule]  Molecule = molecule props
         self.chemPropsMolecules = dict()
-               
+      
+                 
     def __eq__(self, other):
+        """
+        Equality check. Checks for shared ramp_id or a non-empty intersection of ids lists.
+        """ 
         if self.rampId and other.rampId:
             return self.rampId == other.rampId
         return len(set(self.idList).intersection(set(other.idList))) > 0
     
+    
     def shareAltIds(self, other):
-            return len(set(self.idList).intersection(set(other.idList))) > 0
+        """
+        Check for shared ids
+        """
+        return len(set(self.idList).intersection(set(other.idList))) > 0
        
     def __hash__(self):
+        """
+        Hash code generator for ramp Metabolite objects
+        """
         if self.rampId:
             return hash(str(self.rampId))
         else:
             return hash("&".join(self.idList))
-        
+                
     def addId(self, id, source):
+        """
+        Adds a new id if it doesn't exist
+        The id is added to a the idList, a simple list, as well as an id dictionary that 
+        groups ids by source.
+        """
         # keep this a unique id list
         if id not in self.idList:
             self.idList.append(id)
@@ -59,8 +79,12 @@ class Metabolite(object):
             self.idDict[source] = list()
         if id not in self.idDict[source]:
             self.idDict[source].append(id)
+    
                 
     def printMet(self):
+        """
+        Utility method to print metabolite record to standard out
+        """
         print("METABOLITE RECORD\n")
         s= "RampID: " + self.rampId + "\n"
         s= s + "sourceId " + self.sourceId + "\n"
@@ -92,40 +116,77 @@ class Metabolite(object):
                 pathway.printPathway()
             print("")
         
+        
     def addSource(self, sourceName):
+        """
+        Adds source name to list of sources
+        """
         # maintain as a unique list
         if sourceName not in self.sources:
             self.sources.append(sourceName)
-        
+    
+    
     def getSortedSources(self):
+        """
+        Returns the list of sources associated with the metabolite
+        """
         srcs = set(self.sources)
         list(srcs).sort()
         return srcs
     
     def mergeMets(self, otherMet):
+        """
+        Deprecated: Merges ID lists and sources for two metabolites.
+        """
         for id in otherMet.idList:
             self.idList.append(id)
         for src in otherMet.sources:
             self.sources.append(src)
+        
             
     def addPathway(self, pathway, source):
+        """
+        Adds a pathway
+        Pathways are separated by source.
+        """
         if source not in self.pathways:
             self.pathways[source] = list()
         if pathway not in self.pathways[source]:
             self.pathways[source].append(pathway)
             
+         
+    def getPathwayCount(self):
+        """
+        Returns the number of pathways to which the metabolite is associated 
+        """
+        count = 0
+        for source in self.pathways:
+            count = len(self.pathways[source])
+        return count
+            
     def addCommonName(self, id, commonName, source):
+        """
+        Adds a metabolite common names as a triple source, id, common name 
+        """
         if source not in self.commonNameDict:            
             self.commonNameDict[source] = dict()
         self.commonNameDict[source][id] = commonName
         
     def addSynonym(self, synonym, source):
+        """
+        Adds a metoblite synonym, separated by source
+        """
         if source not in self.synonymDict:
             self.synonymDict[source] = list()
         if synonym not in self.synonymDict[source]:
             self.synonymDict[source].append(synonym)
             
+            
     def subsumeMetabolite(self, metabolite):
+        """
+        Utility method to transfer contents from the passed Metabolite to the invoking Metabolite.
+        This method is used to merge metabolite entities.
+        """
         # copy ids
         for source in metabolite.idDict:
             for id in metabolite.idDict[source]:
@@ -141,6 +202,10 @@ class Metabolite(object):
                 
     
     def resolveCommonNames(self):
+        """
+        Verifies that all ids are associated with common names for export to the source table.
+        1/12/2021 - This can be refined to be more robust, id -> source_id -> source_common name.
+        """
         for source in self.idDict:
             for id in self.idDict[source]:
                 if source in self.commonNameDict and id not in self.commonNameDict[source]:
@@ -153,11 +218,20 @@ class Metabolite(object):
 
     
     def addChemProps(self, molecule):
+        """
+        Adds a molecule object to the metabolite.
+        The molecule is added based on molecular information source and the molecule's id.
+        Chemical properties are stored as source-id-molecule.` 
+        """
         if molecule.source not in self.chemPropsMolecules:
            self.chemPropsMolecules[molecule.source] = dict()
         self.chemPropsMolecules[molecule.source][molecule.id] = molecule
     
+    
     def toSourceString(self):
+        """
+        Utility method to return a tab delimited string suitable for source export.
+        """
         lines = 0
         s = ""
         for source in self.commonNameDict:
@@ -183,6 +257,9 @@ class Metabolite(object):
 
     
     def toPathwayMapString(self):
+        """
+        Utility method to return a tab delimited string for analyte to pathway export.
+        """
         s = ""
         for source in self.pathways:
             for pathway in self.pathways[source]:
@@ -191,6 +268,9 @@ class Metabolite(object):
     
 
     def toSynonymsString(self):
+        """
+        Utility method to return a tab delimited string for analyte to pathway export.
+        """
         s = ""
         for source in self.synonymDict:
             for syn in self.synonymDict[source]:
@@ -198,9 +278,11 @@ class Metabolite(object):
         
         return s
     
-    
-    
+        
     def toChemPropsString(self):
+        """
+        Utility method to return a chemical property string suitable for exporting chemical properties.
+        """
         s = ""
         for source in self.chemPropsMolecules:
             for id in self.chemPropsMolecules[source]:
@@ -212,7 +294,10 @@ class Metabolite(object):
     
     
     def checkMWParity(self, mwTolerance, pctOrAbs):
-        
+        """
+        Returns 0.0 if the molecular weights between contained molecules is within the mass tolerance
+        based on pct (fraction) or absolute mw difference.
+        """
         mwList = list() 
         
         for source in self.chemPropsMolecules:
@@ -236,8 +321,12 @@ class Metabolite(object):
         else:
             return 0
     
+    
     def checkInchiBaseParity(self):
-        
+        """
+        Returns the number of distinct inchikey base values.
+        If the return is 1, then all molecules have the same constituents and connectivity. 
+        """
         inchiDict = dict() 
         
         for source in self.chemPropsMolecules:
@@ -249,7 +338,11 @@ class Metabolite(object):
         
         return len(inchiDict)
     
+    
     def toCommonNameJoinString(self):
+        """
+        Utility method to supply a concatenated common name with semicolon separator. 
+        """
         cname = list()
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:

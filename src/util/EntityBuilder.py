@@ -29,7 +29,17 @@ import time
 
 class EntityBuilder(object):
     '''
-    classdocs
+    The EntityBuilder class is used to populate an harmonize objects from the rampEntity
+    module that include Gene, Metabolite, Pathway, Molecule (chem properties) and related lists.
+    The input data is the file set parsed from data sources into intermediate files.
+    The output from the class is a collection of files that are formatted to upload to the database.
+    The 'fullBuild' method runs through the process if building, harmonizing and exporting the data associated.
+    During the process, all ramp data is held in one data structure for harmonization and review.
+    
+    Methods fall into three broad categories:
+        Construction methods that build entities and relationships
+        Write methods that dump the structure data into output files for database loading
+        Utility methods use to evaluate and report on cases of improper mappings.
     '''
 
     __rampMetStartId = 0
@@ -40,52 +50,112 @@ class EntityBuilder(object):
         '''
         Constructor
         '''
+        
+        # The full metabolite list object
         self.metaboliteList = MetaboliteList()
         
+        # The gene list object
         self.geneList = GeneList()
         
+        # The pathway list object. Note that pathway entities are also linked to metabolites and genes
         self.pathList = PathwayList()
         
+        # List of DataSource objects. These hold data source configuration.
         self.sourceList = []
         
-        self.source = DataSource()
-        
+        # Note: The following populates reactome and wikipathway sources and appends to the default hmdb source
+        # This data source list will eventually be populated by config file
+        self.source = DataSource()        
         self.sourceList.append(self.source)
     
         self.dataSource2 = DataSource()
-        
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.sourceLocPath = '../../misc/output/reactome';
         
         self.sourceList.append(self.dataSource2)
         
-        self.dataSource3 = DataSource()
-        
+        self.dataSource3 = DataSource()        
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
-        self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';
-        
+        self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
         self.sourceList.append(self.dataSource3)
-        
+        # End DataSource code
+                
+        # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
         self.metToPathAssocSourceTallies = dict()
         
+        # mapping exclusion list and population of the list
+        # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
         self.mappingExclustionList.populateExclusionList("../../misc/resourceConfig/curation_mapping_issues_list.txt")
     
+        # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()
         
+        # Maps all source ids to their list of alternate ids.
+        # Ths captures all primary associations between source id 
         self.sourceIdToIDDict = dict()
         
-    def loadMetaboList(self, eqMetric = 0):
+        
+    def fullBuild(self):
+        """
+        This high level method performs the entire process of entity construction
+        associations and writing. The stages of construction are:
+        1.) Constructing pathways and pathway category
+        2.) Constructing genes, gene common names, synonyms.
+        3.) Building gene/pathway edges.
+        4.) Constructing/harmonizing metabolites.
+        5.) Adding metabolites common names and synonyms.
+        6.) Building metabolite/pathway edges.
+        7.) Load chemical properties - currently (1/2021), HMDB and ChEBI
+        8.) Associate chemical properties (molecules) with with ramp metabolites
+        9.) Write methods: pathways, analyte-source info, synonyms, analyte to pathways, analyte registry, chemical properties.
+        """
+        # load pathways
+        self.loadPathways()
+        self.addPathwayCategory()
 
+        # load genes
+        self.loadGeneList()
+        self.addGeneCommonNameAndSynonyms()
+        self.buildGeneToPathwayConnections()
+
+        # load metabolite list, over all sources and hamonization during build
+        self.loadMetaboList()
+        self.addMetaboliteCommonName()
+        self.addMetaboliteSynonyms()
+        self.buildMetaboliteToPathwayConnections()
+        
+        # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
+        # 1/2021 - currently hmdb and chebi sources
+        self.loadChemstry(["hmdb","chebi"])
+        self.resolveChemistry(["hmdb", "chebi"])      
+        
+        # loader file writes
+        self.writePathways()
+        self.writeAnalyteSource()
+        self.writeAnalyteSynonyms()
+        self.writeAnalyteToPathway()
+        self.writeAnalyte()
+        self.writeChemProps()
+            
+        
+        
+    def loadMetaboList(self, eqMetric = 0):
+        """
+        Loads the metabolite list for all data sources
+        Note that as the list is built, metabolite entities are being merged (subsumed) into RaMP metabolite objects
+        """
         Metabolite.__equalityMetric = eqMetric
         
+        # Build list for each data source
         for src in self.sourceList:
-            print(src.sourceName);
             
             source = src.sourceName
+            
+            # Note that the input format is metabolite id dictionaries.
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteIDDictionary.txt"
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
@@ -97,8 +167,7 @@ class EntityBuilder(object):
                 if row[1] == "smiles":
                     continue
 
-                currSourceId = str(row[0])
-                                            
+                currSourceId = str(row[0])                                            
                 altId = str(row[2])
                 
                 # add the sourceId and altId to the support dictionary
@@ -106,7 +175,6 @@ class EntityBuilder(object):
                     self.sourceIdToIDDict[currSourceId] = list()
                 
                 self.sourceIdToIDDict[currSourceId].append(altId)
-
                 
                 excludeMappingConnection = False
                 
@@ -172,49 +240,19 @@ class EntityBuilder(object):
                             # safe add, adds unique source to metabolite
                             metabolite.addSource(source)
                     
-        
-        print(" primary id cnt in id mapping dict"+str(len(self.sourceIdToIDDict)))
-        for id in self.sourceIdToIDDict["hmdb:HMDB0010338"]:
-            print("checking mapped ids for hmdb:HMDB0010338: "+id)
-        
-        # refine the list...
-        # metaboliteList.idBasedMetaboliteMerge()
-        
-#         print("Finished hmdb test")
-#         print("list size = "+str(self.metaboliteList.length()))
-#         print("unique met list size = " + str(len(self.metaboliteList.getUniqueMetabolites())))
-#                 
-#         met = self.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0038650")
-#         if met is not None:
-#             met.printMet()
-#         
-#         met = self.metaboliteList.getMetaboliteBySourceId("pubchem:13592840")
-#         if met is not None:
-#             met.printMet()
-#         
-#         met = self.metaboliteList.getMetaboliteBySourceId("CAS:103541-16-8")
-#         if met is not None:
-#             met.printMet()
-#         
-#         met = self.metaboliteList.getMetaboliteBySourceId("pubchem:278")
-#         if met is not None:
-#             met.printMet()
-#         else:
-#             print("Not a distinct source id:" + "pubchem:278")
-#             
-#         print("record based on wikidata..."+"\n")
-#         met = self.metaboliteList.getMetaboliteBySourceId("wikidata:Q424409")
-#         if met is not None:
-#             met.printMet()
-#         else:
-#             print("Not a distinct source id:" + "wikidata:Q424409")
+
             
     def isaPrimaryIdMapping(self, sourceId, altId):
+        """
+        Returns True if a source and an alternate id are primary mapping id pairs from the data source.
+        """
         return sourceId in self.sourceIdToIDDict and altId in self.sourceIdToIDDict[sourceId]
          
         
     def addMetaboliteCommonName(self):
-        
+        """
+        Appends metabolite common names to metabolite records for all data sources
+        """
         for src in self.sourceList:
             print(src.sourceName);
             
@@ -235,8 +273,11 @@ class EntityBuilder(object):
         for met in mets:
             met.resolveCommonNames()
     
+    
     def addMetaboliteSynonyms(self):
-        
+        """
+        Adds all metabolite synonyms for all data sources
+        """
         for src in self.sourceList:
             print(src.sourceName);
             
@@ -258,6 +299,10 @@ class EntityBuilder(object):
         
                     
     def generateRampId(self, type):
+        """
+        Generates a unique reamp id for the requested type.
+        type is a character C = compound (metabolite), G = gene, P = pathway
+        """
         if(type == "C"):
             self.__rampMetStartId = self.__rampMetStartId + 1
             return "RAMP_C_" + (str(self.__rampMetStartId)).zfill(9)
@@ -271,12 +316,12 @@ class EntityBuilder(object):
 
 
     def loadPathways(self):
-        print("loading pathways")
-
+        """
+        Loads pathways from all data sources
+        """
         for src in self.sourceList:
 
-            #Load Pathway Dictionary First
-            
+            #Load Pathway Dictionary First            
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayDictionary.txt"
         
@@ -291,25 +336,19 @@ class EntityBuilder(object):
                 pathway.pathSourceId = row[0]
                 pathway.pathName = row[1]
                 self.pathList.addPathway(row[0], pathway)
-        
-        
-        print("Hey we have pathwaaays... how many?.. "+str(self.pathList.length()))        
-        
-#         p = self.pathList.getPathwayBySourceId("WP554")        
-#         if p is not None:
-#             p.printPathway()    
+          
     
     def addPathwayCategory(self):
-
+        """
+        Loads pathway category for each data source
+        """
         for src in self.sourceList:
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayCategory.txt"
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
-            #df = pd.DataFrame(data)
-            #df = self.remove_whitespace(df)
-            
+
             for i,row in data.iterrows():
                 pathway = self.pathList.getPathwayBySourceId(row[0])
                 if pathway is not None:
@@ -318,9 +357,13 @@ class EntityBuilder(object):
                     else:
                         pathway.pathCategory = "NA"
         
-        
+    
+    
     def buildMetaboliteToPathwayConnections(self):
-        
+        """
+        Loads metabolite/pathway connections.
+        Pathway objects from the pathway list are associated with metbolites for each data source.
+        """
         strandedMetSourceIds = list()
         strandedPathSourceIds = list()
 
@@ -368,27 +411,12 @@ class EntityBuilder(object):
                 
                 else:
                     print("high pathway metab: " + metId + " pathway count = " + str(len(map[metId])))
-#                else:
-#                    print("we have a met without a MET")
+
+
                 i = i + 1     
                 if(i % 1000 == 0):
                     print("metabolites processed = " + str(i), flush=True)
 
-
-                
-
-#                 met = self.metaboliteList.getMetaboliteBySourceId(row[0].strip())
-#                 if(met is None):
-#                     strandedMetSourceIds.append(row[0])
-#                 else:
-#                     pathway = self.pathList.getPathwayBySourceId(row[1].strip())
-#                     if(pathway is None):
-#                         strandedPathSourceIds.append(row[1])
-#                     else:
-#                         # Now we have an association between a metabolite and a pathway
-#                         met.addPathway(pathway)
-        
-        
         print("Finished met to path mapping stranded counts (mets and paths)")
         print(str(len(strandedMetSourceIds)))
         print(str(len(strandedPathSourceIds)))
@@ -396,7 +424,10 @@ class EntityBuilder(object):
 
 
     def loadGeneList(self, eqMetric = 0):
-
+        """
+        Populates the gene list from all data sources using the <source>geneInfoDictionary files.
+        This builds gene entities and merges based on common ids.
+        """
         Metabolite.__equalityMetric = eqMetric
         
         for src in self.sourceList:
@@ -460,7 +491,9 @@ class EntityBuilder(object):
 
 
     def addGeneCommonNameAndSynonyms(self):
-        
+        """
+        Adds common name and gene synonyms for all data sources based on geneInfoDictionary files.
+        """
         for src in self.sourceList:
             print(src.sourceName);
             
@@ -483,42 +516,23 @@ class EntityBuilder(object):
             gene.resolveCommonNames()
 
 
-#     def addGeneSynonyms(self):
-#         
-#         for src in self.sourceList:
-#             print(src.sourceName);
-#             
-#             source = src.sourceName
-#             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
-#             
-#             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
-#             df = pd.DataFrame(data)
-#                 
-#             for i,row in df.iterrows():
-#                 if row[1] == "common_name":
-#                     gene = self.geneList.getGeneById(row[0])
-#                     if gene is not None:
-#                         gene.addSynony
-            
 
     def buildGeneToPathwayConnections(self):
-        
+        """
+        Constructs gene/pathway connections for all data sources.
+        """
         strandedGeneSourceIds = list()
         strandedGeneSourceIds = list()
         noPathwayGenes = 0
         
         for src in self.sourceList:
 
-            #Load Pathway Dictionary First
-            
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwaysWithGenesDictionary.txt"
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
-            
-            print("Number of pathway associations = " + str(data.shape[0]))
             
             self.geneToPathAssocSourceTallies[source] = 0
         
@@ -531,7 +545,6 @@ class EntityBuilder(object):
                     newlist = list()
                     newlist.append(row[0])
                     map[row[1]] = newlist
-
             
             i = 0
             assocCount = 0
@@ -556,82 +569,55 @@ class EntityBuilder(object):
                 i = i + 1     
                 if(i % 1000 == 0):
                     print("genes processed = " + str(i), flush=True)
-                
-        print("Pathways are Done for Genes. "+str(noPathwayGenes)+ " genes have no associated pathways")
 
 
-    def fullBuild(self):
-        
-        # load pathways
-        self.loadPathways()
-        self.addPathwayCategory()
-
-        # load genes
-        self.loadGeneList()
-        self.addGeneCommonNameAndSynonyms()
-        self.buildGeneToPathwayConnections()
-        
-        gene = self.geneList.getGeneById("TFAP2E")
-        if gene is not None:
-            gene.printGene()
-
-        # load metabolite list, over all sources and hamonization during build
-        self.loadMetaboList()
-        self.addMetaboliteCommonName()
-        self.addMetaboliteSynonyms()
-        self.buildMetaboliteToPathwayConnections()
-        
-        # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
-        self.loadChemstry()
-        self.resolveChemistry(["hmdb", "chebi"])      
-        
-        # loader file writes
-        self.writePathways()
-        self.writeAnalyteSource()
-        self.writeAnalyteSynonyms()
-        self.writeAnalyteToPathway()
-        self.writeAnalyte()
-        self.writeChemProps()
-
-
-#         metSourceSummary = self.metaboliteList.generateMetaboliteSourceStats(self.sourceList)
-#         
-#         geneSourceSummary = self.geneList.generateGeneSourceStats(self.sourceList)
-#         
-#         pathwaySourceSummary = self.pathList.gereratePathwaySourceSummaryStats(self.sourceList)
-#                 
-#         for source in metSourceSummary.keys():
-#             print(source + " metabolite count " + str(metSourceSummary[source]))
-#         
-#         for source in geneSourceSummary.keys():
-#             print(source + " gene count " + str(geneSourceSummary[source]))
+#     def fullBuild(self):
+#         """
+#         This high level method performs the entire process of entity construction
+#         associations and writing. The stages of construction are:
+#         1.) Constructing pathways and pathway category
+#         2.) Constructing genes, gene common names, synonyms.
+#         3.) Building gene/pathway edges.
+#         4.) Constructing/harmonizing metabolites.
+#         5.) Adding metabolites common names and synonyms.
+#         6.) Building metabolite/pathway edges.
+#         7.) Load chemical properties - currently (1/2021), HMDB and ChEBI
+#         8.) Associate chemical properties (molecules) with with ramp metabolites
+#         9.) Write methods: pathways, analyte-source info, synonyms, analyte to pathways, analyte registry, chemical properties.
+#         """
+#         # load pathways
+#         self.loadPathways()
+#         self.addPathwayCategory()
 # 
-#         for source in pathwaySourceSummary.keys():
-#             print(source + " pathway count " + str(pathwaySourceSummary[source]))
-#             
-#         for source in self.metToPathAssocSourceTallies.keys():
-#             print(source + " metabolite to pathway association count " + str(self.metToPathAssocSourceTallies[source]))
+#         # load genes
+#         self.loadGeneList()
+#         self.addGeneCommonNameAndSynonyms()
+#         self.buildGeneToPathwayConnections()
 # 
-#         for source in self.geneToPathAssocSourceTallies.keys():
-#             print(source + " gene to pathway association count " + str(self.geneToPathAssocSourceTallies[source]))
-# 
-#         gene = self.geneList.getGeneById("GAPDH")
-#         if gene is not None:
-#             gene.printGene()
+#         # load metabolite list, over all sources and hamonization during build
+#         self.loadMetaboList()
+#         self.addMetaboliteCommonName()
+#         self.addMetaboliteSynonyms()
+#         self.buildMetaboliteToPathwayConnections()
 #         
-#         print("check GAPDH via main uniprot")
-#         gene = self.geneList.getGeneById("uniprot:P04406")
-#         if gene is not None:
-#             gene.printGene()
-#             
-#         gene = self.geneList.getGeneById("GAPDXYZ")
-#         if gene is not None:
-#             gene.printGene()
+#         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
+#         self.loadChemstry()
+#         self.resolveChemistry(["hmdb", "chebi"])      
+#         
+#         # loader file writes
+#         self.writePathways()
+#         self.writeAnalyteSource()
+#         self.writeAnalyteSynonyms()
+#         self.writeAnalyteToPathway()
+#         self.writeAnalyte()
+#         self.writeChemProps()
             
 
 
     def writeAnalyteSource(self):
-
+        """
+        Write final files for analyte source
+        """
         sourcefile  = open("../../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -668,9 +654,12 @@ class EntityBuilder(object):
            
         sourcefile.close()
         
+        
     
     def writeAnalyteToPathway(self):
-        
+        """
+        write analyte to pathway mappings to final files
+        """
         sourcefile  = open("../../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
         
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -687,7 +676,9 @@ class EntityBuilder(object):
             
             
     def writePathways(self):
-        
+        """
+        Write pathway object records for all data sources
+        """
         sourcefile  = open("../../misc/sql/pathway.txt", "w+", encoding='utf-8')
 
         for pathway in self.pathList.getPathwaysAsList():
@@ -697,6 +688,9 @@ class EntityBuilder(object):
 
 
     def writeAnalyte(self):
+        """
+        Writes analyte list for all data sources.
+        """
         sourcefile  = open("../../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
         for met in self.metaboliteList.getUniqueMetabolites():
@@ -709,7 +703,9 @@ class EntityBuilder(object):
 
        
     def writeChemProps(self):
-        
+        """
+        Writes chemcial properties file for all data sources.
+        """
         chemPropsFile  = open("../../misc/sql/chemProps.txt", "w+", encoding='utf-8')
         mets = self.metaboliteList.getUniqueMetabolites()
         for met in mets:
@@ -718,8 +714,11 @@ class EntityBuilder(object):
 
         chemPropsFile.close()
 
+
     def writeAnalyteSynonyms(self):
-        
+        """
+        Writes analyte synonym annotations to file for all data sources
+        """
         synonymfile  = open("../../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
         
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -745,14 +744,22 @@ class EntityBuilder(object):
         return dF
     
     
-    def loadChemstry(self):
+    def loadChemstry(self, sources):
+        """
+        Loads chemistry for sources
+        """
         cw = ChemWrangler()
-        sources = ["hmdb","chebi","kegg","pubchem"]
+        # sources = ["hmdb","chebi"]
+        # sources = ["hmdb","chebi","kegg","pubchem"]
         cw.loadRampChemRecords(sources)
         self.chemSourceRecords = cw.getChemSourceRecords()
         
-    def resolveChemistry(self, sourceOrder):
-        for source in sourceOrder:
+        
+    def resolveChemistry(self, sources):
+        """
+        Associates molecular entities with parent metabolites
+        """
+        for source in sources:
             chemRecords = self.chemSourceRecords[source]            
             
             for key in chemRecords:
@@ -760,16 +767,18 @@ class EntityBuilder(object):
                 if met is not None:
                     mol = chemRecords[key]
                     met.addChemProps(mol)
-                    
-                    if met.rampId == "RAMP_C_000044109" and key == "kegg:C13828":
-                        print("\n*\n*\n*\nHeyyyyy in resolve chemistry RAMP 44109 and kegg:C13828\n*\n*\n*\n")
         
-        self.metaboliteList.generateChemPropSummaryStats()
+        self.metaboliteList.printChemPropSummaryStats()
      
     
     
     def crosscheckChemPropsMW(self, mwTolerance = 0.1, pctOrAbs = 'pct'):
-        
+        """
+        Utility method to evaluate populated metabolite list and chemical properties.
+        This applies a monoisotopic mass cutoff with associated tolerances.
+        Any metabolite containing molecules that diverge from the tolerance are added to a problem metabolites list.
+        The problem metabolites are returned in a list.
+        """
         problemMets = list()
         
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -783,7 +792,11 @@ class EntityBuilder(object):
 
 
     def crosscheckChemPropsInchiBase(self):
-
+        """
+        Utility method to verify parity in molecular constituency and connectivity.
+        Returns a list of metabolites that contain molecules that have different inchikey base strings.
+        The list consists of metabolites with discordant molecule entitities.
+        """
         problemMets = list()
         
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -796,9 +809,13 @@ class EntityBuilder(object):
         return problemMets    
     
     
-
     def crossCheckMetaboliteHarmony(self, buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct'):
-        
+        """
+        A high level utility method that checks for metabolite 'harmony' based on molecular weight or inchi-key prefix.
+        The result is an output file containing ramp ids and suspect id pairs in a report.
+        Current output is in this directory within the RaMP Backend project:
+            ../../misc/resourceConfig/metaboliteMappingIssues.txt
+        """
         self.loadMetaboList()
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
@@ -815,10 +832,13 @@ class EntityBuilder(object):
 
         print("Check inChI base on mets, problem mets..." + str(len(problemInchiMets)))
 
-        probMets = list(set(problemMWMets + problemInchiMets))
+        # Decided only to use MW criteria, not the more stringent inchikey prefix criteria
+        # probMets = list(set(problemMWMets + problemInchiMets))
+
+        # Note - only using molecular weight        
+        probMets = problemMWMets
         
-        # probMets = problemMWMets
-        
+        # Note - current method is only using MW criteria. InchiKey prefix is too stringent.
         print("Union of problem mets..." + str(len(probMets)))
         
         moleculeCount = 0;
@@ -827,8 +847,6 @@ class EntityBuilder(object):
                 for id in met.chemPropsMolecules[source]:
                     moleculeCount = moleculeCount + 1
                     
-        print("Total molecule records " + str(moleculeCount))
-        
         moleculeCount = 0;
         for met in problemMWMets:
             for source in met.chemPropsMolecules:
@@ -857,18 +875,18 @@ class EntityBuilder(object):
                 mismatchList = self.getMetaboliteIDMismatchInchiBase(met)
             
             totalMismatches.extend(mismatchList)
-            
-            if metCnt % 25 == 0:
-                print("problem metabolites processed = " + str(metCnt))
-    
-        
-    
-        with open("../../misc/resourceConfig/metMappingIssuesReport_withKegg_ONLY_primaryMappings_nowPCQ.txt", "w", encoding='utf-8') as outfile:
+                  
+        with open("../../misc/resourceConfig/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
     
+    
+    
         
     def getMetaboliteIDMismatchInchiBase(self, met):
+        """
+        Returns problem metabolites having compounds with differnt inchikey bases.
+        """
         chebiIds = dict()
         hmdbIds = dict()
         pubchemIds = dict()
@@ -920,7 +938,14 @@ class EntityBuilder(object):
         return misMatchList
        
        
+       
     def getMetaboliteIDMismatchMW(self, met, tolerance = 0.1, pctOrAbs = 'pct'):
+        """
+        Supporting method that looks at all molecules contained in the input Metabolite and finds 
+        molecules that fail the test (MW based comparison with a tolerance).
+        The returned value is a string representing mismapped molecule pairs.
+        The mis-mapped molecules from this method can be output to the curation file.
+        """
         chebiMW = dict()
         hmdbMW = dict()
         pubchemMW = dict()
@@ -928,14 +953,7 @@ class EntityBuilder(object):
         myFriend = False
         
         rampId = met.rampId
-        
-        if "hmdb:HMDB0010338" in met.idList:
-          #if met.rampId == "RAMP_C_000056372": # old case RAMP_C_000044109
-            print("Evaluating my test case") 
-            print(met.toSourceString())
-            myFriend = True
-        else:
-            myFriend = False
+        metPathwayCount = met.getPathwayCount()
         
         for source in met.chemPropsMolecules:
             for id in met.chemPropsMolecules[source]:
@@ -946,36 +964,60 @@ class EntityBuilder(object):
                 if mol.id.startswith("chebi"):
                     if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                         chebiMW[mol.id] = float(mol.monoisotopicMass)
+                    # special deal for kegg R group kegg ids without mass...
+                    if "R" in mol.formula:
+                        chebiMW[mol.id] = float(-1.0)     
                 if mol.id.startswith("kegg"):
                     if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                         keggMW[mol.id] = float(mol.monoisotopicMass)
-                        if myFriend:
-                            print("have my bad case, getting my kegg mass " + mol.id + " " + str(mol.monoisotopicMass))
+                    # special deal for kegg R group kegg ids without mass...
+                    if "R" in mol.formula:
+                        keggMW[mol.id] = float(-1.0)
                 if mol.id.startswith("pubchem"):
                     if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                         pubchemMW[mol.id] = float(mol.monoisotopicMass)
                         
+                        
+        # a subset of molecules contain R groups.
+        # These are special generic molecules that can cause a lot of aggregation
+        rgroupFormulaMolecules = dict()
+        idToFormula = dict()
+        for source in met.chemPropsMolecules:
+            for id in met.chemPropsMolecules[source]:
+                
+                mol = met.chemPropsMolecules[source][id]
+                if mol.formula and "R" in mol.formula:                  
+                    rgroupFormulaMolecules[id] = mol.formula
+                        
+                if mol.formula:
+                    idToFormula[id] = mol.formula
+                else:
+                    idToFormula[id] = ""
+                    
+        
+#        12/2021 - temporary code used to evaluate pubchem cids that were associated with
+#        The code uses pubchempy and their api to pull in compound attributes used to validate pubchem mapping
+#        
 #         for id in met.idList:
 #              #this will accumulate pubchem monoisotopic masses
 #             if id.startswith("pubchem"):
-#                 
-#                           
+#                  
+#                            
 #                 if id not in pubchemMW:
 #                     try:
 #                         c = pcp.Compound.from_cid(id.split(":")[1])
 #                     except:
 #                         continue
 #                         print("Cid lacks a record at pubchem: " + id)
-#                     
+#                      
 #                     # give pubchem a rest
 #                     time.sleep(0.75)
 #                     if c is not None and c.inchikey is not None:
 #                         pubchemMW[id] = c.monoisotopic_mass
 #                         if c.inchikey is not None:
-#                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey)
-                        
-                    
-                    
+#                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey + "\t" + c.molecular_formula)
+
+                   
         # now reconcile the differences, hmdb to pubchem and chebi to pubchem, also hmdb and chebi to kegg
         misMatchList = list()
         for pid in pubchemMW:
@@ -984,21 +1026,15 @@ class EntityBuilder(object):
             
             for hid in hmdbMW:
                 hmdbMass = hmdbMW[hid] 
-                if myFriend:
-                    print("Test case comparing hmdb to pubchem " + hid + " " + pid )               
-                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance:
-                    if myFriend:
-                        print("hmdbmass to pubchem mass (passed cutoffs)" + str(hmdbMass) + " " + str(pubchemMass))                
+                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(pid, False):
                     if self.isaPrimaryIdMapping(hid, pid) or self.isaPrimaryIdMapping(pid, hid):
-                        if myFriend:
-                            print("\n****passed cutoffs AND is a primary mapping***\n")
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString())
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(pid,""))
 
             for cid in chebiMW:
                 chebiMass = chebiMW[cid]
-                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance:
+                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(pid, False):
                     if self.isaPrimaryIdMapping(cid, pid) or self.isaPrimaryIdMapping(pid, cid):
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString())        
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,""))        
         
         # checking hmdb to chebi    
         for hid in hmdbMW:
@@ -1007,28 +1043,16 @@ class EntityBuilder(object):
             # compare chebi to hmdb
             for cid in chebiMW:
                 chebiMass = chebiMW[cid]
-                if myFriend:
-                    print("comparing " + hid + " to " + cid)
-                    print(str(hmdbMass) + " " + str(chebiMass))
-                        
-                if abs(chebiMass-hmdbMass)/min(chebiMass, hmdbMass) > tolerance:
-                    if myFriend:
-                        print("test case meets tolerance")
+
+                if abs(chebiMass-hmdbMass)/min(chebiMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(cid, False):
                     if self.isaPrimaryIdMapping(hid, cid) or self.isaPrimaryIdMapping(cid, hid):  
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + cid + "\t" + str(chebiMass) + "\t" + met.toCommonNameJoinString())
-                        if myFriend:
-                            print("test case is a primary mapping, meets criteria, being added")
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + cid + "\t" + str(chebiMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,""))
             # compare kegg to hmdb         
             for keggId in keggMW:
                 keggMass = keggMW[keggId]
-                if myFriend:
-                    print("comparing " + hid + " to " + keggId)
-                    print(str(hmdbMass) + " " + str(keggMass))
-                if abs(keggMass-hmdbMass)/min(keggMass, hmdbMass) > tolerance:
-                    if myFriend:
-                        print("*****Should be adding hmdb to kegg problem case to bad list.")
+                if abs(keggMass-hmdbMass)/min(keggMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(keggId, False):
                     if self.isaPrimaryIdMapping(hid, keggId) or self.isaPrimaryIdMapping(keggId, hid):  
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString())
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(keggId,""))
         
         # finish with chebi to kegg                     
         for cid in chebiMW:
@@ -1037,12 +1061,14 @@ class EntityBuilder(object):
             for keggId in keggMW:
                 keggMass = keggMW[keggId]
 
-                if abs(keggMass-chebiMass)/min(keggMass, chebiMass) > tolerance:
+                if abs(keggMass-chebiMass)/min(keggMass, chebiMass) > tolerance or rgroupFormulaMolecules.get(keggId, False):
                     if self.isaPrimaryIdMapping(cid, keggId) or self.isaPrimaryIdMapping(keggId, cid):  
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString())
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(cid, "") + "\t" + idToFormula.get(keggId,""))
      
                           
         return misMatchList
+    
+    
     
     def utilCheckHMDBMappingValidity(self):
         '''
@@ -1112,6 +1138,10 @@ class EntityBuilder(object):
                             if altId not in allstarChebiIds:
                                 uniqueInvalidChebi[altId] = altId    
                                 # print("bad chebi..." + altId)
+                              
+                    # Consider adding pubchem -                 
+
+
                                 
         print("\n\nCheck of HMDB to KEGG and CHEBI, are the alt ids valid?")
         print("Total mappings to KEGG IDs: " + str(keggTotalMappings))
@@ -1129,7 +1159,10 @@ class EntityBuilder(object):
                         
     
 class DataSource(object):
-    
+    """
+    Utility class that holds data source information required for building
+    RaMP entities and relations
+    """    
     def __init__(self):
         
         self.sourceName = "hmdb"
@@ -1137,12 +1170,12 @@ class DataSource(object):
         self.sourceLocPath = "../../misc/output/hmdb"
         self.exportPath = "../../misc/sql"
         
-'''
- This class holds a collection of improperly associated metabolite ids.
- This list is one means to check associations and skip those that are in error from the source
-'''        
+     
 class MappingExclusionList(object):        
-    
+    '''
+     This class holds a collection of improperly associated metabolite ids.
+     This list is one means to check associations and skip those that are in error from the source
+    '''   
     def __init__(self):
     
         # sourceId : extID List
@@ -1166,9 +1199,7 @@ class MappingExclusionList(object):
         for i,row in df.iterrows():
             sourceId = row[1]
             extId = row[3]
-        
-            print("exclusions: " + sourceId + "\t" + extId)
-        
+ 
             if sourceId not in self.sourceIdToExtIdDict:
                 self.sourceIdToExtIdDict[sourceId] = list()
             if extId not in self.sourceIdToExtIdDict:
@@ -1179,89 +1210,11 @@ class MappingExclusionList(object):
         
         print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
         
-        
-builder = EntityBuilder()
-builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
-builder.utilCheckHMDBMappingValidity()
 
+
+builder = EntityBuilder()
+#builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
+#builder.utilCheckHMDBMappingValidity()
 #builder.fullBuild()
 
-
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0128442")
-# if met is not None:
-#     met.printMet()
-
-# builder.writeMetaboliteSource()
-# builder.writeMetaboliteToPathway()
-# builder.writePathways()
-# builder.writeAnalyte()
-
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0002306")
-#  
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("No metabolite HCl record for hmdb:HMDB0002306")
-# 
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0029225")
-#  
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("No metabolite Coumeric acid record for HMDB0029225")
-# 
-# 
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000122")
-#  
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("No metabolite record for glucose hmdb:HMDB0000122")
-#     
-    
-
-# builder.loadGeneList()
-# builder.addGeneCommonName()
-# print(str(builder.geneList.length()))
-# print(str(len(builder.geneList.getUniqueGenes())))
-# builder.loadPathways()
-# builder.buildGeneToPathwayConnections()
-# 
-# 
-# gene = builder.geneList.getGeneById("GAPDH")
-# if gene is not None:
-#     gene.printGene()
-# 
-# builder.loadMetaboList()
-# builder.addMetaboliteCommonName()
-#       
-# builder.addMetaboliteSynonyms()
-# builder.buildMetaboliteToPathwayConnections()
-# met = builder.metaboliteList.getMetaboliteBySourceId("chebi:13705")
-# 
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("Hey... no chebi:13705 metabolite...")
-#      
-#  
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000060")
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("Hey... no hmdb:HMDB0000060 metabolite...")
-#      
-# met = builder.metaboliteList.getMetaboliteBySourceId("kegg:C00164")
-# if met is not None:
-#     met.printMet()
-# else:
-#     print("Hey... no kegg:C00164 metabolite...")
-#           
-#       
-# met = builder.metaboliteList.getMetaboliteByAltId("chebi:13705")
-# if met is not None:
-#     print("have metabolite by alt id query")
-#     met.printMet()
-# else:
-#     print("Hey... no chebi:13705 metabolite...")
 #         
