@@ -6,9 +6,8 @@ Created on Dec 7, 2020
 
 class Molecule(object):
     '''
-    classdocs
+    Container object to hold chemical properties
     '''
-
 
     def __init__(self):
         '''
@@ -35,7 +34,11 @@ class Molecule(object):
         self.name = ""
         
         
+        
     def toChemPropsString(self):
+        """
+        Ths utility method is used to format an export format for tab delimited files.
+        """
         s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchi + "\t" + self.inchiKey + "\t" 
         s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + self.name + "\t" + self.formula+ "\n"
         return s
