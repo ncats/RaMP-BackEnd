@@ -254,7 +254,7 @@ class ChemWrangler(object):
                 file = "../../misc/data/chemprops/structures.sdf"
                 self.readSDF('hmdb', file)
             if source == 'chebi':
-                file = "../../misc/data/chemprops/ChEBI_complete_3star.sdf"
+                file = "../../misc/data/chemprops/ChEBI_complete.sdf"
                 self.readSDF('chebi', file)
             if source == 'kegg':
                 file = "../../misc/data/chemprops/kegg_compound"
