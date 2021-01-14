@@ -1215,6 +1215,6 @@ class MappingExclusionList(object):
 builder = EntityBuilder()
 #builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
 #builder.utilCheckHMDBMappingValidity()
-#builder.fullBuild()
+builder.fullBuild()
 
 #         
