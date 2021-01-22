@@ -4,6 +4,7 @@ Created on Nov 16, 2020
 @author: braistedjc
 '''
 import os
+from os import path
 from rampEntity.Gene import Gene
 from rampEntity.GeneList import GeneList
 from rampEntity.Metabolite import Metabolite
@@ -14,6 +15,7 @@ from chemprop.ChemWrangler import ChemWrangler
 from rampEntity.Molecule import Molecule
 
 from pathlib import Path
+
 
 import pandas as pd
 import numpy as np
@@ -127,11 +129,12 @@ class EntityBuilder(object):
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
+        self.loadMetaboliteToGene()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
-        self.loadChemstry(["hmdb","chebi"])
-        self.resolveChemistry(["hmdb", "chebi"])      
+        self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
+        self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
         # loader file writes
         self.writePathways()
@@ -139,6 +142,7 @@ class EntityBuilder(object):
         self.writeAnalyteSynonyms()
         self.writeAnalyteToPathway()
         self.writeAnalyte()
+        self.writeMetGeneAssociation()
         self.writeChemProps()
             
         
@@ -570,7 +574,49 @@ class EntityBuilder(object):
                 if(i % 1000 == 0):
                     print("genes processed = " + str(i), flush=True)
 
+    
+    def loadMetaboliteToGene(self):
+        
+        for src in self.sourceList:
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesLinkedToGenes.txt"
+    
+            metaboliteToGene = dict()
+            
+            
+            if path.exists(file):
+                print ("metaboliteToGene mappings for " + source)
+                
+                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+                df = pd.DataFrame(data)
+                df = self.remove_whitespace(df)
+                
+                for i,row in df.iterrows():
+                    met = row[0]
+                    gene = row[1]
+                    if met not in metaboliteToGene:
+                        metaboliteToGene[met] = list()
+                    
+                    metaboliteToGene[met].append(gene)
 
+            # now traverse mets 
+            for met in metaboliteToGene:
+                for gene in metaboliteToGene[met]:
+                    
+                    targetMet = self.metaboliteList.getMetaboliteBySourceId(met)
+                    targetGene = self.geneList.getGeneById(gene)
+                    
+                    if targetMet and targetGene:
+                        targetMet.addAssociatedGene(targetGene)
+                    
+                    
+                    
+            
+                
+    
+    
+    
+    
 #     def fullBuild(self):
 #         """
 #         This high level method performs the entire process of entity construction
@@ -735,6 +781,23 @@ class EntityBuilder(object):
            
         synonymfile.close()
                 
+
+    def writeMetGeneAssociation(self):
+        """
+        Writes analyte synonym annotations to file for all data sources
+        """
+        file = open("../../misc/sql/catalyzes.txt", "w+", encoding='utf-8')
+        
+        mets = self.metaboliteList.getUniqueMetabolites()
+        
+        for met in mets:
+            s = met.toMetToGeneAssociationString()
+            if len(s) > 0:
+                file.write(s)
+        
+        file.close()
+                
+
 
     def remove_whitespace(self, dF):     
         for colName in dF.columns:

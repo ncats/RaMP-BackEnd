@@ -38,6 +38,8 @@ class Metabolite(object):
      
         self.sources = list()
         
+        self.associatedGenes = list()
+        
         # source: [source_id: Molecule]  Molecule = molecule props
         self.chemPropsMolecules = dict()
       
@@ -180,6 +182,10 @@ class Metabolite(object):
             self.synonymDict[source] = list()
         if synonym not in self.synonymDict[source]:
             self.synonymDict[source].append(synonym)
+    
+    def addAssociatedGene(self, gene):
+        if gene not in self.associatedGenes:
+            self.associatedGenes.append(gene)
             
             
     def subsumeMetabolite(self, metabolite):
@@ -208,13 +214,19 @@ class Metabolite(object):
         """
         for source in self.idDict:
             for id in self.idDict[source]:
-                if source in self.commonNameDict and id not in self.commonNameDict[source]:
+                if source not in self.commonNameDict:
+                    self.commonNameDict[source] = dict()
+                
+                if id not in self.commonNameDict[source]:
                     # now we know we have a common name dictionary for the source
-                    # and our id doesn't have a commmon name entry.
-                    
+                    # and our id doesn't have a commmon name entry.                    
                     #grab a key
-                    keyId = list(self.commonNameDict[source].keys())[0]
-                    self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
+                        keyId = list(self.commonNameDict[source].keys())[0]
+                        if keyId is None:
+                            print("Hey we have a None key id in common name")
+                            self.commonNameDict[source][id].append("NA")
+                        else:
+                            self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
 
     
     def addChemProps(self, molecule):
@@ -290,6 +302,14 @@ class Metabolite(object):
                 chemProps = mol.toChemPropsString()
                 if chemProps is not None:
                     s = s + self.rampId + "\t" + chemProps
+        return s
+    
+    def toMetToGeneAssociationString(self):
+        s = ""
+        
+        for gene in self.associatedGenes:
+            s = s + self.rampId + "\t" + gene.rampId + "\n"
+        
         return s
     
     
