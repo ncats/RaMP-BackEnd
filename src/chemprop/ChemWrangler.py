@@ -195,7 +195,56 @@ class ChemWrangler(object):
         # add to to full dictionary
         self.chemLibDict[source] = molDict
 
-            
+
+    def readLipidMapsSDF(self, source, filePath):
+        """
+        Utility method to read Chebi SDF file for specific data types to populate Molecule objects.
+        """        
+        print(sys.getdefaultencoding())
+        print("Lipidmaps SDF")
+
+        i = 0
+        sdfDB = open(filePath, 'r+', encoding="utf-8")
+        molDict = dict()
+        mol = Molecule()
+        mol.source = source
+        
+        while True:
+            line = sdfDB.readline()
+
+            if len(line) == 0:
+                print("line is none...")
+                break
+
+            line = line.strip()            
+            if line == '$$$$':
+                i = i + 1
+               # print("processing structure " + str(i))
+                molDict[mol.id] = mol
+                mol = Molecule()
+                mol.source = source
+            if line == '> <LM_ID>':
+                mol.id = sdfDB.readline().strip()
+                mol.id = "LIPIDMAPS:" + mol.id 
+            if line == '> <SMILES>':
+                mol.smiles = sdfDB.readline().strip()
+            if line == '> <INCHI_KEY>':
+                mol.inchiKey = sdfDB.readline().strip()
+                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]                
+            if line == '> <INCHI>':
+                mol.inchi = sdfDB.readline().strip()                                      
+            if line == '> <MASS>':
+                mol.mw = sdfDB.readline().strip()
+            if line == '> <EXACT_MASS>':
+                mol.monoisotopicMass = sdfDB.readline().strip()
+            if line == '> <NAME>':
+                mol.name = sdfDB.readline().strip()
+            if line == '> <FORMULA>':
+                mol.formula = sdfDB.readline().strip()
+
+        self.chemLibDict[source] = molDict
+        print("Finished Lipidmaps chemprops: size="+str(len(molDict)))
+
             
     def readPubchemTabIdMiInchikey(self, source, file):
         """
@@ -242,7 +291,9 @@ class ChemWrangler(object):
         if source == 'kegg':
             self.readKEGGCompound(source, file)
         if source == 'pubchem':
-            self.readPubchemTabIdMiInchikey(source, file)            
+            self.readPubchemTabIdMiInchikey(source, file)
+        if source == 'lipidmaps':
+            self.readLipidMapsSDF(source, file)          
             
 
     def loadRampChemRecords(self, sources):
@@ -261,7 +312,10 @@ class ChemWrangler(object):
                 self.readSDF('kegg', file)
             if source == 'pubchem':
                 file = "../../misc/data/chemprops/pubchem_id_mi_inchikey_issue_set.txt"
-                self.readSDF('pubchem', file)    
+                self.readSDF('pubchem', file) 
+            if source == 'lipidmaps':
+                file = "../../misc/data/chemprops/lipid_maps/structures.sdf" 
+                self.readSDF("lipidmaps", file)      
            
            
          
@@ -362,5 +416,6 @@ class ChemWrangler(object):
         testReadme.close()
             
         
-
+cw = ChemWrangler()
+cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
         
