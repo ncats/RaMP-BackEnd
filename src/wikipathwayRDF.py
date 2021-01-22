@@ -66,6 +66,10 @@ class WikipathwaysRDF(MetabolomicsData):
         #tissue location stay empty
         self.tissue = dict()
         self.tissueLocation = dict()
+        
+        self.lipidMapsIdCounterDict = dict()
+        
+        
     def getEverything(self,writeToFile = False):
         '''
         This function pack all functions in this class together, running this function will parse all data 
@@ -76,6 +80,9 @@ class WikipathwaysRDF(MetabolomicsData):
         self.getIDMapingWithPathways()
         if writeToFile:
             self.write_myself_files('wikipathwayRDF')
+            
+        print("distinct lipidmap ids = " + str(len(self.lipidMapsIdCounterDict)))    
+            
     def getDatabaseFile(self):
         '''
         Downloaded wikipathway file from the given url
@@ -210,6 +217,8 @@ class WikipathwaysRDF(MetabolomicsData):
             self.getGenesIDFromGraph(g, this_pathway)
             #self.getCatalyzation(g, this_pathway)
         print("End of wiki genes")
+        
+        
     def getGenesIDFromGraph(self,g,this_pathway):
         geneProduct = URIRef('http://vocabularies.wikipathways.org/wp#GeneProduct')
         type_predicate = URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -375,14 +384,19 @@ class WikipathwaysRDF(MetabolomicsData):
             # predicate in RDF is defined here, this the subject/object with these predicates are extracted.
             
             # JCB Lets get the commonName...
-            commonName = g.label(metabolites, default="NA")            
+            commonName = g.label(metabolites, default="NA")
+            
+            if source == 'LIPIDMAPS':
+                self.lipidMapsIdCounterDict[metabolites_id] 
             
             id_mapping = {
                 'chebi_id':'http://vocabularies.wikipathways.org/wp#bdbChEBI',
                 'hmdb_id':'http://vocabularies.wikipathways.org/wp#bdbHmdb',
                 'pubchem_compound_id':'http://vocabularies.wikipathways.org/wp#bdbPubChem',
                 'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata',
-                'chemspider_id':'http://vocabularies.wikipathways.org/wp#bdbChemspider'
+                'chemspider_id':'http://vocabularies.wikipathways.org/wp#bdbChemspider',
+                'LIPIDMAPS':'http://vocabularies.wikipathways.org/wp#bdbLipidMaps'           
+                #'LIPIDMAPS':'http://identifiers.org/lipidmaps'
             }
             # metabolites id mapping created each loop
             metaboliteMapping = {
@@ -418,21 +432,65 @@ class WikipathwaysRDF(MetabolomicsData):
                         link_id = links.split('/')
                         link_id = link_id[len(link_id) - 1]
                         link_id = self.prependID(key, link_id)
+
+                        if key == 'LIPIDMAPS':
+                            self.lipidMapsIdCounterDict[link_id] = link_id
+                        if link_id == "LMFA01010000":
+                            print("have LMFA01010000")
                         metabolite_list.add(link_id)
                         # add id to the metabolites id mapping 
                         if metaboliteMapping[key] == 'NA' and type(link_id) is str:
                             metaboliteMapping[key] = [link_id]
                         elif type(metaboliteMapping[key]) is list and type(link_id) is str:
                             if link_id not in metaboliteMapping[key]:
-                                metaboliteMapping[key].append(link_id)    
+                                metaboliteMapping[key].append(link_id) 
+                                
+                        # JCB populate metabolites to pathway dictionary, this was not previously populated
+                        # check the link_ids at this level (in this loop)    
+                        if link_id in self.metabolitesWithPathwaysDictionary:
+                            if this_pathway not in self.metabolitesWithPathwaysDictionary[link_id]:
+                                self.metabolitesWithPathwaysDictionary[link_id].append(this_pathway)
+                        else:
+                            self.metabolitesWithPathwaysDictionary[link_id] = [this_pathway]
+                               
                         #print('Root {} has been linked to {}'.format(metabolites_id,link_id))
                 #print(metaboliteMapping)
                 self.pathwaysWithMetabolitesDictionary[this_pathway] = list(metabolite_list)
-                self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
                 
-                # JCB populate metabolites to pathway dictionary, this was not previously populated              
+                # JCB have to be careful here. A metabolite id is likely found in multiple pathways
+                # so this line might have over written the dictionary associated with a metabolite id
+                # commenting out
+                # self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+                
+                # JCB replacement code. If the metabolite ids exists, run through metaboliteMapping to add entries.
+                # JCB if the id isn't in the mapping dict, just add it
+                if metabolites_id not in self.metaboliteIDDictionary:
+                    self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+                    
+                    # this is the first time we've seen the metabolite id. Add it 'metabolite_id' to it's own mapping
+                    if source not in self.metaboliteIDDictionary[metabolites_id]:
+                        self.metaboliteIDDictionary[metabolites_id][source] = [metabolites_id]
+                    else:
+                        if metabolites_id not in self.metaboliteIDDictionary[metabolites_id][source]:
+                            self.metaboliteIDDictionary[metabolites_id][source].append(metabolites_id)
+                         
+                # else, run through the linked ids for the main metabolite id and add them as needed.
+                else:
+                    idDict = self.metaboliteIDDictionary[metabolites_id]
+                    for idType in metaboliteMapping:
+                        if idType not in idDict:
+                            idDict[idType] = metaboliteMapping[idType]
+                        else:
+                            for id in metaboliteMapping[idType]:
+                                if id not in idDict[idType]:
+                                    idDict[idType].append(id)
+                
+                
+                
+                # JCB populate metabolites to pathway dictionary, this was not previously populated]
+                # This code bit takes care of the primary metabolite id (link_ids are handled above)
                 if metabolites_id in self.metabolitesWithPathwaysDictionary:
-                    if(not(this_pathway in self.metabolitesWithPathwaysDictionary[metabolites_id])):
+                    if this_pathway not in self.metabolitesWithPathwaysDictionary[metabolites_id]:
                         self.metabolitesWithPathwaysDictionary[metabolites_id].append(this_pathway)
                 else:
                     self.metabolitesWithPathwaysDictionary[metabolites_id] = [this_pathway]
@@ -504,6 +562,8 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'CAS:' + id
         elif prefix == 'lipidmaps':
             id = 'LIPIDMAPS:' + id
+        elif prefix == 'LIPIDMAPS':
+            id = 'LIPIDMAPS:' + id    
         elif prefix == 'ncbigene' or prefix == 'Entrez':
             id = 'entrez:' + id
         elif prefix == 'uniprot' or prefix == 'UniProt':
@@ -520,34 +580,34 @@ class WikipathwaysRDF(MetabolomicsData):
 
 # test
 wikipathways = WikipathwaysRDF()
-wikipathways.getEverything()
-wikipathways.write_myself_files(database ="wiki")
+wikipathways.getEverything(writeToFile=True)
+#wikipathways.write_myself_files(database ="wiki")
 
-sql = writeToSQL()
-wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
-wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", wikicompoundnum)
-
-wikipathwaysnumbers = sql.write(
-        wikipathways.metaboliteCommonName,
-        wikipathways.pathwayDictionary, 
-         wikipathways.pathwayCategory,
-#         wikipathways.pathwaysWithMetabolitesDictionary,
-         wikipathways.metabolitesWithPathwaysDictionary,
-         wikipathways.metabolitesWithSynonymsDictionary,
-         wikipathways.metaboliteIDDictionary,
-         wikipathways.pathwaysWithGenesDictionary,
-         wikipathways.metabolitesLinkedToGenes,
-         wikipathways.geneInfoDictionary,
-         wikipathways.biofluidLocation,
-         wikipathways.biofluid,
-         wikipathways.cellularLocation,
-         wikipathways.cellular,
-         wikipathways.pathwayOntology,
-         wikipathways.exoEndoDictionary,
-         wikipathways.exoEndo,
-         wikipathways.tissueLocation,
-         wikipathways.tissue,
-         dict(),
-         "wiki",
-         0,wikigenenum)
+# sql = writeToSQL()
+# wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", 0)
+# wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", wikicompoundnum)
+# 
+# wikipathwaysnumbers = sql.write(
+#         wikipathways.metaboliteCommonName,
+#         wikipathways.pathwayDictionary, 
+#          wikipathways.pathwayCategory,
+# #         wikipathways.pathwaysWithMetabolitesDictionary,
+#          wikipathways.metabolitesWithPathwaysDictionary,
+#          wikipathways.metabolitesWithSynonymsDictionary,
+#          wikipathways.metaboliteIDDictionary,
+#          wikipathways.pathwaysWithGenesDictionary,
+#          wikipathways.metabolitesLinkedToGenes,
+#          wikipathways.geneInfoDictionary,
+#          wikipathways.biofluidLocation,
+#          wikipathways.biofluid,
+#          wikipathways.cellularLocation,
+#          wikipathways.cellular,
+#          wikipathways.pathwayOntology,
+#          wikipathways.exoEndoDictionary,
+#          wikipathways.exoEndo,
+#          wikipathways.tissueLocation,
+#          wikipathways.tissue,
+#          dict(),
+#          "wiki",
+#          0,wikigenenum)
   
