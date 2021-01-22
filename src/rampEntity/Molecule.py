@@ -39,7 +39,7 @@ class Molecule(object):
         """
         Ths utility method is used to format an export format for tab delimited files.
         """
-        s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchi + "\t" + self.inchiKey + "\t" 
+        s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchiKey + "\t" + self.inchi + "\t" 
         s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + self.name + "\t" + self.formula+ "\n"
         return s
         
