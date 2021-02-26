@@ -5,7 +5,7 @@ from lxml import etree as ET
 import zipfile
 import time
 import os
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 import pandas as pd
 
 class hmdbData(MetabolomicsData):
