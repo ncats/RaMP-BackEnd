@@ -3,7 +3,7 @@ sys.path.append('/Users/pati13/Downloads/')
 import urllib.request as RE
 import time
 import os
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 import zipfile
 from rdflib import URIRef,Graph
 import rdflib.namespace
