@@ -2,7 +2,7 @@ import urllib.request
 import time
 from multiprocessing import Pool
 import os
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 '''
 This module works to import a variety of data about metabolites from the kegg database.
 
