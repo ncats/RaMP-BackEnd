@@ -101,7 +101,7 @@ class reactomeData(MetabolomicsData):
 
         '''
         url_proteins,dir_proteins,file_proteins = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
-                                                            "../misc/data/reactome/",
+                                                            "../../misc/data/reactome/",
                                                             "UniProt2Reactome_All_Levels.txt")
         
 #         url_genes,dir_proteins,file_genes = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
@@ -109,7 +109,7 @@ class reactomeData(MetabolomicsData):
 #                                                             "NCBI2Reactome_All_Levels.txt")
         
         url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
-                                                              "../misc/data/reactome/",
+                                                              "../../misc/data/reactome/",
                                                               "ChEBI2Reactome_All_Levels.txt")
 #        existed = os.listdir(dir_proteins)
 
@@ -175,6 +175,8 @@ class reactomeData(MetabolomicsData):
                             self.pathwaysWithGenesDictionary[pathwayID] = ['uniprot:'+gene]
                         else:
                             self.pathwaysWithGenesDictionary[pathwayID] = ['entrez:'+gene]                                
+                           
+                           
                             
                         self.pathwayDictionary[pathwayID] = pathwayName
                         self.pathwayCategory[pathwayID] = "NA"
@@ -410,16 +412,16 @@ class reactomeData(MetabolomicsData):
                         # we now have uniprot to 'common_name', really gene id.
                         # now we want to grab the NCBI/Entrez 'GeneID'                 
                         if childtag == "dbReference":
-                            if type == "GeneID":
-                                geneId = id.text
+                            if child2.get("type") == "GeneID":
+                                geneId = child2.get("id")
                                 # protein to gene can be 1:n, so they have to be stored as a list
                                 # lets check for a value
-                                idList = mapping.get("entrez", None)
+                                idList = mapping.get("small_e_entrez", None)
                                 if(idList == None):
                                     idList = list()
-                                    mapping["entrez"] = idList
-                                
-                                idList.append(geneId)    
+                                    mapping["small_e_entrez"] = idList
+
+                                idList.append(geneId)  
                                 
                         
                                         
@@ -427,4 +429,8 @@ class reactomeData(MetabolomicsData):
                 print("Skip {} ...".format(f))
                 pass
              
+rd = reactomeData()
+rd.getDatabaseFiles()
+#rd.getEverything()          
+
           
