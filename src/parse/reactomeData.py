@@ -101,7 +101,7 @@ class reactomeData(MetabolomicsData):
 
         '''
         url_proteins,dir_proteins,file_proteins = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
-                                                            "../../misc/data/reactome/",
+                                                            "../misc/data/reactome/",
                                                             "UniProt2Reactome_All_Levels.txt")
         
 #         url_genes,dir_proteins,file_genes = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
@@ -109,7 +109,7 @@ class reactomeData(MetabolomicsData):
 #                                                             "NCBI2Reactome_All_Levels.txt")
         
         url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
-                                                              "../../misc/data/reactome/",
+                                                              "../misc/data/reactome/",
                                                               "ChEBI2Reactome_All_Levels.txt")
 #        existed = os.listdir(dir_proteins)
 
