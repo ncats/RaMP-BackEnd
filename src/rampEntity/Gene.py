@@ -212,8 +212,13 @@ class Gene(object):
                     #grab a key
                     keyId = list(self.commonNameDict[source].keys())[0]
                     self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
-        
-    
+                
+                else:
+                    # what if we don't have a common name dictionary for the source, no common name
+                    # just make an entry for the id but with no common name. This handles genes without common names
+                    if source not in self.commonNameDict:
+                        self.commonNameDict[source] = dict()
+                        self.commonNameDict[source][id] = ""
         
     def subsumeGene(self, gene):
         """

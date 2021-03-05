@@ -516,6 +516,7 @@ class EntityBuilder(object):
 
         # resolve common name for ids without corresponding common names
         genes = self.geneList.getUniqueGenes()
+        
         for gene in genes:
             gene.resolveCommonNames()
 
