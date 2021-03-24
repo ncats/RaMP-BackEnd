@@ -138,7 +138,7 @@ class hmdbData(MetabolomicsData):
         # Define file name and url for downloading file
         file_metabolites = "hmdb_metabolites.zip"
         file_proteins = "hmdb_proteins.zip"
-        download_url = "http://www.hmdb.ca/system/downloads/current/"
+        download_url = "https://hmdb.ca/system/downloads/current/"
         dir = "../misc/data/hmdb/"
         # check if this path exists
         self.check_path(dir)
@@ -875,6 +875,24 @@ class hmdbData(MetabolomicsData):
                                 else:
                                     if accession.text not in self.pathwaysWithGenesDictionary[smpid]:
                                         self.pathwaysWithGenesDictionary[smpid].append('hmdb:'+accession.text)
+
+                        if infotag == 'kegg_map_id':
+                            if info.text is not None:
+                                keggid = info.text
+                                if keggid not in self.pathwayDictionary and keggid is not None:
+                                    self.pathwayDictionary[keggid] = pathwayName
+                                if keggid not in self.pathwaysWithGenesDictionary:
+                                    self.pathwaysWithGenesDictionary[keggid] = []
+                                    self.pathwaysWithGenesDictionary[keggid].append('hmdb:' + accession.text)
+                                else:
+                                    if accession.text not in self.pathwaysWithGenesDictionary[keggid]:
+                                        self.pathwaysWithGenesDictionary[keggid].append('hmdb:'+accession.text)
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
             for metabolite in protein.find('{http://www.hmdb.ca}metabolite_associations'):
                 hmdb_id = 'hmdb:' + metabolite.find('{http://www.hmdb.ca}accession').text # find the metabolite id under this node
                 # Use protein file to add more information to metablite-gene relations
