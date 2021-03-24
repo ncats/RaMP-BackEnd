@@ -90,7 +90,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20200810-rdf-wp.zip'
+        filename = 'wikipathways-20210210-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
