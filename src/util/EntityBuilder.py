@@ -129,7 +129,8 @@ class EntityBuilder(object):
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
-        self.loadMetaboliteToGene()
+        self.loadMetaboliteToGene()        
+        self.metaboliteClassConnections()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
@@ -144,6 +145,7 @@ class EntityBuilder(object):
         self.writeAnalyte()
         self.writeMetGeneAssociation()
         self.writeChemProps()
+        self.writeMetaboliteClass()
             
         
         
@@ -520,7 +522,28 @@ class EntityBuilder(object):
         for gene in genes:
             gene.resolveCommonNames()
 
-
+    def metaboliteClassConnections(self):
+        
+        for src in self.sourceList:
+            source = src.sourceName
+            file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteClass.txt"
+    
+            if(path.exists(file)):    
+                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)            
+                df = pd.DataFrame(data)
+                df = self.remove_whitespace(df)
+                
+                for i, row in df.iterrows():
+                    if(source == "hmdb"):
+                        metid = row[0]
+                        classLevel = row[1]
+                        className = row[2]
+                         
+                        met = self.metaboliteList.getMetaboliteBySourceId(metid)
+                        if met is not None:
+                            met.addMetClass(source, metid, classLevel, className)
+                  
+                                    
 
     def buildGeneToPathwayConnections(self):
         """
@@ -798,6 +821,14 @@ class EntityBuilder(object):
         
         file.close()
                 
+    def writeMetaboliteClass(self):
+        mets = self.metaboliteList.getUniqueMetabolites()
+
+        file = open("../../misc/sql/metaboliteClass.txt", "w+", encoding='utf-8')
+        for met in mets:
+            file.write(met.toMetaboliteClassString())
+            
+        file.close()    
 
 
     def remove_whitespace(self, dF):     
@@ -1280,5 +1311,46 @@ builder = EntityBuilder()
 #builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
 #builder.utilCheckHMDBMappingValidity()
 builder.fullBuild()
+
+
+# builder.loadMetaboList()
+# builder.addMetaboliteCommonName()
+# builder.addMetaboliteSynonyms()
+# builder.metaboliteClassConnections()
+# builder.writeMetaboliteClass()
+# 
+# mets = builder.metaboliteList.getUniqueMetabolites()
+# 
+# metClassCnt = 0
+# printedDouble = false
+# totAltIds = 0
+# uniqueIdDict = dict()
+# for met in mets:
+#     hmdbMC = met.metClasses.get("hmdb", None)
+#     if(hmdbMC is not None):
+#         metClassCnt = metClassCnt + 1
+#         if metClassCnt == 100:
+#             print(met.toMetaboliteClassString())
+#         if len(hmdbMC) > 1 and printedDouble == False:
+#             print("multi hmdb classes")
+#             print(met.toChemPropsString())
+#             printedDouble = True
+#     
+#     totAltIds = totAltIds + len(met.idList)
+#     for altId in met.idList:
+#         uniqueIdDict[altId] = 1
+#     
+#        
+# print("Met Class Count = "+ str(metClassCnt))
+# print("tot id count = "+ str(totAltIds))
+# print("unique id count = "+ str(len(uniqueIdDict)))
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0005402")
+# if met is not None:
+#     print(met.toMetaboliteClassString())
+# 
+
+
+
 
 #         

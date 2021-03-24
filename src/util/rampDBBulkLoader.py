@@ -148,16 +148,18 @@ class rampDBBulkLoader(object):
     def loadFile(self, resource, engine):
         print(os.path.abspath(os.getcwd()))
 
-        file_path = "../../misc/sql/"+resource.stagingFile        
+        file_path = "../../misc/sql/"+resource.stagingFile
+        colNames = resource.columnNames
+        
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
-        data = pd.read_table(file_path, sep="\t+", header=None, index_col=None, engine="python")     
+        data = pd.read_table(file_path, sep="\t", header=0, names=colNames, index_col=None, engine="python")     
         df = pd.DataFrame(data)
     
         # issue with whitespace    
         df = self.remove_whitespace(df)
         
         # grab key columns append column names
-        colNames = resource.columnNames
+        
         print(df.shape)
         if(len(df.columns) > len(colNames)):
             print("too wide... cut down")           

@@ -4,6 +4,7 @@ Created on Nov 6, 2020
 @author: braistedjc
 '''
 import pandas as pd
+from jedi.inference.value.klass import ClassName
 
 class Metabolite(object):
     '''
@@ -42,6 +43,9 @@ class Metabolite(object):
         
         # source: [source_id: Molecule]  Molecule = molecule props
         self.chemPropsMolecules = dict()
+        
+        # layered dictionary source:dict(classLevel:list(className))
+        self.metClasses = dict()
       
                  
     def __eq__(self, other):
@@ -240,6 +244,32 @@ class Metabolite(object):
         self.chemPropsMolecules[molecule.source][molecule.id] = molecule
     
     
+    def addMetClass(self, source, sourceId, classLevel, className):
+        if className == "Triradylcglycerols":
+            className = "Triacylglycerols"
+        
+        sourceClasses = self.metClasses.get(source, None)
+        if sourceClasses is None:
+            self.metClasses[source] = dict()
+            self.metClasses[source][sourceId] = dict()
+            self.metClasses[source][sourceId][classLevel] = list()
+            self.metClasses[source][sourceId][classLevel].append(className)
+        else:
+            sourceIdDict = self.metClasses[source].get(sourceId, None)
+            
+            if(sourceIdDict is None):
+                self.metClasses[source][sourceId] = dict()
+               
+            classLevelList = self.metClasses[source][sourceId].get(classLevel, None)
+            if classLevelList is None:
+                self.metClasses[source][sourceId][classLevel] = list()
+                self.metClasses[source][sourceId][classLevel].append(className)
+            else:
+                if className not in self.metClasses[source][sourceId][classLevel]:
+                    self.metClasses[source][sourceId][classLevel].append(className)
+
+    
+    
     def toSourceString(self):
         """
         Utility method to return a tab delimited string suitable for source export.
@@ -311,6 +341,19 @@ class Metabolite(object):
             s = s + self.rampId + "\t" + gene.rampId + "\n"
         
         return s
+    
+    def toMetaboliteClassString(self):
+        s = ""
+        for src in self.metClasses:
+            for metSourceId in self.metClasses[src]:
+                for classLevel in self.metClasses[src][metSourceId]:          
+                    for className in self.metClasses[src][metSourceId][classLevel]:
+                        s = ( s + str(self.rampId) + 
+                        "\t" + str(metSourceId) + 
+                        "\t" + str(classLevel) + 
+                        "\t" + str(className) + 
+                        "\t" + str(src) + "\n")
+        return s                
     
     
     def checkMWParity(self, mwTolerance, pctOrAbs):
