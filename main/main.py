@@ -4,7 +4,7 @@ from parse.wikipathwayRDF import WikipathwaysRDF
 from parse.hmdbData import hmdbData
 from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
-from KeggData import KeggData
+from parse.KeggData import KeggData
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
 import os
