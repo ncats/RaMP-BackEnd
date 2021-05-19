@@ -1,12 +1,6 @@
 import urllib.request
-#from xml.etree.ElementTree import ElementTree
-from lxml import etree as ET
-import zipfile
-import time
 import os
 from parse.MetabolomicsData import MetabolomicsData
-import pandas as pd
-
 from chemprop.ChemWrangler import ChemWrangler
 
 
