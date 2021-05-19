@@ -27,7 +27,7 @@ class lipidmapsChemData():
     
     def parseLipidMaps(self, writeToFile=False):
         chemist = ChemWrangler()
-        #chemist.fetchFile("LIPIDMAPS", "../../misc/data/chemprops/lipid_maps/", "https://www.lipidmaps.org/files/?file=LMSD&ext=sdf.zip", "LMSD.sdf.zip", "zip")
+        chemist.fetchFile("LIPIDMAPS", "../../misc/data/chemprops/lipid_maps/", "https://www.lipidmaps.org/files/?file=LMSD&ext=sdf.zip", "LMSD.sdf.zip", "zip")
         
         chemist.readLipidMapsSDF(self.sourceName, self.sourceFile)
         lipidMapMolecules = chemist.chemLibDict[self.sourceName]
