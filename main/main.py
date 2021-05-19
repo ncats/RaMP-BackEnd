@@ -1,4 +1,5 @@
 import sys
+from lipidmapsChemData import lipidmapsChemData
 sys.path.append('../src')
 from wikipathwayRDF import WikipathwaysRDF
 from wikipathwaysData import wikipathwaysData
@@ -20,6 +21,8 @@ class Main():
         wikipathways = WikipathwaysRDF()
         reactome = reactomeData()
         kegg = KeggData()
+        lipidmaps = lipidmapsChemData()
+        
         # works based on your computer, setup working directory
         os.chdir('../main/')
 
@@ -31,6 +34,11 @@ class Main():
         wikipathways.getEverything(True)
         print("Getting reactome...")
         reactome.getEverything(True)
+        
+        # This parses and writes lipid maps
+        # sql write will be handled by EntityBuilder
+        print("Getting LipidMaps...")
+        lipidmaps.getEverything(True)
 
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'

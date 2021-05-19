@@ -33,7 +33,11 @@ class Molecule(object):
         
         self.name = ""
         
+        self.idDict = dict()
         
+        self.classDict = dict()
+        
+        self.nameDict = dict()
         
     def toChemPropsString(self):
         """
@@ -43,3 +47,21 @@ class Molecule(object):
         s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + self.name + "\t" + self.formula+ "\n"
         return s
         
+    def toSourceString(self):
+        s = ""
+        for idType in self.idDict:
+            s = s + self.id + "\t" + idType + "\t" + self.idDict[idType] + "\n"
+        return s
+    
+    def toCommonNameString(self): 
+        return self.id + "\t" + self.name + "\n"
+    
+    def toClassString(self):
+        s = ""        
+        for classLevel in self.classDict:
+            s = s + self.id + "\t" + classLevel + "\t" + self.classDict[classLevel] + "\n"            
+        return s            
+            
+            
+            
+            

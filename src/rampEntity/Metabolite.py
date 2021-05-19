@@ -28,7 +28,7 @@ class Metabolite(object):
         # source: id dictionary
         self.idDict = dict()
         
-        # keys are source, values are dictiontaries of source id to commonName
+        # keys are source, values are dictionaries of source id to commonName
         self.commonNameDict = dict()
         
         self.synonymDict = dict()
