@@ -5,7 +5,7 @@ from xml.etree.ElementTree import ElementTree
 import os
 import zipfile
 import time
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 
 
 

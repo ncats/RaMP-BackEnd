@@ -5,7 +5,7 @@ Created on Dec 7, 2020
 '''
 import sys, os
 from rampEntity.Molecule import Molecule
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 import zipfile
 import gzip
 import shutil
