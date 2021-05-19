@@ -1,11 +1,10 @@
 import sys
-from lipidmapsChemData import lipidmapsChemData
+from parse.lipidmapsChemData import lipidmapsChemData
 sys.path.append('../src')
-from wikipathwayRDF import WikipathwaysRDF
-from wikipathwaysData import wikipathwaysData
-from hmdbData import hmdbData
+from parse.wikipathwayRDF import WikipathwaysRDF
+from parse.hmdbData import hmdbData
 from KeggData import KeggData
-from reactomeData import reactomeData
+from parse.reactomeData import reactomeData
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
 import os
@@ -128,7 +127,7 @@ class Main():
                 reactome.tissue,
                 dict(),
                 "reactome",
-                 wikipathwaysnumbers[0],wikipathwaysnumbers[1])
+                wikipathwaysnumbers[0],wikipathwaysnumbers[1])
 
         keggnumbers = sql.write(
                 kegg.metaboliteCommonName,
@@ -152,6 +151,7 @@ class Main():
                  dict(),
                  "kegg",
                  reactomenumbers[0],reactomenumbers[1])
+
 
         print("Done ... for importing database")
         
