@@ -11,7 +11,10 @@ import gzip
 import shutil
 import re
 
+from rampEntity.Metabolite import Metabolite
+
 from ftplib import FTP
+from bz2 import compress
 
 class ChemWrangler(object):
     '''
@@ -54,6 +57,32 @@ class ChemWrangler(object):
             with open(dir+extractFile, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
 
+    
+        """
+    Fetch compound properties
+    """    
+    def fetchFile(self, source, outputDir, fetchURL, remoteFile, compressionMode = 'gzip'):
+        
+        print(os.getcwd())
+        
+        metData = MetabolomicsData()
+        url = fetchURL
+        targetDest = outputDir+"/"+remoteFile
+        metData.download_files(url, targetDest)
+        
+        if compressionMode == 'zip':
+            with zipfile.ZipFile(targetDest,"r") as zip_ref:
+                zip_ref.extractall(outputDir)
+        
+        if compressionMode == 'gzip':
+            extractTarget = targetDest.replace(".gz", '')      
+            with gzip.open(targetDest, 'rb') as f_in:
+                with open(extractTarget, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                
+                
+    
+    
         
     def readHMDBSDF(self, source, filePath):
         """
@@ -203,6 +232,18 @@ class ChemWrangler(object):
         print(sys.getdefaultencoding())
         print("Lipidmaps SDF")
 
+        idDict = {
+        "> <PUBCHEM_CID>":"pubchem",
+        "> <KEGG_ID>":"kegg",
+        "> <HMDB_ID>":"hmdb",
+        "> <CHEBI_ID>":"chebi",
+        "> <SWISSLIPIDS_ID>":"swisslipids",
+        "> <LIPIDBANK_ID>":"lipidbank",
+        "> <PLANTFA_ID>":"plantfa"
+        }
+        
+        classDict = { "> <CATEGORY>":"LipidMaps_category", "> <MAIN_CLASS>":"LipidMaps_main_class", "> <SUB_CLASS>":"LipidMaps_sub_class"}
+        
         i = 0
         sdfDB = open(filePath, 'r+', encoding="utf-8")
         molDict = dict()
@@ -239,8 +280,13 @@ class ChemWrangler(object):
                 mol.monoisotopicMass = sdfDB.readline().strip()
             if line == '> <NAME>':
                 mol.name = sdfDB.readline().strip()
+                mol.nameDict[source] = mol.name
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
+            if line in idDict:
+                mol.idDict[idDict[line]] = idDict[line]+":"+sdfDB.readline().strip()
+            if line in classDict:
+                mol.classDict[classDict[line]] = sdfDB.readline().strip()
 
         self.chemLibDict[source] = molDict
         print("Finished Lipidmaps chemprops: size="+str(len(molDict)))
@@ -398,6 +444,29 @@ class ChemWrangler(object):
           
         file.close()
 
+    
+    def castMoleculesToMetabolites(self, moleculeDict, source):
+        
+        for molId in moleculeDict:
+            mol = moleculeDict[molId]
+            met = Metabolite()
+            
+            # first ids 
+            met.sourceId = mol.sourceId
+            met.idDict[source] = mol.sourceId
+            for idType in mol.idDict:
+                met.idDict[idType] = mol.idDict[idType]
+            
+            # now common name
+            met.commonNameDict[source] = moleculeDict[source]
+            
+            # now add source
+            met.addSource(source)
+    
+            # now add classes
+            for classLevel in mol.classDict:
+                met.addMetClass(source, met.sourceId, classLevel, mol.classDict)
+    
 
     def testDownloadKeggFile(self):
         ftpUrl = "ftp.kegg.net"
@@ -416,6 +485,6 @@ class ChemWrangler(object):
         testReadme.close()
             
         
-cw = ChemWrangler()
-cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
+#cw = ChemWrangler()
+#cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
         
