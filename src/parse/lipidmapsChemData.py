@@ -10,7 +10,7 @@ import pandas as pd
 from chemprop.ChemWrangler import ChemWrangler
 
 
-class lipidmapsChemData():
+class lipidmapsChemData(MetabolomicsData):
     '''This class parses lipidmaps SDF file to capture lipidmaps structures specifically for the following tables
     source, met_classes and chem_props. The goal here is to increase chemical knowledge and expand ids.
     This data source does not conform to typical MetabolimicsData but is better suited specifically as a collection of Molecule entries.
@@ -33,6 +33,7 @@ class lipidmapsChemData():
         lipidMapMolecules = chemist.chemLibDict[self.sourceName]
         
         if writeToFile:
+            self.write_myself_files('lipidmaps')
             self.writeFiles(lipidMapMolecules)
     
     def writeFiles(self, molDict):
