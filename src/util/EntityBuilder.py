@@ -81,7 +81,15 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
+        
         self.sourceList.append(self.dataSource3)
+        
+        self.dataSource4 = DataSource()        
+        self.dataSource4.sourceName = 'lipidmaps'
+        self.dataSource4.filePrefix = 'lipidmaps'
+        self.dataSource4.sourceLocPath = '../../misc/output/lipidmaps/';        
+
+        self.sourceList.append(self.dataSource4)
         # End DataSource code
                 
         # dictionary that holds data statistics
