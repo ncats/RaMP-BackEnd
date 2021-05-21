@@ -113,11 +113,12 @@ class lipidmapsChemData(MetabolomicsData):
 
 
     def writeFiles(self, molDict):
+                          
         classFile = "lipidmapsmetaboliteClass.txt"
         metIdFile = "lipidmapsmetaboliteIDDictionary.txt"
         commonNameFile = "lipidmapsmetaboliteCommonName.txt"
         
-        lipidMapsOutputDir = "../../misc/output/lipidmaps/"
+        lipidMapsOutputDir = "../misc/output/lipidmaps/"
         
         try:
             os.makedirs(lipidMapsOutputDir)

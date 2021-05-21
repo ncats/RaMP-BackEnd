@@ -281,7 +281,7 @@ class ChemWrangler(object):
             if line == '> <NAME>':
                 name = sdfDB.readline().strip()
                 mol.addName(name)
-                mol.nameDict[source] = name
+                mol.nameDict[source] = name                
             if line == '> <SYSTEMATIC_NAME>':
                 mol.addName(sdfDB.readline().strip())
             if line == '> <FORMULA>':

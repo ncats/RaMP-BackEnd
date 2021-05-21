@@ -63,7 +63,7 @@ class Molecule(object):
     def toCommonNameString(self):
         s= ""
         for name in self.names:
-            self.id + "\t" + name + "\n"            
+            s = s + self.id + "\t" + name + "\n"            
         return s
     
     def toClassString(self):
