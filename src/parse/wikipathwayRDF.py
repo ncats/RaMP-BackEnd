@@ -574,6 +574,9 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'ensembl:' + id
         elif prefix == 'ncbiprotein':
             id = 'ncbiprotein:' + id
+        elif prefix == "hgnc.symbol":
+            id = 'gene_symbol:' + id
+            
             
             
         return id

@@ -68,7 +68,7 @@ class EntityBuilder(object):
         # Note: The following populates reactome and wikipathway sources and appends to the default hmdb source
         # This data source list will eventually be populated by config file
         self.source = DataSource()        
-        self.sourceList.append(self.source)
+        #self.sourceList.append(self.source)
     
         self.dataSource2 = DataSource()
         self.dataSource2.sourceName = 'reactome'
@@ -82,7 +82,7 @@ class EntityBuilder(object):
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
         
-        self.sourceList.append(self.dataSource3)
+        #self.sourceList.append(self.dataSource3)
         
         self.dataSource4 = DataSource()        
         self.dataSource4.sourceName = 'lipidmaps'
@@ -171,6 +171,9 @@ class EntityBuilder(object):
             
             # Note that the input format is metabolite id dictionaries.
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteIDDictionary.txt"
+            
+            if not(path.exists(file)):
+                break
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
@@ -339,6 +342,9 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayDictionary.txt"
         
+            if not(path.exists(file)):
+                break
+        
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
@@ -360,6 +366,9 @@ class EntityBuilder(object):
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayCategory.txt"
+            
+            if not(path.exists(file)):
+                break
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
 
@@ -387,7 +396,10 @@ class EntityBuilder(object):
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithPathwaysDictionary.txt"
-    
+            
+            if not(path.exists(file)):
+                break
+        
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
@@ -449,6 +461,9 @@ class EntityBuilder(object):
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
+            
+            if not(path.exists(file)):
+                break
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
@@ -514,6 +529,9 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
+            if not(path.exists(file)):
+                break
+            
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
@@ -565,6 +583,9 @@ class EntityBuilder(object):
 
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwaysWithGenesDictionary.txt"
+                        
+            if not(path.exists(file)):
+                break
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
