@@ -130,6 +130,9 @@ class Gene(object):
         lines = 0
         s = ""
         for source in self.commonNameDict:
+            
+            haveKeggPathwayMap = self.checkPathwaySourceLink(source, "kegg")
+            
             for id in self.commonNameDict[source]:
                 
                 if isinstance(id, float) or isinstance(id, int):
@@ -139,10 +142,23 @@ class Gene(object):
                 if len(idSplit) > 1:
                     idType = idSplit[0]
                 else:
-                    idType = "Other"
-                lines = lines + 1                    
+                    idType = "gene_symbol"
+                    id = "gene_symbol:" + id
+                lines = lines + 1
+                
+                currSource = source
+                                
+                if haveKeggPathwayMap:
+                    if source == 'hmdb':
+                        currSource == 'hmdb_kegg'             
+                    if source == 'wiki':
+                        currSource == 'wikipathways_kegg'
+                    # add a row for current source, embedded kegg
+                    s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + str(self.commonNameDict[source][id]) + "\t" + str(currSource) + "\n"
+                        
+                             
                 s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + str(self.commonNameDict[source][id]) + "\t" + str(source) + "\n"
-
+                
         return s
        
        
@@ -237,4 +253,16 @@ class Gene(object):
         for source in gene.synonymDict:
             for syn in gene.synonymDict[source]:
                 self.addSynonym(syn, source)        
+            
+            
+        # check if a pathway of a given data source and category exists.        
+    def checkPathwaySourceLink(self, source, category):
+        jointMembership = False
+        # check for pathway membership
+        if source in self.pathways:
+            for pathway in self.pathways[source]:
+                jointMembership = pathway.checkPathwaySourceAndCategory(source, category)
+                if jointMembership:
+                    return jointMembership
+        return jointMembership
             

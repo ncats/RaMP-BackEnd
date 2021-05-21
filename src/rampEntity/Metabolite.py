@@ -3,8 +3,6 @@ Created on Nov 6, 2020
 
 @author: braistedjc
 '''
-import pandas as pd
-from jedi.inference.value.klass import ClassName
 
 class Metabolite(object):
     '''
@@ -35,6 +33,7 @@ class Metabolite(object):
                 
         self.primarySource = ""
 
+        # source to pathway map
         self.pathways = dict()
      
         self.sources = list()
@@ -209,7 +208,6 @@ class Metabolite(object):
         for source in metabolite.synonymDict:
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
-                
     
     def resolveCommonNames(self):
         """
@@ -220,18 +218,23 @@ class Metabolite(object):
             for id in self.idDict[source]:
                 if source not in self.commonNameDict:
                     self.commonNameDict[source] = dict()
+                    
+                print("resolving commonNames for " + source + " " + id)
                 
                 if id not in self.commonNameDict[source]:
                     # now we know we have a common name dictionary for the source
                     # and our id doesn't have a commmon name entry.                    
-                    #grab a key
+                    # grab a key
+                    if len(list(self.commonNameDict[source].keys())) < 1:
+                        keyId = None
+                    else:                            
                         keyId = list(self.commonNameDict[source].keys())[0]
-                        if keyId is None:
-                            print("Hey we have a None key id in common name")
-                            self.commonNameDict[source][id].append("NA")
-                        else:
-                            self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
-
+                    
+                    if keyId is None:
+                        print("Hey we have a None key id in common name")
+                        self.commonNameDict[source][id] = "NA"
+                    else:
+                        self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
     
     def addChemProps(self, molecule):
         """
@@ -283,8 +286,14 @@ class Metabolite(object):
                     idType = idSplit[0]
                 else:
                     idType = "None"
-                lines = lines + 1                    
-                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + str(source) + "\n"
+                lines = lines + 1
+                currSource = source
+                if idType == 'kegg':
+                    if source == 'hmdb':
+                        currSource = 'hmdb_kegg'
+                    if source == 'wiki':
+                        currSource = 'wikipathways_kegg'    
+                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + str(currSource) + "\n"
             #s = s.strip()
 
 #         for source in self.idDict:
@@ -412,6 +421,18 @@ class Metabolite(object):
                 cname.append(self.commonNameDict[source][id])
                 
         return "; ".join(cname)        
+            
+    # check if a pathway of a given data source and category exists.        
+    def checkPathwaySourceLink(self, source, category):
+        jointMembership = False
+        # check for pathway membership
+        if source in self.pathways:
+            for pathway in self.pathways[source]:
+                jointMembership = pathway.checkPathwaySourceAndCategory(source, category)
+                if jointMembership:
+                    return jointMembership
+        return jointMembership
+    
             
                 
     

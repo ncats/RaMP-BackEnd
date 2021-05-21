@@ -57,4 +57,7 @@ class Pathway(object):
         s = self.pathRampId + "\t" + self.pathSourceId + "\t" + self.pathSource + "\t" + str(self.pathCategory) + "\t" + self.pathName + "\n"
         return s
     
+    def checkPathwaySourceAndCategory(self, source, cat):
+        return self.pathSource == source and self.pathCategory == cat
     
+        

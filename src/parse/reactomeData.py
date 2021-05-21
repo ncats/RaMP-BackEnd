@@ -3,6 +3,7 @@ import urllib.error as ER
 import libchebipy
 import time
 import os
+from os import path
 import xml.etree.ElementTree as ET
 from parse.MetabolomicsData import MetabolomicsData
 from multiprocessing.dummy import Pool
@@ -404,7 +405,7 @@ class reactomeData(MetabolomicsData):
                                     #print(geneid+":"+name.text)
                                     try:
                                         mapping = self.geneInfoDictionary['uniprot:'+geneid]
-                                        mapping["common_name"] = name.text
+                                        mapping["common_name"] = "gene_symbol:"+name.text
                                     except KeyError:
                                         print("Raw data does not have this ID ...")
                                         print(geneid)
@@ -414,6 +415,7 @@ class reactomeData(MetabolomicsData):
                         if childtag == "dbReference":
                             if child2.get("type") == "GeneID":
                                 geneId = child2.get("id")
+                                geneId = 'entrez:'+geneId
                                 # protein to gene can be 1:n, so they have to be stored as a list
                                 # lets check for a value
                                 idList = mapping.get("small_e_entrez", None)
@@ -429,8 +431,17 @@ class reactomeData(MetabolomicsData):
                 print("Skip {} ...".format(f))
                 pass
              
+#     def checkFiles(self):
+#         print("In reactome land")
+#         files = os.listdir("../misc/data/Uniprot/")
+#         print(path.exists("../misc/data/Uniprot/"))
+#         print(len(files))
+             
 rd = reactomeData()
 rd.getDatabaseFiles()
-#rd.getEverything()          
+rd.getEverything(True)          
 
-          
+#print("In reactome land")
+#files = os.listdir("../misc/data/Uniprot/")
+#print(path.exists("../misc/data/Uniprot/"))
+#print(files)

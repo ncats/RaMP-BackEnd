@@ -113,6 +113,7 @@ class hmdbData(MetabolomicsData):
         # value as the class name
         self.metaboliteClass = dict()
     
+    
     def getEverything(self,writeToFile = False):
         '''
         Run all the function to get everything from hmdb source
@@ -565,7 +566,7 @@ class hmdbData(MetabolomicsData):
                                          #   print("for HMDB0004970:", [prefix[mapping_key] + sourceid.text], mapping_key)
                                         mapping[mapping_key] = [prefix[mapping_key] + sourceid.text]
                                     else:
-                                        mapping[mapping_key] = sourceid.text
+                                        mapping[mapping_key] = "gene_symbol:"+sourceid.text
                                     
                             
                             proteinacc = mapping['HMDB_protein_accession'][0]
