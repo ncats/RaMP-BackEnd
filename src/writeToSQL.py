@@ -1,5 +1,5 @@
 import time
-from MetabolomicsData import MetabolomicsData
+from parse.MetabolomicsData import MetabolomicsData
 from collections import defaultdict
 
 

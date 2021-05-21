@@ -123,7 +123,7 @@ class ChemWrangler(object):
             if line == '> <EXACT_MASS>':
                 mol.monoisotopicMass = sdfDB.readline().strip()
             if line == '> <GENERIC_NAME>':
-                mol.name = sdfDB.readline().strip()
+                mol.addName(sdfDB.readline().strip())
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
 
@@ -172,7 +172,7 @@ class ChemWrangler(object):
             if line == '> <Monoisotopic Mass>':
                 mol.monoisotopicMass = sdfDB.readline().strip()
             if line == '> <ChEBI Name>':
-                mol.name = sdfDB.readline().strip()
+                mol.addName(sdfDB.readline().strip())
             if line == '> <Formulae>':
                 mol.formula = sdfDB.readline().strip()
 
@@ -216,8 +216,8 @@ class ChemWrangler(object):
             if linekey == 'EXACT_MASS':
                 mol.monoisotopicMass = lineToks[1].strip()
             if linekey == 'NAME':
-                mol.name = lineToks[1].strip()
-                mol.name = mol.name[:-1]
+                name = lineToks[1].strip()
+                mol.addName(name[:-1])
             if linekey == 'FORMULA':
                 mol.formula = lineToks[1].strip()
 
@@ -279,8 +279,11 @@ class ChemWrangler(object):
             if line == '> <EXACT_MASS>':
                 mol.monoisotopicMass = sdfDB.readline().strip()
             if line == '> <NAME>':
-                mol.name = sdfDB.readline().strip()
-                mol.nameDict[source] = mol.name
+                name = sdfDB.readline().strip()
+                mol.addName(name)
+                mol.nameDict[source] = name
+            if line == '> <SYSTEMATIC_NAME>':
+                mol.addName(sdfDB.readline().strip())
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
             if line in idDict:
