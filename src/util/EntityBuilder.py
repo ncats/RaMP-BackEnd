@@ -553,7 +553,7 @@ class EntityBuilder(object):
         for src in self.sourceList:
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteClass.txt"
-    
+                        
             if(path.exists(file)):    
                 data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)            
                 df = pd.DataFrame(data)

@@ -967,9 +967,9 @@ class hmdbData(MetabolomicsData):
             #print(metabolite.tag)
             hmdbid = metabolite.find(prefix+'accession')
             taxonomy = metabolite.find(prefix+'taxonomy')
-            metabolites_class = {'super_class':'NA',
-                                 'class':'NA',
-                                 'sub_class':'NA'}
+            metabolites_class = {'ClassyFire_super_class':'NA',
+                                 'ClassyFire_class':'NA',
+                                 'ClassyFire_sub_class':'NA'}
             #if i % 1000 == 0:
             #    print('{} metabolites parsed'.format(i))
             if taxonomy is not None:
@@ -977,11 +977,11 @@ class hmdbData(MetabolomicsData):
                 clas = taxonomy.find(prefix+'class')
                 sub_clas = taxonomy.find(prefix+'sub_class')
                 if super_clas is not None and super_clas is not None:
-                    metabolites_class['super_class'] = super_clas.text
+                    metabolites_class['ClassyFire_super_class'] = super_clas.text
                 if clas is not None and clas.text is not None:
-                    metabolites_class['class'] = clas.text
+                    metabolites_class['ClassyFire_class'] = clas.text
                 if sub_clas is not None and sub_clas.text is not None:
-                    metabolites_class['sub_class'] = sub_clas.text
+                    metabolites_class['ClassyFire_sub_class'] = sub_clas.text
             i = i + 1
             self.metaboliteClass['hmdb:' + hmdbid.text] = metabolites_class
             #print('metabolite {} has super class {} class {} subclass {}'\
