@@ -135,6 +135,8 @@ class Gene(object):
             
             for id in self.commonNameDict[source]:
                 
+                currId = id
+                
                 if isinstance(id, float) or isinstance(id, int):
                     print(self.printGene())
                 
@@ -142,22 +144,26 @@ class Gene(object):
                 if len(idSplit) > 1:
                     idType = idSplit[0]
                 else:
-                    idType = "gene_symbol"
-                    id = "gene_symbol:" + id
+                    idType = "gene_symbol"                    
+                    currId = "gene_symbol:" + id
+
                 lines = lines + 1
                 
                 currSource = source
                                 
+                commonName = str(self.commonNameDict[source][id])
+                commonName = commonName.replace("gene_symbol", "", 1)
+                
                 if haveKeggPathwayMap:
                     if source == 'hmdb':
                         currSource == 'hmdb_kegg'             
                     if source == 'wiki':
                         currSource == 'wikipathways_kegg'
                     # add a row for current source, embedded kegg
-                    s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + str(self.commonNameDict[source][id]) + "\t" + str(currSource) + "\n"
+                    s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + str(currSource) + "\n"
                         
                              
-                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + str(self.commonNameDict[source][id]) + "\t" + str(source) + "\n"
+                s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + str(source) + "\n"
                 
         return s
        
