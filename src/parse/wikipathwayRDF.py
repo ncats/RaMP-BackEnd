@@ -230,7 +230,8 @@ class WikipathwaysRDF(MetabolomicsData):
             'ec-code':'Enzyme Nomenclature',
             'wikidata':'WikiData',
             'ncbiprotein':'NCBI-ProteinID',
-	        'chebi':'ChEBI'
+	        'chebi':'ChEBI',
+            'hgnc.symbol':'gene_symbol'
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
