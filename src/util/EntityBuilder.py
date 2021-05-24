@@ -73,6 +73,7 @@ class EntityBuilder(object):
         self.dataSource2 = DataSource()
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
+        self.dataSource2.haveChemClassInfo = False
         self.dataSource2.sourceLocPath = '../../misc/output/reactome';
         
         self.sourceList.append(self.dataSource2)
@@ -80,6 +81,7 @@ class EntityBuilder(object):
         self.dataSource3 = DataSource()        
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
+        self.dataSource3.haveChemClassInfo = False
         self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
         
         self.sourceList.append(self.dataSource3)
@@ -87,6 +89,7 @@ class EntityBuilder(object):
         self.dataSource4 = DataSource()        
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
+        self.dataSource4.haveChemClassInfo = True
         self.dataSource4.sourceLocPath = '../../misc/output/lipidmaps/';        
 
         self.sourceList.append(self.dataSource4)
@@ -554,20 +557,19 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteClass.txt"
                         
-            if(path.exists(file)):    
+            if(path.exists(file) and src.haveChemClassInfo):    
                 data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)            
                 df = pd.DataFrame(data)
                 df = self.remove_whitespace(df)
                 
-                for i, row in df.iterrows():
-                    if(source == "hmdb"):
-                        metid = row[0]
-                        classLevel = row[1]
-                        className = row[2]
-                         
-                        met = self.metaboliteList.getMetaboliteBySourceId(metid)
-                        if met is not None:
-                            met.addMetClass(source, metid, classLevel, className)
+                for i, row in df.iterrows():               
+                    metid = row[0]
+                    classLevel = row[1]
+                    className = row[2]
+                     
+                    met = self.metaboliteList.getMetaboliteBySourceId(metid)
+                    if met is not None:
+                        met.addMetClass(source, metid, classLevel, className)
                   
                                     
 
@@ -1292,6 +1294,7 @@ class DataSource(object):
         self.sourceName = "hmdb"
         self.filePrefix = "hmdb"
         self.sourceLocPath = "../../misc/output/hmdb"
+        self.haveChemClassInfo = True
         self.exportPath = "../../misc/sql"
         
      
