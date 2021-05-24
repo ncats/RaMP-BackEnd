@@ -223,7 +223,8 @@ class hmdbData(MetabolomicsData):
                          "cas_registry_number":"CAS",
                          "metlin_id":"metlin_id",
                          "pubchem_compound_id":"pubchem_compound_id",
-                         'smiles':'smiles'
+                         'smiles':'smiles',
+                         'LIPIDMAPS':'LIPIDMPAS'
                          }
                 
                 commonName = metabolite.find('{http://www.hmdb.ca}name').text
@@ -377,7 +378,7 @@ class hmdbData(MetabolomicsData):
                                 self.pathwayCategory[smpid] = 'NA'
                                 # add pathways to metabolites With pathway dictionary
                                 
-                            # JCB: The above IF addes pathway to the pathway dictionary if not in there...
+                            # JCB: The above IF adds pathway to the pathway dictionary if not in there...
                             # JCB: But this addition to the M2P dictionary won't happen if the smp1d isn't in the dict.?
                             # JCB: Consider moving this if statement down, this should be run if the pathway is in the dictionary. 
                             # JCB: Added 'if smpid is not None:' to bring down to add mapping for all smp-path ids
@@ -850,6 +851,8 @@ class hmdbData(MetabolomicsData):
                     pathwaytag = pathway.tag.replace('{http://www.hmdb.ca}','')
                     pathwayName = pathway.find('{http://www.hmdb.ca}name').text
                     smpid = pathway.find('{http://www.hmdb.ca}smpdb_id').text
+                    keggidtag = pathway.find('{http://www.hmdb.ca}kegg_map_id')
+                    
                     if smpid is not None:
                         if pathwayName is not None and smpid not in self.pathwayDictionary:
                             self.pathwayDictionary[smpid] = pathwayName
@@ -859,6 +862,15 @@ class hmdbData(MetabolomicsData):
                             else:
                                 self.pathwayCategory[smpid] = 'smpdb3'     
                     keggid = None
+
+                    if keggidtag is not None:
+                        keggId = keggidtag.text
+                        
+                        if pathwayName is not None and keggId not in self.pathwayDictionary:
+                            self.pathwayDictionary[keggId] = pathwayName
+                        if keggid not in self.pathwayCategory:
+                            self.pathwayCategory[keggid] = 'kegg'
+                    
                     # Pathway ID now have the kegg id
                     # Considering incorporate KEGG pathway in the future
                     for info in pathway:
@@ -905,7 +917,8 @@ class hmdbData(MetabolomicsData):
                 
         print('After parsing protein file, geneInfo has {} items'.format(len(self.geneInfoDictionary)))
         print('After parsing protein file, metabolites-gene has {} items'.format(len(self.metabolitesLinkedToGenes)))
-        return tree            
+        return tree  
+              
     def getSMPDB_Category(self):
         '''
         This function is used to give categories of hmdb pathways
