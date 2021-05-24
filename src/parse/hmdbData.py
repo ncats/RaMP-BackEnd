@@ -864,10 +864,10 @@ class hmdbData(MetabolomicsData):
                     keggid = None
 
                     if keggidtag is not None:
-                        keggId = keggidtag.text
+                        keggid = keggidtag.text
                         
-                        if pathwayName is not None and keggId not in self.pathwayDictionary:
-                            self.pathwayDictionary[keggId] = pathwayName
+                        if pathwayName is not None and keggid not in self.pathwayDictionary:
+                            self.pathwayDictionary[keggid] = pathwayName
                         if keggid not in self.pathwayCategory:
                             self.pathwayCategory[keggid] = 'kegg'
                     
