@@ -218,9 +218,7 @@ class Metabolite(object):
             for id in self.idDict[source]:
                 if source not in self.commonNameDict:
                     self.commonNameDict[source] = dict()
-                    
-                print("resolving commonNames for " + source + " " + id)
-                
+                              
                 if id not in self.commonNameDict[source]:
                     # now we know we have a common name dictionary for the source
                     # and our id doesn't have a commmon name entry.                    
@@ -231,7 +229,7 @@ class Metabolite(object):
                         keyId = list(self.commonNameDict[source].keys())[0]
                     
                     if keyId is None:
-                        print("Hey we have a None key id in common name")
+                        #print("Hey we have a None key id in common name")
                         self.commonNameDict[source][id] = "NA"
                     else:
                         self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
