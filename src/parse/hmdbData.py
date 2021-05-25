@@ -865,11 +865,11 @@ class hmdbData(MetabolomicsData):
 
                     if keggidtag is not None:
                         keggid = keggidtag.text
-                        
-                        if pathwayName is not None and keggid not in self.pathwayDictionary:
-                            self.pathwayDictionary[keggid] = pathwayName
-                        if keggid not in self.pathwayCategory:
-                            self.pathwayCategory[keggid] = 'kegg'
+                        if keggid is not None:
+                            if pathwayName is not None and keggid not in self.pathwayDictionary:
+                                self.pathwayDictionary[keggid] = pathwayName
+                            if keggid not in self.pathwayCategory:
+                                self.pathwayCategory[keggid] = 'kegg'
                     
                     # Pathway ID now have the kegg id
                     # Considering incorporate KEGG pathway in the future
@@ -900,7 +900,8 @@ class hmdbData(MetabolomicsData):
                                 else:
                                     if accession.text not in self.pathwaysWithGenesDictionary[keggid]:
                                         self.pathwaysWithGenesDictionary[keggid].append('hmdb:'+accession.text)
-                                        
+                                if keggid not in self.pathwayCategory:
+                                    self.pathwayCategory[keggid] = 'kegg'        
                                         
                                         
                                         
