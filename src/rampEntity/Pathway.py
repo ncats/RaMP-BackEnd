@@ -45,6 +45,7 @@ class Pathway(object):
         s = s + "rampId: " + self.pathRampId + "\n"
         s = s + "source: " + self.pathSource + "\n"
         s = s + "sourceId: " + self.pathSourceId + "\n"
+        s = s + "pathCategory: " + self.pathCategory + "\n"
         s = s + "pathwayName: " + self.pathName
         print(s)
     
@@ -58,6 +59,11 @@ class Pathway(object):
         return s
     
     def checkPathwaySourceAndCategory(self, source, cat):
-        return self.pathSource == source and self.pathCategory == cat
+        if self.pathSourceId == 'map04146':
+            print("Heyyyyy Peroxisome check *" + source + "* *" + cat + "***")
+            self.printPathway()
+            print("is it a match ? " + str(self.pathSource == source and self.pathCategory == cat))
+            
+        return (self.pathSource == source and self.pathCategory == cat)
     
         

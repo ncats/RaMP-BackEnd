@@ -434,8 +434,8 @@ class EntityBuilder(object):
                             met.addPathway(pathway, source)
                             assCount = assCount + 1
                             self.metToPathAssocSourceTallies[source] = self.metToPathAssocSourceTallies[source] + 1
-                            if(assCount % 10000 == 0):
-                                print("associations processsed = " + str(assCount), flush = True)
+#                            if(assCount % 10000 == 0):
+#                                print("associations processsed = " + str(assCount), flush = True)
                                 
                 
                 else:
@@ -443,8 +443,8 @@ class EntityBuilder(object):
 
 
                 i = i + 1     
-                if(i % 1000 == 0):
-                    print("metabolites processed = " + str(i), flush=True)
+#                if(i % 1000 == 0):
+#                    print("metabolites processed = " + str(i), flush=True)
 
         print("Finished met to path mapping stranded counts (mets and paths)")
         print(str(len(strandedMetSourceIds)))
@@ -460,7 +460,7 @@ class EntityBuilder(object):
         Metabolite.__equalityMetric = eqMetric
         
         for src in self.sourceList:
-            print(src.sourceName);
+#            print(src.sourceName);
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
@@ -527,7 +527,7 @@ class EntityBuilder(object):
         Adds common name and gene synonyms for all data sources based on geneInfoDictionary files.
         """
         for src in self.sourceList:
-            print(src.sourceName);
+#            print(src.sourceName);
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
@@ -616,8 +616,8 @@ class EntityBuilder(object):
                             gene.addPathway(pathway, source)
                             self.geneToPathAssocSourceTallies[source] = self.geneToPathAssocSourceTallies[source] + 1
                             assocCount = assocCount + 1
-                            if(assocCount % 10000 == 0):
-                                print("associations processsed = " + str(assocCount), flush = True)
+ #                           if(assocCount % 10000 == 0):
+ #                               print("associations processsed = " + str(assocCount), flush = True)
                                 
                 
                 else:
@@ -626,8 +626,8 @@ class EntityBuilder(object):
 #                else:
 #                    print("we have a met without a MET")
                 i = i + 1     
-                if(i % 1000 == 0):
-                    print("genes processed = " + str(i), flush=True)
+#                if(i % 1000 == 0):
+#                    print("genes processed = " + str(i), flush=True)
 
     
     def loadMetaboliteToGene(self):
@@ -640,7 +640,7 @@ class EntityBuilder(object):
             
             
             if path.exists(file):
-                print ("metaboliteToGene mappings for " + source)
+#                print ("metaboliteToGene mappings for " + source)
                 
                 data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
                 df = pd.DataFrame(data)
@@ -866,7 +866,6 @@ class EntityBuilder(object):
         for colName in dF.columns:
             if is_string_dtype(dF[colName]):
                 dF[colName] = dF[colName].str.strip()
-                print("fixing column...")
         return dF
     
     
