@@ -152,13 +152,13 @@ class Gene(object):
                 currSource = source
                                 
                 commonName = str(self.commonNameDict[source][id])
-                commonName = commonName.replace("gene_symbol", "", 1)
+                commonName = commonName.replace("gene_symbol:", "", 1)
                 
                 if haveKeggPathwayMap:
                     if source == 'hmdb':
-                        currSource == 'hmdb_kegg'             
+                        currSource = 'hmdb_kegg'             
                     if source == 'wiki':
-                        currSource == 'wikipathways_kegg'
+                        currSource = 'wikipathways_kegg'
                     # add a row for current source, embedded kegg
                     s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + str(currSource) + "\n"
                         
@@ -266,7 +266,7 @@ class Gene(object):
         jointMembership = False
         # check for pathway membership
         if source in self.pathways:
-            for pathway in self.pathways[source]:
+            for pathway in self.pathways[source]:                
                 jointMembership = pathway.checkPathwaySourceAndCategory(source, category)
                 if jointMembership:
                     return jointMembership
