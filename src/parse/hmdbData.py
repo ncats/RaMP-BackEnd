@@ -598,22 +598,16 @@ class hmdbData(MetabolomicsData):
             metId = self.getMetaboliteIdTag(metabolite)
             
             if metId is None:
-                print("Null Metabolite Id")
                 continue
                         
             ontology = metabolite.find('{http://www.hmdb.ca}ontology')
                     
             if ontology is not None:
-                print("have ontology")
-                #self.parseSource(ontology, metId)
-                # self.parseTissue(ontology, metId)
-                # self.parseBiofluid(ontology, metId)
+                self.parseSource(ontology, metId)
+                self.parseTissue(ontology, metId)
+                self.parseBiofluid(ontology, metId)
                 self.parseCellLocation(ontology, metId)
-               
-                
-            for metId in self.cellularLocation:
-                for term in self.cellularLocation[metId]:                    
-                    print(metId + " -- " + term)    
+
         # Disposition
         # A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.
         
@@ -686,8 +680,6 @@ class hmdbData(MetabolomicsData):
                     if term in keyTerms:
                         continue
 
-                    # print(metId + " tAndS " +term)
-                    
                     if metId in self.tissueLocation:
                         if term not in self.tissueLocation[metId]:
                             self.tissueLocation[metId].append(term)
@@ -702,9 +694,7 @@ class hmdbData(MetabolomicsData):
                     
                     if term in keyTerms:
                         continue
-                    
-                    # print(metId + " oAndC " +term)
-                                        
+             
                     if metId in self.tissueLocation:
                         if term not in self.tissueLocation[metId]:
                             self.tissueLocation[metId].append(term)
@@ -770,13 +760,8 @@ class hmdbData(MetabolomicsData):
             
     def getMetaboliteIdTag(self, parentNode):
         child = parentNode.find('{http://www.hmdb.ca}accession')
-        #print(child.text)
-       # for child in parentNode:
-       #     print(child)
-        metId = None
-         
+        metId = None         
         if child is not None:
-            #print("have accession node")
             metId = 'hmdb:' + child.text
         return metId
               
