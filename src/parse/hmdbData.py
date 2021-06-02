@@ -125,7 +125,8 @@ class hmdbData(MetabolomicsData):
         self.getPathwaysandSynonyms(tree)
         self.getGenes(tree)
 
-        self.getBiofluidCellularLocationDisease(tree)
+        self.getOntology(tree)
+        # self.getBiofluidCellularLocationDisease(tree)
         self.getPathwaysLinkedToGene()
         self.getMetabolitesClasses(tree)
         if writeToFile:
@@ -581,6 +582,205 @@ class hmdbData(MetabolomicsData):
         print('Length of metabolite-gene is {}'.format(len(self.metabolitesLinkedToGenes)))
 
 
+
+    def getOntology(self, tree = None):
+        # get disposition
+        if tree is None:
+            tree = ET.parse('../../misc/data/hmdb/' + dir)
+        
+        root = tree.getroot()
+        
+        for metabolite in root:
+            #print("parse met")
+        
+            metabolitetag = metabolite.tag.replace("{http://www.hmdb.ca}", "")
+            
+            metId = self.getMetaboliteIdTag(metabolite)
+            
+            if metId is None:
+                print("Null Metabolite Id")
+                continue
+                        
+            ontology = metabolite.find('{http://www.hmdb.ca}ontology')
+                    
+            if ontology is not None:
+                print("have ontology")
+                #self.parseSource(ontology, metId)
+                # self.parseTissue(ontology, metId)
+                # self.parseBiofluid(ontology, metId)
+                self.parseCellLocation(ontology, metId)
+               
+                
+            for metId in self.cellularLocation:
+                for term in self.cellularLocation[metId]:                    
+                    print(metId + " -- " + term)    
+        # Disposition
+        # A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.
+        
+            # Source // Endogenous
+            
+            # Biological location 
+            # The physiological origin within an organism, including anatomical compnents, biofluids and excreta.
+        
+                # Tissue and substructures
+                # Biofluid and excreta,   // Saliva, Feces, Urine, Blood
+                # Subcellular // Cytoplasm
+        
+        
+        # get biological location
+        
+        # get biofluid
+
+    def parseSource(self, ontology, metId):
+        
+        self.exoEndoDictionary = dict()
+        endoExoList = [
+            'Endogenous',
+            'Exogenous',
+            'Microbial',
+            'Drug or steroid metabolite',
+            'Drug metabolite',
+            'Toxin/Pollutant',
+            'Food',
+            'Cosmetic',
+            'Plant',
+            'Drug',
+            'Environmental',
+            'Saccharomyces cerevisiae',
+            'Synthetic',
+            'Animal',
+            'Fungi',
+            'Microbe']
+        
+        sourceNode = self.findSingleDecendentNodeTerm(ontology, "Source")
+        
+        if sourceNode:      
+            for dec in sourceNode.iter('{http://www.hmdb.ca}descendant'):
+                for termNode in dec.iter('{http://www.hmdb.ca}term'):            
+                    term = termNode.text.strip()                    
+                    if(term in endoExoList):                       
+                        if metId in self.exoEndoDictionary:
+                            if(term not in self.exoEndoDictionary[metId]):
+                                self.exoEndoDictionary[metId].append(term)
+                        else:
+                            self.exoEndoDictionary[metId] = [term]
+        
+           
+        
+        
+    def parseTissue(self, ontology, metId):
+
+        self.tissueLocation = dict()
+        
+        keyTerms = ["Tissue and substructures", "Organ and components"]
+        
+        tAndSNode = self.findSingleDecendentNodeTerm(ontology, "Tissue and substructures")
+        oAndCNode = self.findSingleDecendentNodeTerm(ontology, "Organ and components")
+        
+        if tAndSNode:
+            for tissueDec in tAndSNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = tissueDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+
+                    if term in keyTerms:
+                        continue
+
+                    # print(metId + " tAndS " +term)
+                    
+                    if metId in self.tissueLocation:
+                        if term not in self.tissueLocation[metId]:
+                            self.tissueLocation[metId].append(term)
+                    else:
+                        self.tissueLocation[metId] = [term]
+                        
+        if oAndCNode:
+            for tissueDec in oAndCNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = tissueDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+                    
+                    if term in keyTerms:
+                        continue
+                    
+                    # print(metId + " oAndC " +term)
+                                        
+                    if metId in self.tissueLocation:
+                        if term not in self.tissueLocation[metId]:
+                            self.tissueLocation[metId].append(term)
+                    else:
+                        self.tissueLocation[metId] = [term]               
+                                
+                           
+    def parseBiofluid(self, ontology, metId):
+        
+        self.biofluidLocation = dict()
+        
+        bfTerm = "Biofluid and excreta"
+        
+        biofluidsNode = self.findSingleDecendentNodeTerm(ontology, bfTerm)
+              
+        if biofluidsNode:
+            for bioNodeDec in biofluidsNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = bioNodeDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+                    
+                    if term == bfTerm:
+                        continue
+                    
+                    print(metId + " " + term)
+                    if metId in self.biofluidLocation:
+                        if term not in self.biofluidLocation[metId]:
+                            self.biofluidLocation[metId].append(term)
+                    else:
+                        self.biofluidLocation[metId] = [term]
+                        
+        
+    def parseCellLocation(self, ontology, metId):
+        cellTerm = "Subcellular"
+        
+        cellNode = self.findSingleDecendentNodeTerm(ontology, cellTerm)
+              
+        if cellNode:
+            for cellNodeDec in cellNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = cellNodeDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+                    
+                    if term == cellTerm:
+                        continue
+                    
+                    if metId in self.cellularLocation:
+                        if term not in self.cellularLocation[metId]:
+                            self.cellularLocation[metId].append(term)
+                    else:
+                        self.cellularLocation[metId] = [term]
+        
+    
+    def findSingleDecendentNodeTerm(self, parentNode, queryTerm):
+        foundit = False
+   
+        decs = parentNode.iter('{http://www.hmdb.ca}descendant')
+        for dec in decs:            
+            termNode = dec.find('{http://www.hmdb.ca}term')
+            if termNode.text == queryTerm:
+                return dec
+        return None  
+            
+    def getMetaboliteIdTag(self, parentNode):
+        child = parentNode.find('{http://www.hmdb.ca}accession')
+        #print(child.text)
+       # for child in parentNode:
+       #     print(child)
+        metId = None
+         
+        if child is not None:
+            #print("have accession node")
+            metId = 'hmdb:' + child.text
+        return metId
+              
+
     def getBiofluidCellularLocationDisease(self,tree = None,dir = 'hmdb_metabolites.xml'):
         
         '''This function finds biofluid and cellular location infromation for every metabolite and places them in:
@@ -1010,4 +1210,14 @@ class hmdbData(MetabolomicsData):
         result.to_csv('../misc/output/metabolites_class.csv')
             
         '''
-        
+ 
+# hmdb = hmdbData()  
+# hmdb.getOntology(None, "100_hmdb.xml")
+
+
+
+
+
+
+
+   
