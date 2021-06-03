@@ -627,7 +627,6 @@ class hmdbData(MetabolomicsData):
 
     def parseSource(self, ontology, metId):
         
-        self.exoEndoDictionary = dict()
         endoExoList = [
             'Endogenous',
             'Exogenous',
@@ -664,8 +663,6 @@ class hmdbData(MetabolomicsData):
         
     def parseTissue(self, ontology, metId):
 
-        self.tissueLocation = dict()
-        
         keyTerms = ["Tissue and substructures", "Organ and components"]
         
         tAndSNode = self.findSingleDecendentNodeTerm(ontology, "Tissue and substructures")
@@ -703,9 +700,7 @@ class hmdbData(MetabolomicsData):
                                 
                            
     def parseBiofluid(self, ontology, metId):
-        
-        self.biofluidLocation = dict()
-        
+ 
         bfTerm = "Biofluid and excreta"
         
         biofluidsNode = self.findSingleDecendentNodeTerm(ontology, bfTerm)
@@ -728,6 +723,7 @@ class hmdbData(MetabolomicsData):
                         
         
     def parseCellLocation(self, ontology, metId):
+        
         cellTerm = "Subcellular"
         
         cellNode = self.findSingleDecendentNodeTerm(ontology, cellTerm)
