@@ -112,6 +112,9 @@ class hmdbData(MetabolomicsData):
         # key: source ID e.g. HMDBID, value: dictionary that has key of sub,class,super class
         # value as the class name
         self.metaboliteClass = dict()
+        
+        # holds industrial application, like 'Drug', 'Self Care Product'
+        self.metaboliteApplication = dict()
     
     
     def getEverything(self,writeToFile = False):
@@ -586,7 +589,7 @@ class hmdbData(MetabolomicsData):
     def getOntology(self, tree = None, dir = 'hmdb_metabolites.xml'):
         # get disposition
         if tree is None:
-            tree = ET.parse('../misc/data/hmdb/' + dir)
+            tree = ET.parse('../../misc/data/hmdb/' + dir)
         
         root = tree.getroot()
         
@@ -607,6 +610,12 @@ class hmdbData(MetabolomicsData):
                 self.parseTissue(ontology, metId)
                 self.parseBiofluid(ontology, metId)
                 self.parseCellLocation(ontology, metId)
+                self.parseApplication(ontology, metId)
+            
+                for met in self.application:
+                    for term in self.application[met]:
+                        print(met, "--", term)
+                
 
         # Disposition
         # A concept that describes the origin of a chemical, its location within an organism, or its route of exposure.
@@ -714,7 +723,6 @@ class hmdbData(MetabolomicsData):
                     if term == bfTerm:
                         continue
                     
-                    print(metId + " " + term)
                     if metId in self.biofluidLocation:
                         if term not in self.biofluidLocation[metId]:
                             self.biofluidLocation[metId].append(term)
@@ -743,6 +751,36 @@ class hmdbData(MetabolomicsData):
                     else:
                         self.cellularLocation[metId] = [term]
         
+    def parseApplication(self, ontology, metId):
+    
+        appTerm = "Industrial application"
+                
+        appNode = self.findSingleDecendentNodeTerm(ontology, appTerm)
+        
+        if appNode:
+            for appNodeDec in appNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = appNodeDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+                    
+                    if term == appTerm:
+                        continue
+                    
+                    if metId in self.metaboliteApplication:
+                        if term not in self.metaboliteApplication[metId]:
+                            self.metaboliteApplication[metId].append(term)
+                    else:
+                        self.metaboliteApplication[metId] = [term]
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
     
     def findSingleDecendentNodeTerm(self, parentNode, queryTerm):
         foundit = False
@@ -1192,8 +1230,8 @@ class hmdbData(MetabolomicsData):
             
         '''
  
-# hmdb = hmdbData()  
-# hmdb.getOntology(None, "100_hmdb.xml")
+hmdb = hmdbData()  
+hmdb.getOntology(None, "100_hmdb.xml")
 
 
 
