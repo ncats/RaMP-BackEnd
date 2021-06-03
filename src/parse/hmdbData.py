@@ -611,10 +611,6 @@ class hmdbData(MetabolomicsData):
                 self.parseBiofluid(ontology, metId)
                 self.parseCellLocation(ontology, metId)
                 self.parseApplication(ontology, metId)
-            
-                for met in self.application:
-                    for term in self.application[met]:
-                        print(met, "--", term)
                 
 
         # Disposition
