@@ -589,7 +589,7 @@ class hmdbData(MetabolomicsData):
     def getOntology(self, tree = None, dir = 'hmdb_metabolites.xml'):
         # get disposition
         if tree is None:
-            tree = ET.parse('../../misc/data/hmdb/' + dir)
+            tree = ET.parse('../misc/data/hmdb/' + dir)
         
         root = tree.getroot()
         
@@ -1230,8 +1230,8 @@ class hmdbData(MetabolomicsData):
             
         '''
  
-hmdb = hmdbData()  
-hmdb.getOntology(None, "100_hmdb.xml")
+# hmdb = hmdbData()  
+# hmdb.getOntology(None, "100_hmdb.xml")
 
 
 
