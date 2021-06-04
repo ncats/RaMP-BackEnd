@@ -152,7 +152,7 @@ class rampDBBulkLoader(object):
         colNames = resource.columnNames
         
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
-        data = pd.read_table(file_path, sep="\t", header=0, names=colNames, index_col=None, engine="python")     
+        data = pd.read_table(file_path, sep="\t", header=None, names=colNames, index_col=None, engine="python")     
         df = pd.DataFrame(data)
     
         # issue with whitespace    
@@ -253,7 +253,13 @@ class rampDBBulkLoader(object):
         file_path = "../../misc/sql/"+fileName
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
         data = pd.read_table(file_path, sep="\t+", header=None, index_col=None, engine="python", keep_default_na=False)     
+
+        print(list(data.columns))
+
         df = pd.DataFrame(data)
+
+        print(list(df.columns))
+
     
         # issue with whitespace    
         df = self.remove_whitespace(df)
