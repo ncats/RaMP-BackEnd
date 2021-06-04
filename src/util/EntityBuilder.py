@@ -1486,7 +1486,6 @@ class MappingExclusionList(object):
         print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
         
 
-
 builder = EntityBuilder()
 #builder.loadOntolgies()
 ##builder.writeOntologies()
