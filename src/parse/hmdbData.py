@@ -652,7 +652,7 @@ class hmdbData(MetabolomicsData):
         
         sourceNode = self.findSingleDecendentNodeTerm(ontology, "Source")
         
-        if sourceNode:      
+        if sourceNode is not None:      
             for dec in sourceNode.iter('{http://www.hmdb.ca}descendant'):
                 for termNode in dec.iter('{http://www.hmdb.ca}term'):            
                     term = termNode.text.strip()                    
@@ -673,7 +673,7 @@ class hmdbData(MetabolomicsData):
         tAndSNode = self.findSingleDecendentNodeTerm(ontology, "Tissue and substructures")
         oAndCNode = self.findSingleDecendentNodeTerm(ontology, "Organ and components")
         
-        if tAndSNode:
+        if tAndSNode is not None:
             for tissueDec in tAndSNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = tissueDec.find('{http://www.hmdb.ca}term')
                 if termNode is not None:
@@ -688,7 +688,7 @@ class hmdbData(MetabolomicsData):
                     else:
                         self.tissueLocation[metId] = [term]
                         
-        if oAndCNode:
+        if oAndCNode is not None:
             for tissueDec in oAndCNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = tissueDec.find('{http://www.hmdb.ca}term')
                 if termNode is not None:
@@ -710,7 +710,7 @@ class hmdbData(MetabolomicsData):
         
         biofluidsNode = self.findSingleDecendentNodeTerm(ontology, bfTerm)
               
-        if biofluidsNode:
+        if biofluidsNode is not None:
             for bioNodeDec in biofluidsNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = bioNodeDec.find('{http://www.hmdb.ca}term')
                 if termNode is not None:
@@ -732,7 +732,7 @@ class hmdbData(MetabolomicsData):
         
         cellNode = self.findSingleDecendentNodeTerm(ontology, cellTerm)
               
-        if cellNode:
+        if cellNode is not None:
             for cellNodeDec in cellNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = cellNodeDec.find('{http://www.hmdb.ca}term')
                 if termNode is not None:
@@ -753,7 +753,7 @@ class hmdbData(MetabolomicsData):
                 
         appNode = self.findSingleDecendentNodeTerm(ontology, appTerm)
         
-        if appNode:
+        if appNode is not None:
             for appNodeDec in appNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = appNodeDec.find('{http://www.hmdb.ca}term')
                 if termNode is not None:

@@ -11,6 +11,8 @@ from rampEntity.Metabolite import Metabolite
 from rampEntity.MetaboliteList import MetaboliteList
 from rampEntity.Pathway import Pathway
 from rampEntity.PathwayList import PathwayList
+from rampEntity.Ontology import Ontology
+from rampEntity.OntologyList import OntologyList
 from chemprop.ChemWrangler import ChemWrangler
 from rampEntity.Molecule import Molecule
 
@@ -47,6 +49,7 @@ class EntityBuilder(object):
     __rampMetStartId = 0
     __rampGeneStartId = 0
     __rampPathStartId = 0
+    __rampOntStartId = 0
 
     def __init__(self):
         '''
@@ -61,6 +64,9 @@ class EntityBuilder(object):
         
         # The pathway list object. Note that pathway entities are also linked to metabolites and genes
         self.pathList = PathwayList()
+        
+        # ontology list
+        self.ontologyList = OntologyList()
         
         # List of DataSource objects. These hold data source configuration.
         self.sourceList = []
@@ -140,6 +146,9 @@ class EntityBuilder(object):
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
+        
+        self.loadOntolgies()
+        
         self.loadMetaboliteToGene()        
         self.metaboliteClassConnections()
         
@@ -155,6 +164,8 @@ class EntityBuilder(object):
         self.writeAnalyteToPathway()
         self.writeAnalyte()
         self.writeMetGeneAssociation()
+        self.writeOntologies()
+        self.writeOntologyAssociations()
         self.writeChemProps()
         self.writeMetaboliteClass()
             
@@ -332,7 +343,9 @@ class EntityBuilder(object):
         elif(type == "P"):
             self.__rampPathStartId = self.__rampPathStartId + 1
             return "RAMP_P_" + (str(self.__rampPathStartId)).zfill(9)
-
+        elif(type == "OL"):
+            self.__rampOntStartId = self.__rampOntStartId + 1
+            return "RAMP_OL_" + (str(self.__rampOntStartId)).zfill(9)
 
 
     def loadPathways(self):
@@ -521,7 +534,114 @@ class EntityBuilder(object):
                         gene.addSource(source)
 
 
+    def loadOntolgies(self):
+        """
+        loads 5 ontologies per data source, if available.
+        This builds the overall onology resource and collects associations
+        """
+  
+        # biofluids
+        parentTerm = 'biofluid'
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "biofluidLocation.txt"
+            
+            if not(path.exists(file)):
+                break
 
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+            
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)
+                
+        # origins
+        parentTerm = 'origins'
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "exoEndoDictionary.txt"
+            
+            if not(path.exists(file)):
+                break
+            
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)
+
+        # cellular location
+        parentTerm = 'cellular location'        
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "cellularLocation.txt"
+            
+            if not(path.exists(file)):
+                break
+
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)
+
+        # tissue location
+        parentTerm = 'tissue location'
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "tissueLocation.txt"
+            
+            if not(path.exists(file)):
+                break
+
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)
+        
+        # metabolite application
+        parentTerm = 'application'      
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteApplication.txt"
+            
+            if not(path.exists(file)):
+                break
+        
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)        
+    
+        print("ontology size="+str(len(self.ontologyList.getFullOntologyList())))
+    
+    def recordOntology(self, parentTerm, childTerm, metId):
+        ontology = self.ontologyList.getOntologyFromParentChild(parentTerm, childTerm)
+        if ontology is None:
+            ontology = Ontology()
+            ontology.ontolParent = parentTerm
+            ontology.ontolChild = childTerm
+            ontology.ontolRampId = self.generateRampId("OL")
+            self.ontologyList.forceAddOntologyRecord(ontology)
+        
+        # now add ontology record to metabolite
+        met = self.metaboliteList.getMetaboliteBySourceId(metId)
+        if met is not None:
+            met.addOntologyTerm(ontology) 
+    
+        
     def addGeneCommonNameAndSynonyms(self):
         """
         Adds common name and gene synonyms for all data sources based on geneInfoDictionary files.
@@ -851,6 +971,35 @@ class EntityBuilder(object):
                 file.write(s)
         
         file.close()
+
+
+    def writeOntologies(self):
+        """
+        Writes analyte synonym annotations to file for all data sources
+        """
+        file = open("../../misc/sql/ontology.txt", "w+", encoding='utf-8')        
+        
+        ontos = self.ontologyList.getFullOntologyList()
+        
+        for ont in ontos:
+            s = ont.getOntologyString()
+            if len(s) > 0:
+                file.write(s)
+        
+        file.close()
+    
+    
+    def writeOntologyAssociations(self):
+        mets = self.metaboliteList.getUniqueMetabolites()
+
+        file = open("../../misc/sql/analyteToOntology.txt", "w+", encoding='utf-8')
+        for met in mets:
+            s = met.toMetaboliteOntologyString()
+            if len(s) > 0:
+                file.write(s)
+            
+        file.close()   
+
                 
     def writeMetaboliteClass(self):
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -1339,6 +1488,8 @@ class MappingExclusionList(object):
 
 
 builder = EntityBuilder()
+#builder.loadOntolgies()
+##builder.writeOntologies()
 #builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
 #builder.utilCheckHMDBMappingValidity()
 builder.fullBuild()

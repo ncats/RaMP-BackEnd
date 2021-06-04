@@ -46,6 +46,7 @@ class Metabolite(object):
         # layered dictionary source:dict(classLevel:list(className))
         self.metClasses = dict()
       
+        self.ontologyTerms = list()
                  
     def __eq__(self, other):
         """
@@ -269,6 +270,9 @@ class Metabolite(object):
                 if className not in self.metClasses[source][sourceId][classLevel]:
                     self.metClasses[source][sourceId][classLevel].append(className)
 
+    def addOntologyTerm(self, ontology):
+        if ontology not in self.ontologyTerms:
+            self.ontologyTerms.append(ontology)
     
     
     def toSourceString(self):
@@ -327,7 +331,12 @@ class Metabolite(object):
         
         return s
     
-        
+    def toMetaboliteOntologyString(self):
+        s = ""
+        for ontology in self.ontologyTerms:
+            s = s + self.rampId + "\t" + ontology.ontolRampId + "\n"
+        return s
+
     def toChemPropsString(self):
         """
         Utility method to return a chemical property string suitable for exporting chemical properties.
