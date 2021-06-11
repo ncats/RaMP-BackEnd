@@ -90,7 +90,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20210510-rdf-wp.zip'
+        filename = 'wikipathways-20210610-rdf-wp.zip'
         path = '../misc/data/wikipathwaysRDF/'
         self.check_path(path)
         existed = os.listdir(path)
@@ -235,7 +235,7 @@ class WikipathwaysRDF(MetabolomicsData):
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
-                         'interpro','refseq','pfam','ecogene','chembl.compound']
+                         'interpro','refseq','pfam','ecogene','chembl.compound', 'reactome']
         genelist = set()
         count = 0
         #print("this pathway:", this_pathway)
