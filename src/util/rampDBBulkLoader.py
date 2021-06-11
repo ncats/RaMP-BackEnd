@@ -3,40 +3,36 @@ Created on Aug 25, 2020
 
 @author: braistedjc
 '''
-# from odo import odo
 import mysql.connector
-from mysql.connector import Error
 import pandas as pd
-from pandas.io.common import file_path_to_url
 from pandas.api.types import is_string_dtype
-
 import os.path
 from os import path
-from sqlalchemy import MetaData, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import insert
+from sqlalchemy import create_engine
 import logging
-
-import pymysql.cursors
-
-
-#from distutils.command.config import config
-#from tornado.routing import _unquote_or_none
-#from builtins import None
-
-#from schema import RaMP_schema
-from collections import namedtuple
+from jproperties import Properties
 from pprint import pprint
-from pymysql import charset
-
 
 #import pymysql
 class dbConfig(object):
-    def __init__(self):
-        password = 'ramptest'
-        username = 'ramp'
-        host = 'ramp-db.ncats.io'
-        dbname = 'ramp2'
+    
+    def __init__(self, configFile):
+                
+        dbConfig = Properties()
+        
+        with open(configFile, 'rb') as config_file:
+            dbConfig.load(config_file)
+        
+        self.conpass = dbConfig.get("conpass").data
+        self.username = dbConfig.get("username").data
+        self.host = dbConfig.get("host").data
+        self.dbname = dbConfig.get("dbname").data
+        
+    def dumpConfig(self):        
+        print(self.host)
+        print(self.dbname)
+        print(self.username)
+        print(self.conpass)    
         
         
 class rampFileResource(object):
@@ -64,29 +60,10 @@ class rampFileResource(object):
                         
 class rampDBBulkLoader(object):
     
-    def __init__(self):
+    def __init__(self, dbConf):
         print("rampDBBulkLoaer__init__")
-    
-    # def create_connection(host_name, user_name, user_password, myDatabase):
-    # 
-    #     connection = None
-    # 
-    #     try:
-    #         connection = mysql.connector.connect(
-    #             host=host_name,
-    #             user=user_name,
-    #             passwd=user_password,
-    #             database = myDatabase
-    #         )
-    #         
-    # 
-    #         print("Connection to MySQL DB successful")
-    # 
-    #     except Error as e:
-    #         print(f"The error '{e}' occurred")
-    #     return connection
-    # 
-    #     
+        self.dbConf = dbConf
+   
     
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
@@ -135,14 +112,6 @@ class rampDBBulkLoader(object):
         except Exception as ex:   
             print(ex)
             
-        
-        
-#     def odoLoadFile(self, resource):
-#         table = resource.destTable
-#         file_path = "../../misc/sql/"+resource.stagingFile
-#         url = ("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}::{table}").format(user="ramp", pw="ramptest", db="ramp2", table="")
-#         res = odo(file_path, url)
-#         print(str(res))
         
     def loadFile(self, resource, engine):
         print(os.path.abspath(os.getcwd()))
@@ -194,37 +163,13 @@ class rampDBBulkLoader(object):
             pass
     
     
-#         metaData = MetaData()
-#         metaData.reflect(bind=engine)
-#         myTable = metaData.tables[table]
-#         __table_args__ = {'quote':False}
-#         
-#         for dataRow in df.to_dict(orient="records"):
-#             #print(dataRow)
-#             resource.columnNames;
-#             
-#             insert_stmt = insert(myTable).values(dataRow)
-#            
-# #             on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-# #                 data=dataRow,
-# #                 status='U')
-#             
-#             # print(str(insert_stmt.compile(engine)))
-#             engine.execute(insert_stmt)
-    
 
     def loadIgnore(self, engine, resource):
-#         connection = pymysql.connect(host='ramp-db.ncats.io',
-#                          user='ramp',
-#                          password='ramptest',
-#                          db='ramp2',
-#                          charset='utf8mb4',
-#                          cursorclass=pymysql.cursors.DictCursor)
 
-        conn = mysql.connector.connect(host='ramp-db.ncats.io',
-                         user='ramp',
-                         password='ramptest',
-                         db='ramp2',
+        conn = mysql.connector.connect(host= self.dbConf.host,
+                         user=self.dbConf.username,
+                         password=self.dbConf.conpass,
+                         db=self.dbConf.dbname,
                          charset = 'utf8',
                          use_unicode=True)
         #conn.set_charset_collation('utf16')
@@ -282,10 +227,7 @@ class rampDBBulkLoader(object):
         else:
             # rationale.... final check if we have a completely duplicated record over all columns
             df = df.drop_duplicates(ignore_index=False, inplace=False, keep="first")
-    # loadFile2(engine = sqlengine, file_path = "../../misc/sql/hmdbsource.sql", table = "source", 
-    #          stmt= "INSERT INTO source (sourceId, rampId, IDtype, geneOrCompound, commonName) VALUES ( %s, %s, %s, %s, %s )",
-    #          colNames = ['sourceId', 'rampId', 'IDtype', 'geneOrCompound', 'commonName'], colIndices = [0,1,2,3,4], uniqueIndex = True, uniqueCol='sourceId')
-        
+
         records = list(df.itertuples(index=False))
         print(records[1])
       #  with connection.cursor() as cursor:        
@@ -293,29 +235,17 @@ class rampDBBulkLoader(object):
             
             # cursor.executemany(sql, records)
             for i,row in df.iterrows():
-#                 #print(tuple(row))
-# #                 print(list(row.values()))
-# #                 print(row.values())
-# #                 values = tuple(row)
-# #                 valuesStmt = " values ({})".format(df.iloc[i:i+1])                            
-# #                 insertStmt = stmt + valuesStmt
-#                 #print(insertStmt)
-# #                 if(i > 1):
-# #                     break
                 cursor.execute(sql, tuple(row))
                 if(i % 1000 == 0):
                     print(i)
                     conn.commit()
 
-                
-#            df.iloc[i:i+1].to_sql(table, engine, if_exists = 'append', index=False)
         except Exception as ex:   
             print(ex)
             pass
         
         conn.commit()
-        #cursor.commit()
-        #conn.commit()
+
     
     def loadConfig(self):
         print("nothing")
@@ -333,12 +263,8 @@ class rampDBBulkLoader(object):
             fileResource = rampFileResource()
             fileResource.initFileResource(config)            
             resources.append(fileResource)
-            #fileResource.printResource(fileResource)
-        
-         
-        engine = create_engine(("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}").format(user="ramp", pw="ramptest", db="ramp2"), echo=False)
-        # engine.dialect.identifier_preparer.initial_quote = "'"
-        # engine.dialect.identifier_preparer.final_quote = "'"         
+            
+        engine = create_engine(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname), echo=False)
 
         print("Hey in loading loop now") 
         for resource in resources:
@@ -357,12 +283,10 @@ class rampDBBulkLoader(object):
     def updateVersionInfo(self, infoFile):
         print("Updating Version Info")
 
-        engine = create_engine(("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}").format(user="ramp", pw="ramptest", db="ramp2"), echo=False)
-        
+        engine = create_engine(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname), echo=False)
+       
         versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None)
-    
-        #print(versionInfo)
-    
+
         # change current status to archive
         sql = "update version_info set status = 'archive' where status = 'current'"
 
@@ -374,7 +298,9 @@ class rampDBBulkLoader(object):
         
     def updateDataStatusSummary(self):
         
-        engine = create_engine(("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}").format(user="ramp", pw="ramptest", db="ramp2"), echo=False)
+        print("starting update entity summary")
+        
+        engine = create_engine(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname), echo=False)
         
         sqlMets = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource not like '%%kegg' group by dataSource"
         sqlKeggMets = "select count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource like '%%_kegg'"
@@ -456,28 +382,31 @@ class rampDBBulkLoader(object):
             dataList = list()
             for cat in statusTable:
                 for source in statusTable[cat]:
-                    print(cat + " " + source + " " + str(statusTable[cat][source]))
                     row = [cat,source,sourceNameDict[source],statusTable[cat][source]]
-                    print(row)
                     dataList.append(row)
              
             df = pd.DataFrame(dataList, columns=cols)        
-            print(df)   
             
             df.to_sql("entity_status_info", engine, if_exists = 'append', index=False)
-    
+
+            print("finished update entity summary")
+
 
 logging.basicConfig()
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 pd.set_option('display.max_columns', None)   
-dbConf = dbConfig()
-loader = rampDBBulkLoader()
+
+
+dbConf = dbConfig("../../misc/resourceConfig/ramp_dev_db_config.txt")
+#dbConf.dumpConfig()
+loader = rampDBBulkLoader(dbConf)
+
+# update methods
 #rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
 #loader.load(dbConf, rampResourceConfigFile)     
 
-# loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
-
-loader.updateDataStatusSummary()
+#loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
+#loader.updateDataStatusSummary()
 
         
 
