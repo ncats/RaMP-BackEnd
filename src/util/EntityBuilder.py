@@ -1515,50 +1515,5 @@ class MappingExclusionList(object):
         
 
 builder = EntityBuilder()
-#builder.loadOntolgies()
-##builder.writeOntologies()
-#builder.crossCheckMetaboliteHarmony(True, "MW", 0.1, 'pct')
-#builder.utilCheckHMDBMappingValidity()
+
 builder.fullBuild()
-
-# builder.loadMetaboList()
-# builder.addMetaboliteCommonName()
-# builder.addMetaboliteSynonyms()
-# builder.metaboliteClassConnections()
-# builder.writeMetaboliteClass()
-# 
-# mets = builder.metaboliteList.getUniqueMetabolites()
-# 
-# metClassCnt = 0
-# printedDouble = false
-# totAltIds = 0
-# uniqueIdDict = dict()
-# for met in mets:
-#     hmdbMC = met.metClasses.get("hmdb", None)
-#     if(hmdbMC is not None):
-#         metClassCnt = metClassCnt + 1
-#         if metClassCnt == 100:
-#             print(met.toMetaboliteClassString())
-#         if len(hmdbMC) > 1 and printedDouble == False:
-#             print("multi hmdb classes")
-#             print(met.toChemPropsString())
-#             printedDouble = True
-#     
-#     totAltIds = totAltIds + len(met.idList)
-#     for altId in met.idList:
-#         uniqueIdDict[altId] = 1
-#     
-#        
-# print("Met Class Count = "+ str(metClassCnt))
-# print("tot id count = "+ str(totAltIds))
-# print("unique id count = "+ str(len(uniqueIdDict)))
-# 
-# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0005402")
-# if met is not None:
-#     print(met.toMetaboliteClassString())
-# 
-
-
-
-
-#         
