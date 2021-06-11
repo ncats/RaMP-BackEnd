@@ -357,13 +357,13 @@ class ChemWrangler(object):
                 file = "../../misc/data/chemprops/ChEBI_complete.sdf"
                 self.readSDF('chebi', file)
             if source == 'kegg':
-                file = "../../misc/data/chemprops/kegg_compound"
+                file = "../../misc/data/chemprops/kegg_compound.txt"
                 self.readSDF('kegg', file)
             if source == 'pubchem':
                 file = "../../misc/data/chemprops/pubchem_id_mi_inchikey_issue_set.txt"
                 self.readSDF('pubchem', file) 
             if source == 'lipidmaps':
-                file = "../../misc/data/chemprops/lipid_maps/structures.sdf" 
+                file = "../../misc/data/chemprops/lipidmaps/structures.sdf" 
                 self.readSDF("lipidmaps", file)      
            
            
