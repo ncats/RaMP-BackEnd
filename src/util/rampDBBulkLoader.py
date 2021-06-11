@@ -14,7 +14,7 @@ import os.path
 from os import path
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import insert
 import logging
 
 import pymysql.cursors
@@ -65,8 +65,7 @@ class rampFileResource(object):
 class rampDBBulkLoader(object):
     
     def __init__(self):
-       print()
-       print("I am OK")
+        print("rampDBBulkLoaer__init__")
     
     # def create_connection(host_name, user_name, user_password, myDatabase):
     # 
@@ -354,15 +353,131 @@ class rampDBBulkLoader(object):
                     self.loadFile(resource,engine)
                     print("\n\nbulkLoadFile: "+resource.stagingFile+"\n\n")
 
+
+    def updateVersionInfo(self, infoFile):
+        print("Updating Version Info")
+
+        engine = create_engine(("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}").format(user="ramp", pw="ramptest", db="ramp2"), echo=False)
+        
+        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None)
+    
+        #print(versionInfo)
+    
+        # change current status to archive
+        sql = "update version_info set status = 'archive' where status = 'current'"
+
+        with engine.connect() as conn:
+            conn.execute(sql)
+            
+        versionInfo.to_sql("version_info", engine, if_exists = 'append', index=False)
+
+        
+    def updateDataStatusSummary(self):
+        
+        engine = create_engine(("mysql+pymysql://{user}:{pw}@ramp-db.ncats.io/{db}").format(user="ramp", pw="ramptest", db="ramp2"), echo=False)
+        
+        sqlMets = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource not like '%%kegg' group by dataSource"
+        sqlKeggMets = "select count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource like '%%_kegg'"
+        
+        sqlGenes = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'gene' and dataSource not like '%%kegg'group by dataSource"
+        sqlKeggGenes = "select count(distinct(rampId)) from source where geneOrCompound = 'gene' and dataSource like '%%_kegg'"
+        
+        sqlPathways = "select type, count(distinct(pathwayRampId)) from pathway where sourceId not like 'map%%' group by type"
+        sqlKeggPathways = "select count(distinct(pathwayRampId)) from pathway where sourceId like 'map%%'"
+        
+        sqlPathAssocMets = "select p.type, count(1) from pathway p, analytehaspathway a where a.rampId like 'RAMP_C%%' and p.pathwayRampId = a.pathwayRampId and p.sourceId not like 'map%%' group by p.type"
+        sqlPathAssocGenes = "select p.type, count(1) from pathway p, analytehaspathway a where a.rampId like 'RAMP_G%%' and p.pathwayRampId = a.pathwayRampId and p.sourceId not like 'map%%' group by p.type"
+        
+        sqlKeggAssocMets = "select p.type, count(1) from pathway p, analytehaspathway a where a.rampId like 'RAMP_C%%' and p.pathwayRampId = a.pathwayRampId and p.sourceId like 'map%%' group by p.type"
+        sqlKeggAssocGenes = "select p.type, count(1) from pathway p, analytehaspathway a where a.rampId like 'RAMP_G%%' and p.pathwayRampId = a.pathwayRampId and p.sourceId like 'map%%' group by p.type"
+
+        sqlChemProps = "select chem_data_source, count(distinct(chem_source_id)) from chem_props group by chem_data_source"
+
+        statusTable = dict()
+        
+        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'Lipid Maps', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI'}
+        
+        with engine.connect() as conn:
+
+            conn.execute("delete from entity_status_info")
+
+            rs = conn.execute(sqlMets)
+            statusTable["Metabolites"] = dict()
+            for row in rs:
+                statusTable["Metabolites"][row[0]] = row[1]
+                
+            rs = conn.execute(sqlKeggMets)
+            for row in rs:
+                statusTable["Metabolites"]['kegg'] = row[0]        
+
+            rs = conn.execute(sqlGenes)
+            statusTable["Genes"] = dict()
+            for row in rs:
+                statusTable["Genes"][row[0]] = row[1]
+                
+            rs = conn.execute(sqlKeggGenes)
+            for row in rs:
+                statusTable["Genes"]['kegg'] = row[0]     
+            
+            rs = conn.execute(sqlPathways)
+            statusTable["Pathways"] = dict()
+            for row in rs:
+                statusTable["Pathways"][row[0]] = row[1]
+
+            rs = conn.execute(sqlKeggPathways)
+            for row in rs:
+                statusTable["Pathways"]['kegg'] = row[0]            
+
+            rs = conn.execute(sqlPathAssocMets)
+            statusTable["Metabolite-Pathway Associations"] = dict()
+            for row in rs:
+                statusTable["Metabolite-Pathway Associations"][row[0]] = row[1]
+
+            rs = conn.execute(sqlPathAssocGenes)
+            statusTable["Gene-Pathway Associations"] = dict()
+            for row in rs:
+                statusTable["Gene-Pathway Associations"][row[0]] = row[1]
+
+            rs = conn.execute(sqlKeggAssocMets)
+            for row in rs:
+                statusTable["Metabolite-Pathway Associations"]['kegg'] = row[1]    
+
+            rs = conn.execute(sqlKeggAssocGenes)
+            for row in rs:
+                statusTable["Gene-Pathway Associations"]['kegg'] = row[1]    
+
+            rs = conn.execute(sqlChemProps)
+            statusTable["Chemical Property Records"] = dict()
+            for row in rs:
+                statusTable["Chemical Property Records"][row[0]] = row[1]  
+
+            cols=('status_category','entity_source_id','entity_source_name','entity_count')
+            df = pd.DataFrame(columns=cols)
+            dataList = list()
+            for cat in statusTable:
+                for source in statusTable[cat]:
+                    print(cat + " " + source + " " + str(statusTable[cat][source]))
+                    row = [cat,source,sourceNameDict[source],statusTable[cat][source]]
+                    print(row)
+                    dataList.append(row)
+             
+            df = pd.DataFrame(dataList, columns=cols)        
+            print(df)   
+            
+            df.to_sql("entity_status_info", engine, if_exists = 'append', index=False)
+    
+
 logging.basicConfig()
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 pd.set_option('display.max_columns', None)   
 dbConf = dbConfig()
 loader = rampDBBulkLoader()
-rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
-loader.load(dbConf, rampResourceConfigFile)     
+#rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
+#loader.load(dbConf, rampResourceConfigFile)     
 
+# loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
 
+loader.updateDataStatusSummary()
 
         
 
