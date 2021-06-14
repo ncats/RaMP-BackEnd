@@ -236,7 +236,7 @@ class hmdbData(MetabolomicsData):
 
                 #find other ids for metabolite
                 # prefix is the id we collect and would like to store it in RamP 
-                prefix = {'chemsipder_id':'chemsipder:',
+                prefix = {'chemspider_id':'chemspider:',
                           'pubchem_compound_id':'pubchem:',
                           'chebi_id':'chebi:',
                           'CAS':'CAS:',
