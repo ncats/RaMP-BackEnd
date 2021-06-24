@@ -59,11 +59,7 @@ class Pathway(object):
         return s
     
     def checkPathwaySourceAndCategory(self, source, cat):
-        if self.pathSourceId == 'map04146':
-            print("Heyyyyy Peroxisome check *" + source + "* *" + cat + "***")
-            self.printPathway()
-            print("is it a match ? " + str(self.pathSource == source and self.pathCategory == cat))
-            
+
         return (self.pathSource == source and self.pathCategory == cat)
     
         

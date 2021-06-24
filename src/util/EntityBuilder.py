@@ -75,29 +75,29 @@ class EntityBuilder(object):
         # This data source list will eventually be populated by config file
         self.source = DataSource()        
         self.sourceList.append(self.source)
-    
+     
         self.dataSource2 = DataSource()
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
         self.dataSource2.sourceLocPath = '../../misc/output/reactome';
-        
+         
         self.sourceList.append(self.dataSource2)
-        
+         
         self.dataSource3 = DataSource()        
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
         self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
-        
+         
         self.sourceList.append(self.dataSource3)
-        
+         
         self.dataSource4 = DataSource()        
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
         self.dataSource4.haveChemClassInfo = True
         self.dataSource4.sourceLocPath = '../../misc/output/lipidmaps/';        
-
+ 
         self.sourceList.append(self.dataSource4)
         # End DataSource code
                 
@@ -218,7 +218,7 @@ class EntityBuilder(object):
                 # if the source id isn't already captured, make a metabolite
                 if(metabolite is None):
                     
-                    if(altMetabolite is not None):
+                    if(altMetabolite is not None and not excludeMappingConnection):
                         metabolite = altMetabolite
                     else:
                         metabolite = Metabolite()
@@ -237,7 +237,8 @@ class EntityBuilder(object):
                 else:
                     # need to check if the alt id already exists as a key id
                     met2 = self.metaboliteList.getMetaboliteBySourceId(altId)
-                    if met2 is not None:
+                    
+                    if met2 is not None and not excludeMappingConnection:
                         met2.addId(altId, source)
                         met2.addSource(source)
                         met2.addId(currSourceId, source)
@@ -1102,6 +1103,7 @@ class EntityBuilder(object):
         Current output is in this directory within the RaMP Backend project:
             ../../misc/resourceConfig/metaboliteMappingIssues.txt
         """
+        
         self.loadMetaboList()
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
@@ -1236,11 +1238,13 @@ class EntityBuilder(object):
         hmdbMW = dict()
         pubchemMW = dict()
         keggMW = dict()
+        lipidmapsMW = dict()
         
         chebiSmiles = dict()
         hmdbSmiles = dict()
         pubchemSmiles = dict()
         keggSmiles = dict()
+        lipidmapsSmiles = dict()
         
         myFriend = False
         
@@ -1274,6 +1278,12 @@ class EntityBuilder(object):
                     if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                         pubchemMW[mol.id] = float(mol.monoisotopicMass)
                         pubchemSmiles[mol.id] = mol.smiles
+                if mol.id.startswith("lipidmaps"):
+                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                        lipidmapsMW[mol.id] = float(mol.monoisotopicMass)
+                        lipidmapsSmiles[mol.id] = mol.smiles
+                     
+                        
                         
         # a subset of molecules contain R groups.
         # These are special generic molecules that can cause a lot of aggregation
@@ -1325,17 +1335,27 @@ class EntityBuilder(object):
             for hid in hmdbMW:
                 hmdbMass = hmdbMW[hid]
                 hmdbSmile = hmdbSmiles.get(hid, "")
-                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(pid, False):
+                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(hid, False):
                     if self.isaPrimaryIdMapping(hid, pid) or self.isaPrimaryIdMapping(pid, hid):
                         misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(pid,"") + "\t" + hmdbSmile + "\t" + pubchemSmile)
 
             for cid in chebiMW:
                 chebiMass = chebiMW[cid]
                 chebiSmile = chebiSmiles.get(cid, "")
-                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(pid, False):
+                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(cid, False):
                     if self.isaPrimaryIdMapping(cid, pid) or self.isaPrimaryIdMapping(pid, cid):
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,"") + "\t" + hmdbSmile  + "\t" + chebiSmile)        
-        
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,"") + "\t" + chebiSmile  + "\t" + pubchemSmile)        
+            
+            for lmid in lipidmapsMW:
+                lipidMass = lipidmapsMW[lmid]
+                lipidSmile = lipidmapsSmiles.get(lmid, "")
+                if abs(lipidMass-pubchemMass)/min(lipidMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
+                    if self.isaPrimaryIdMapping(lmid, pid) or self.isaPrimaryIdMapping(pid, lmid):
+                        misMatchList.append(rampId + "\t" + lmid + "\t" + str(lipidMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(pid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + lipidSmile  + "\t" + pubchemSmile)        
+            
+            
+            
+            
         # checking hmdb to chebi    
         for hid in hmdbMW:
             hmdbMass = hmdbMW[hid]
@@ -1355,6 +1375,15 @@ class EntityBuilder(object):
                 if abs(keggMass-hmdbMass)/min(keggMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(keggId, False):
                     if self.isaPrimaryIdMapping(hid, keggId) or self.isaPrimaryIdMapping(keggId, hid):  
                         misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(keggId,"") + "\t" + hmdbSmile + "\t" + keggSmile)
+
+            for lmid in lipidmapsMW:
+                lipidMass = lipidmapsMW[lmid]
+                lipidSmile = lipidmapsSmiles.get(lmid, "")
+                if abs(lipidMass-hmdbMass)/min(lipidMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
+                    if self.isaPrimaryIdMapping(lmid, hid) or self.isaPrimaryIdMapping(hid, lmid):
+                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + lmid + "\t" + str(lipidMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + hmdbSmile  + "\t" + lipidSmile)        
+            
+
         
         # finish with chebi to kegg                     
         for cid in chebiMW:
@@ -1367,6 +1396,13 @@ class EntityBuilder(object):
                     if self.isaPrimaryIdMapping(cid, keggId) or self.isaPrimaryIdMapping(keggId, cid):  
                         misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(cid, "") + "\t" + idToFormula.get(keggId,"") + "\t" + chebiSmile + "\t" + keggSmile)
      
+            for lmid in lipidmapsMW:
+                lipidMass = lipidmapsMW[lmid]
+                lipidSmile = lipidmapsSmiles.get(lmid, "")
+                if abs(lipidMass-chebiMass)/min(lipidMass, chebiMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
+                    if self.isaPrimaryIdMapping(lmid, cid) or self.isaPrimaryIdMapping(cid, lmid):
+                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + lmid + "\t" + str(lipidMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(cid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + chebiSmile  + "\t" + lipidSmile)        
+ 
                           
         return misMatchList
     
@@ -1487,9 +1523,11 @@ class MappingExclusionList(object):
     def isMappingProblem(self, sourceId, extId):    
 
         if sourceId in self.sourceIdToExtIdDict and extId in self.sourceIdToExtIdDict[sourceId]:
+            print("excluded pair (1)"+sourceId+" "+extId)
             return True
 
         if extId in self.sourceIdToExtIdDict and sourceId in self.sourceIdToExtIdDict[extId]:
+            print("excluded pair (2)"+sourceId+" "+extId)
             return True
 
         return False
@@ -1515,5 +1553,56 @@ class MappingExclusionList(object):
         
 
 builder = EntityBuilder()
-
+#builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
 builder.fullBuild()
+# print("starting to load metabolites")
+# builder.loadMetaboList()
+# print("finished metabolite loading")
+# print("starting common name")
+# builder.addMetaboliteCommonName()
+# print("finished common name")
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000513")
+# 
+# 
+# if met is not None:
+#     print(met.toSourceString())
+#     print("have the met!!!!!!!")
+# else:
+#     print("None met")
+# 
+# print("\n\n\n\n\n\n\n")
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("hmdb:HMDB0000511")
+# 
+# 
+# if met is not None:
+#     print(met.toSourceString())
+#     print("have the met!!!!!!!")
+# else:
+#     print("None met")
+#     
+#     
+# 
+# met = builder.metaboliteList.getMetaboliteBySourceId("chebi:30813")
+# 
+# 
+# if met is not None:
+#     print(met.toSourceString())
+#     print("have the met!!!!!!!")
+# else:
+#     print("None met")
+#     
+#     
+#     
+# met = builder.metaboliteList.getMetaboliteBySourceId("pubchem:2969")
+# 
+# 
+# if met is not None:
+#     print(met.toSourceString())
+#     print("have the met!!!!!!!")
+# else:
+#     print("None met")
+    
+    
+    
+    
