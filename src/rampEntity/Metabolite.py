@@ -230,7 +230,6 @@ class Metabolite(object):
                         keyId = list(self.commonNameDict[source].keys())[0]
                     
                     if keyId is None:
-                        #print("Hey we have a None key id in common name")
                         self.commonNameDict[source][id] = "NA"
                     else:
                         self.commonNameDict[source][id] = self.commonNameDict[source][keyId]
