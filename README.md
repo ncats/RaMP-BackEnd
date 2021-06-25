@@ -97,7 +97,7 @@ The first update to the RaMP (01/24/2019):
 3. Handled few compound mismatch that had occurred in the old version.
 
 ### Contact ###
-* Bofei Zhang - CSE student (zhang.5675@osu.edu)
-* Ewy Mathe - PI (Ewy.Mathe@osumc.edu)
+* John Braisted (john.braisted@nih.gov)
+* Ewy Mathé (ewy.mathe@nih.gov)
 
-Elizabeth Baskin and Senyang Hu were also involved in developing this code.
+Elizabeth Baskin, Senyang Hu, and Bofei Zhang were also involved in developing this code.
