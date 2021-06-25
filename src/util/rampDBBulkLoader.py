@@ -12,52 +12,7 @@ from sqlalchemy import create_engine
 import logging
 from jproperties import Properties
 from pprint import pprint
-
-#import pymysql
-class dbConfig(object):
     
-    def __init__(self, configFile):
-                
-        dbConfig = Properties()
-        
-        with open(configFile, 'rb') as config_file:
-            dbConfig.load(config_file)
-        
-        self.conpass = dbConfig.get("conpass").data
-        self.username = dbConfig.get("username").data
-        self.host = dbConfig.get("host").data
-        self.dbname = dbConfig.get("dbname").data
-        
-    def dumpConfig(self):        
-        print(self.host)
-        print(self.dbname)
-        print(self.username)
-        print(self.conpass)    
-        
-        
-class rampFileResource(object):
-
-    def __init__(self):
-        self.loadStatus = ""
-        self.destTable = ""
-        self.loadType = ""
-        self.stagingFile = ""
-        self.primaryKey = ""
-        self.columnNames = []
-        
-    def initFileResource(self, resource):
-        self.loadStatus = resource.status
-        self.stagingFile = resource.file
-        self.loadType = resource.loadType
-        self.destTable = resource.table
-        self.primaryKey = resource.primaryKey
-        self.columnNames = resource.colNames.split(",")
-        
-    
-    def printResource(self):
-        pprint(vars(self))
-                        
-                        
 class rampDBBulkLoader(object):
     
     def __init__(self, dbConf):
@@ -391,22 +346,80 @@ class rampDBBulkLoader(object):
 
             print("finished update entity summary")
 
+class dbConfig(object):
+    
+    def __init__(self, configFile):
+                
+        dbConfig = Properties()
+        
+        with open(configFile, 'rb') as config_file:
+            dbConfig.load(config_file)
+        
+        self.conpass = dbConfig.get("conpass").data
+        self.username = dbConfig.get("username").data
+        self.host = dbConfig.get("host").data
+        self.dbname = dbConfig.get("dbname").data
+        
+    def dumpConfig(self):        
+        print(self.host)
+        print(self.dbname)
+        print(self.username)
+        print(self.conpass)    
+        
+        
+class rampFileResource(object):
 
+    def __init__(self):
+        self.loadStatus = ""
+        self.destTable = ""
+        self.loadType = ""
+        self.stagingFile = ""
+        self.primaryKey = ""
+        self.columnNames = []
+        
+    def initFileResource(self, resource):
+        self.loadStatus = resource.status
+        self.stagingFile = resource.file
+        self.loadType = resource.loadType
+        self.destTable = resource.table
+        self.primaryKey = resource.primaryKey
+        self.columnNames = resource.colNames.split(",")
+        
+    
+    def printResource(self):
+        pprint(vars(self))
+                        
+        
+################# DB Loading Instructions
+
+# Sets logging level
 logging.basicConfig()
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 pd.set_option('display.max_columns', None)   
 
-
+# config file holds login credentials in this format:
+# host=<host_uri>
+# dbname=<db_name_usually_ramp>
+# username=<db_user_name_often_root>
+# conpass=<db_connection_password>
 dbConf = dbConfig("../../misc/resourceConfig/ramp_dev_db_config.txt")
-#dbConf.dumpConfig()
+
+# pass the credentials object to the constructed rampDBBulLoader
 loader = rampDBBulkLoader(dbConf)
 
 # update methods
-#rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
-#loader.load(dbConf, rampResourceConfigFile)     
+# the sql_resource_config.txt is a tab delimited file indicating which resources to load
+# those marked as 'ready' will be updated. Usually all database tables are updated in one run.
+rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
+# this method loads the intermediate parsing results from the ../../misc/sql/ directory.
+loader.load(dbConf, rampResourceConfigFile)     
 
-#loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
-#loader.updateDataStatusSummary()
+# this optional method tracks database version information supplied in this file.
+loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
+
+# this method populates a table that reflects teh current status of the database.
+# metrics such as gene and metabolite counts for reach data sets are tallied.
+loader.updateDataStatusSummary()
 
         
 
