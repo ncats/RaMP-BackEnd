@@ -3,8 +3,8 @@
 This repository contains the source code that was used to create RaMP - a Relation database of Metabolic Pathways (https://www.ncbi.nlm.nih.gov/pubmed/29470400).  RaMP is a conglomerate of 4 different databases (Kegg, Reactome, HMDB, and WikiPathways), which includes pathways and annotations for genes and metabolites.  
 
 #### Note that the files here are NOT RaMP but merely the scripts used to create RaMP. ####
-If you are looking for the RaMP mysql dump, you will find it here: https://github.com/Mathelab/RaMP-DB/tree/master/inst/extdata
-If you are looking to access RaMP through our shiny app, look here: https://github.com/Mathelab/RaMP-DB/
+If you are looking for the RaMP mysql dump, you will find it here: https://github.com/ncats/RaMP-DB/tree/master/inst/extdata
+If you are looking to access RaMP through our shiny app, look here: https://github.com/ncats/RaMP-DB/
 
 ### The Basics ###
 Here is the overall workflow for getting the mySQL database up and running:
@@ -12,7 +12,7 @@ Here is the overall workflow for getting the mySQL database up and running:
   1. git clone this repository
   2. Run main.py successfully (purpose is to create sql files in misc/sql folder)
   3. Create an empty database in mySQL (e.g. called ramp) 
-  4. Import the sql files into the database using Program.cs found in mySQLBulkCsharp folder
+  4. Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
   5. You can now query the database!
 
 Keep scrolling down for the details...
@@ -20,9 +20,8 @@ Keep scrolling down for the details...
 ### Environment set-up ###
 
 #### Python ####
-RaMP was built using using python 3.5, which must be downloaded here: https://www.python.org/downloads/
-
-If are using MacOS, python is already installed but it is python 2.7. You will need to install python 3.5 in addition to the 2.7 version already installed. You need to run both simultaneously because MacOS relies on python 2.7 for essential functions.
+RaMP was built using using python 3.8, which must be downloaded here: https://www.python.org/downloads/
+Make certain that you have python 3.8 or later.
 
 #### Integrated Development Environment ####
 Using an IDE makes writing code much simpler. If you are familiar with R, Rstudio is the IDE for R. 
@@ -54,10 +53,7 @@ The output of running 'main.py' are sql files that then need to be imported into
 
 *importing sql tables*
 
-A C# script, mySQLBulkCsharp, imports the sql files in bulk.  The "Program.cs" file is the main script. 
-
-You may need to download the Visual Studio C# IDE: https://www.visualstudio.com/vs/
-(may also need to download .net/mono...)
+Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
 
 You may also need to download mySQL: https://www.mysql.com/downloads/. 
 
@@ -76,8 +72,6 @@ The repo contains the following folders
     **docs**: documentation/user manual
 
     **tests**: unit testing
-
-    **mySQLBulkCsharp**: contains the C# script that will import the .sql files found in misc/sql into a mySQL database
 
     **misc/data**: folders for files from hmdb, wikipathways, kegg, and reactome stored here
 
