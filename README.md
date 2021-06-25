@@ -3,8 +3,8 @@
 This repository contains the source code that was used to create RaMP - a Relation database of Metabolic Pathways (https://www.ncbi.nlm.nih.gov/pubmed/29470400).  RaMP is a conglomerate of 4 different databases (Kegg, Reactome, HMDB, and WikiPathways), which includes pathways and annotations for genes and metabolites.  
 
 #### Note that the files here are NOT RaMP but merely the scripts used to create RaMP. ####
-If you are looking for the RaMP mysql dump, you will find it here: https://github.com/Mathelab/RaMP-DB/tree/master/inst/extdata
-If you are looking to access RaMP through our shiny app, look here: https://github.com/Mathelab/RaMP-DB/
+If you are looking for the RaMP mysql dump, you will find it here: https://github.com/ncats/RaMP-DB/tree/master/inst/extdata
+If you are looking to access RaMP through our shiny app, look here: https://github.com/ncats/RaMP-DB/
 
 ### The Basics ###
 Here is the overall workflow for getting the mySQL database up and running:
