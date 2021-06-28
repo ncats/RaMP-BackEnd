@@ -642,7 +642,7 @@ class EntityBuilder(object):
         parentTerm = 'heath_effect'
         
         for src in self.sourceList:
-            file = src.sourceLocPath + "/" + src.filePrefix + "metaboloiteHeathEffect.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "heathEffect.txt"
             
             if not(path.exists(file)):
                 break

@@ -775,10 +775,10 @@ class hmdbData(MetabolomicsData):
  
     def parsePhysiology(self, ontology, metId):
     
-        physTerm = "Health effect"
+        physTerm = "Health condition"
                 
         physNode = self.findSingleDecendentNodeTerm(ontology, physTerm)
-        
+                
         if physNode is not None:
             for physNodeDec in physNode.iter('{http://www.hmdb.ca}descendant'):
                 termNode = physNodeDec.find('{http://www.hmdb.ca}term')
