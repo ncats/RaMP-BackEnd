@@ -116,7 +116,9 @@ class hmdbData(MetabolomicsData):
         # holds industrial application, like 'Drug', 'Self Care Product'
         self.metaboliteApplication = dict()
     
-    
+        # holds industrial application, like 'Drug', 'Self Care Product'
+        self.healtEffect = dict()
+        
     def getEverything(self,writeToFile = False):
         '''
         Run all the function to get everything from hmdb source
@@ -611,6 +613,7 @@ class hmdbData(MetabolomicsData):
                 self.parseBiofluid(ontology, metId)
                 self.parseCellLocation(ontology, metId)
                 self.parseApplication(ontology, metId)
+                self.parsePhysiology(ontology, metId)
                 
 
         # Disposition
@@ -769,12 +772,28 @@ class hmdbData(MetabolomicsData):
                         self.metaboliteApplication[metId] = [term]
         
         
+ 
+    def parsePhysiology(self, ontology, metId):
+    
+        physTerm = "Health Effect"
+                
+        physNode = self.findSingleDecendentNodeTerm(ontology, physTerm)
         
-        
-        
-        
-        
-        
+        if physNode is not None:
+            for physNodeDec in physNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = physNodeDec.find('{http://www.hmdb.ca}term')
+                if termNode is not None:
+                    term = termNode.text.strip()
+                    
+                    if term == physTerm:
+                        continue
+                    
+                    if metId in self.healtEffect:
+                        if term not in self.healtEffect[metId]:
+                            self.healtEffect[metId].append(term)
+                    else:
+                        self.healtEffect[metId] = [term]       
+           
         
     
     
