@@ -636,7 +636,25 @@ class EntityBuilder(object):
             for i,row in df.iterrows():
                 metId = row[0]
                 childTerm = row[1]
-                self.recordOntology(parentTerm, childTerm, metId)        
+                self.recordOntology(parentTerm, childTerm, metId)
+                
+        # health effect
+        parentTerm = 'heath_effect'
+        
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "metaboloiteHeathEffect.txt"
+            
+            if not(path.exists(file)):
+                break
+        
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)       
     
         print("ontology size="+str(len(self.ontologyList.getFullOntologyList())))
     
