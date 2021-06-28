@@ -1245,8 +1245,8 @@ class hmdbData(MetabolomicsData):
             
         '''
  
-hmdb = hmdbData()  
-hmdb.getOntology(None, "100_hmdb.xml")
+# hmdb = hmdbData()  
+# hmdb.getOntology(None, "100_hmdb.xml")
 
 
 
