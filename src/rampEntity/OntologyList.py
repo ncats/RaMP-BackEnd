@@ -23,7 +23,7 @@ class OntologyList(object):
         self.ontolDict["cellular location"] = dict()
         self.ontolDict["tissue location"] = dict()
         self.ontolDict["application"] = dict()
-        self.ontolDict["health effect"] = dict()
+        self.ontolDict["health condition"] = dict()
                                      
     def addOntologyRecord(self, ontology):
         if ontology not in self.simpleOntolList:
