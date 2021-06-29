@@ -117,7 +117,7 @@ class hmdbData(MetabolomicsData):
         self.metaboliteApplication = dict()
     
         # holds industrial application, like 'Drug', 'Self Care Product'
-        self.healtEffect = dict()
+        self.healthEffect = dict()
         
     def getEverything(self,writeToFile = False):
         '''
@@ -788,9 +788,9 @@ class hmdbData(MetabolomicsData):
                     if term == physTerm:
                         continue
                     
-                    if metId in self.healtEffect:
-                        if term not in self.healtEffect[metId]:
-                            self.healtEffect[metId].append(term)
+                    if metId in self.healthEffect:
+                        if term not in self.healthEffect[metId]:
+                            self.healthEffect[metId].append(term)
                     else:
                         self.healtEffect[metId] = [term]       
            

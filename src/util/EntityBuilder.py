@@ -639,10 +639,10 @@ class EntityBuilder(object):
                 self.recordOntology(parentTerm, childTerm, metId)
                 
         # health effect
-        parentTerm = 'heath_effect'
+        parentTerm = 'health condition'
         
         for src in self.sourceList:
-            file = src.sourceLocPath + "/" + src.filePrefix + "heathEffect.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "healthEffect.txt"
             
             if not(path.exists(file)):
                 break
