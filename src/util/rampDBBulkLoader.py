@@ -415,11 +415,11 @@ rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
 loader.load(dbConf, rampResourceConfigFile)     
 
 # this optional method tracks database version information supplied in this file.
-loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
+#loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
 
 # this method populates a table that reflects teh current status of the database.
 # metrics such as gene and metabolite counts for reach data sets are tallied.
-loader.updateDataStatusSummary()
+#loader.updateDataStatusSummary()
 
         
 
