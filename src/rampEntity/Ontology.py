@@ -28,4 +28,9 @@ class Ontology(object):
         return hash(self.ontolParent + self.ontolChild)
     
     def getOntologyString(self):
-        return self.ontolRampId + "\t" + self.ontolParent + "\t" + self.ontolChild + "\n"     
+        return self.ontolRampId + "\t" + self.ontolChild + "\t" + self.ontolParent + "\n"     
+    
+    
+    
+    
+    
