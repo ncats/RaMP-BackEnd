@@ -28,6 +28,7 @@ class Ontology(object):
         return hash(self.ontolParent + self.ontolChild)
     
     def getOntologyString(self):
+        # note, the DB is set up as ID, Value, Key, so the dump is ordered in that way. Patch 20210910
         return self.ontolRampId + "\t" + self.ontolChild + "\t" + self.ontolParent + "\n"     
     
     
