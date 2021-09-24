@@ -419,7 +419,7 @@ loader.load(dbConf, rampResourceConfigFile)
 
 # this method populates a table that reflects teh current status of the database.
 # metrics such as gene and metabolite counts for reach data sets are tallied.
-#loader.updateDataStatusSummary()
+loader.updateDataStatusSummary()
 
         
 

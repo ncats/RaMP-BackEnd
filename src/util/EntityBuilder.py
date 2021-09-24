@@ -373,8 +373,10 @@ class EntityBuilder(object):
             for i,row in df.iterrows():
                 pathway = Pathway()
                 pathway.pathRampId = self.generateRampId("P")
-                pathway.pathSource = source
+                pathway.pathSource = source                
                 pathway.pathSourceId = row[0]
+                if(pathway.pathSourceId.startswith("map")):
+                    pathway.pathSource = 'kegg'
                 pathway.pathName = row[1]
                 self.pathList.addPathway(row[0], pathway)
           
