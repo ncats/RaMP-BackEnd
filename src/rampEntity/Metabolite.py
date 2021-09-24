@@ -315,7 +315,7 @@ class Metabolite(object):
         s = ""
         for source in self.pathways:
             for pathway in self.pathways[source]:
-                s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + source + "\n"
+                s = s + self.rampId + "\t" + pathway.pathRampId + "\t" + str(pathway.pathSource) + "\n"
         return s
     
 
