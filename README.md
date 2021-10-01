@@ -1,8 +1,9 @@
 # RaMP Creation Package #
 
-This repository contains the source code that was used to create RaMP - a Relation database of Metabolic Pathways (https://www.ncbi.nlm.nih.gov/pubmed/29470400).  RaMP is a conglomerate of 4 different databases (Kegg, Reactome, HMDB, and WikiPathways), which includes pathways and annotations for genes and metabolites.  
+This repository contains the source code that was used to create RaMP - a Relation database of Metabolic Pathways (https://www.ncbi.nlm.nih.gov/pubmed/29470400).  RaMP is a conglomerate of 4 different databases (KEGG, Reactome, HMDB, and WikiPathways), which includes pathways and annotations for genes and metabolites. The database also includes chemical properties and chemical class annotations from HMDB, ChEBI and LIPIDMAPS.  
 
 #### Note that the files here are NOT RaMP but merely the scripts used to create RaMP. ####
+These scripts are used to build the RaMP database from scratch. 
 If you are looking for the RaMP mysql dump, you will find it here: https://github.com/ncats/RaMP-DB/tree/master/inst/extdata
 If you are looking to access RaMP through our shiny app, look here: https://github.com/ncats/RaMP-DB/
 
@@ -10,10 +11,11 @@ If you are looking to access RaMP through our shiny app, look here: https://gith
 Here is the overall workflow for getting the mySQL database up and running:
 
   1. git clone this repository
-  2. Run main.py successfully (purpose is to create sql files in misc/sql folder)
-  3. Create an empty database in mySQL (e.g. called ramp) 
-  4. Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
-  5. You can now query the database!
+  2. Run main.py successfully (purpose is to create intermediate data files in the misc/output folder for each data type.) Reading resource files from the various data sources is memory intensive. 
+  3. Run EntityBuilder.py to merge data to build entity relationships. This produces a file for each table in the RaMP DB Schema in the /misc/sql/loader.
+  4. Create an empty database in mySQL (e.g. called ramp) 
+  5. Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
+  6. You can now query the database!
 
 Keep scrolling down for the details...
 
@@ -24,13 +26,11 @@ RaMP was built using using python 3.8, which must be downloaded here: https://ww
 Make certain that you have python 3.8 or later.
 
 #### Integrated Development Environment ####
-Using an IDE makes writing code much simpler. If you are familiar with R, Rstudio is the IDE for R. 
+Using an IDE makes writing code much simpler. 
 
-Another option is to use pyDev for Eclipse for python:
+One option is to use pyDev for Eclipse for python:
   - download Eclipse: https://www.eclipse.org/downloads/
   - install the pyDev software into Eclipse: http://www.wikihow.com/Install-Pydev-on-Eclipse
-
-Yet another option is to use PyCharm. 
 
 #### Documentation ####
 The package is being documented using Sphinx: https://samnicholls.net/2016/06/15/how-to-sphinx-readthedocs/ and http://autoapi.readthedocs.io/
@@ -47,19 +47,20 @@ Set up requires adding the Sphinx to your PYTHONPATH. Traditionally, this would 
 
 The main script to build the database is 'main.py'. This script calls the other classes and necessary code to build the database. 
 
-The first time 'main.py' is run, one must swith the "getDatabaseFiles" parameter to "True".  Setting this parameter to true will download the content of the databases (HMDB, KEGG, Reactome, WikiPathways) on your computer.  By default, we have set "getDatabasefiles" to FALSE because you may need to gather the information from each database again if you add new functionalities to the scripts (in which case there is no need to download the original files again).  
+The first time 'main.py' is run, one must swith the "getDatabaseFiles" parameter to "True".  Setting this parameter to true will download the content of the databases (HMDB, Reactome, WikiPathways) on your computer.  By default, we have set "getDatabasefiles" to FALSE because you may need to gather the information from each database again if you add new functionalities to the scripts (in which case there is no need to download the original files again). Note that the Reactome resource updates monthly and changes the name of their files to add the date.  The src/parse/reactomeData.py file's getDatabaseFile method contains the variable to set.
 
-The output of running 'main.py' are sql files that then need to be imported into one database.
+The output of running 'main.py' are intermediate files that are created in data-source specific files in misc/output. 
+
+The next step is building entities and final files for database loading. The files in misc/output are input into an entity harmonization process that enforces entity curation patches, aggregates duplicate gene and compound entities from different data soruces and builds entity relationships. This step is kicked off by running /src/util/EntityBuilder.py. This step will refer to a text file that contains manual curation results that captures known problems in entity mappings held in certain data sources. The compound curation list prevents incorrect mappings between compounds from being introduced to the RaMP database. 
 
 *importing sql tables*
 
 Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
 
+[Additional information coming soon on bringing up mysql and initial creation of the database schema]
+
 You may also need to download mySQL: https://www.mysql.com/downloads/. 
 
-*plots*
-
-Most of the code is written in Python but two scripts are written in R (src/threeVenn.R and fourVenn.R). These scripts produce plots that show the overlapping genes and metabolites between all databases in RaMP. You must have R installed on your computer, as well as these R packages: VennDiagram and grDevices.
 
 
 #### Overview of folders in this repo ####
