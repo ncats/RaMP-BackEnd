@@ -127,6 +127,7 @@ class reactomeData(MetabolomicsData):
 #                 print("Already downloaded ...")
 
 #        else:
+        self.check_path(dir_proteins)
         existed = os.listdir(dir_proteins) 
         if file_metabolites not in existed or file_proteins not in existed:                                                
             self.download_files(url_proteins,dir_proteins+file_proteins)

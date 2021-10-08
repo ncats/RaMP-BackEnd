@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../src')
+from rampConfig.RampConfig import RampConfig
 from parse.wikipathwayRDF import WikipathwaysRDF
 from parse.hmdbData import hmdbData
 from parse.reactomeData import reactomeData
@@ -239,9 +240,9 @@ class Main():
         # Database loading is handled as a separate, un-coupled step.
             
 
-resourceConfFile = "../../config/external_resource_config.txt"                
+resourceConfFile = "../config/external_resource_config.txt"                
 main = Main()
-main.runEverything(resourceConfigFile = resoureceConfFile)
+main.runEverything(resourceConfigFile = resourceConfFile)
 
 
 
