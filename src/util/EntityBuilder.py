@@ -24,12 +24,10 @@ import numpy as np
 from pandas.io.common import file_path_to_url
 from pandas.api.types import is_string_dtype
 from pandas.io.html import _remove_whitespace
-from sqlalchemy.sql.expression import false
 from collections import defaultdict
 
 import pubchempy as pcp
 import time
-#from builtins import True
 
 class EntityBuilder(object):
     '''
