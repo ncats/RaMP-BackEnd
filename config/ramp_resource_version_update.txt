@@ -1,0 +1,7 @@
+ramp_db_version	db_mod_date	status	data_source_id	data_source_name	data_source_url	data_source_version
+v2.0.4	2021-06-28	current	hmdb	HMDB	https://hmdb.ca/	v4.0 (2020-09-10)
+v2.0.4	2021-06-28	current	reactome	Reactome	https://reactome.org/	v76 (March 2021)
+v2.0.4	2021-06-28	current	wiki	Wikipathways	https://www.wikipathways.org/index.php/WikiPathways	v20210610
+v2.0.4	2021-06-28	current	kegg	KEGG	https://www.genome.jp/kegg/	HMDB (v4.0)
+v2.0.4	2021-06-28	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 200 (2021-06-01)
+v2.0.4	2021-06-28	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release 2021-05-28
