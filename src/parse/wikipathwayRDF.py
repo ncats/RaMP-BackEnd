@@ -94,7 +94,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if the file name is wrong, go the the url to check if the file is updated
         '''
         
-        wikiConf = self.resourceConfig.getConf("wiki_pathways_mets_genes")
+        wikiConf = self.resourceConfig.getConfig("wiki_pathways_mets_genes")
         
         url = wikiConf.sourceURL
         filename = wikiConf.sourceFileName
