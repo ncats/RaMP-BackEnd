@@ -5,6 +5,7 @@ from parse.hmdbData import hmdbData
 from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
 from parse.KeggData import KeggData
+from util.EntityBuilder import EntityBuilder
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
 import os
@@ -12,8 +13,12 @@ import time
 
 class Main():
 
-    def runEverything(self, getDatabaseFiles = True):
+    def runEverything(self, getDatabaseFiles = True, resourceConfigFile):
         sql = writeToSQL()
+        
+        # build the ramp resource config
+        resourceConf = RampConfig()
+        resourceConf.loadConfig(resourceConfigFile)
         
         stat = getStatistics()
         hmdb = hmdbData()
@@ -220,16 +225,26 @@ class Main():
                  wikipathways.pathwayOntology,
                  wikipathways.exoEndoDictionary,
                  "wiki")
+        
+        
+        # constructs the entity builder
+        builder = EntityBuilder()
+        
+        # performs a full build of entities for loading
+        # the input are files in /misc/output
+        # the result are files for DB loading in /misc/sql
+          
+        builder.fullBuild()
+        
+        # Database loading is handled as a separate, un-coupled step.
+            
 
-        #stat.Apoptosis(sql.rampGeneIDdictionary,
-         #               wikipathways.pathwaysWithGenesDictionary,
-          #              kegg.pathwaysWithGenesDictionary,
-           #             reactome.pathwaysWithGenesDictionary)
-
-        
-        
-    
-        
-        
-main = Main()
+resourceConfFile = "../../config/external_resource_config.txt"                
+main = Main(resoureceConfFile)
 main.runEverything()
+
+
+
+
+
+
