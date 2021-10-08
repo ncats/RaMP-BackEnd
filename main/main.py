@@ -13,7 +13,7 @@ import time
 
 class Main():
 
-    def runEverything(self, getDatabaseFiles = True, resourceConfigFile):
+    def runEverything(self, resourceConfigFile, getDatabaseFiles = True):
         sql = writeToSQL()
         
         # build the ramp resource config
@@ -21,9 +21,9 @@ class Main():
         resourceConf.loadConfig(resourceConfigFile)
         
         stat = getStatistics()
-        hmdb = hmdbData()
-        wikipathways = WikipathwaysRDF()
-        reactome = reactomeData()
+        hmdb = hmdbData(resourceConf)
+        wikipathways = WikipathwaysRDF(resourceConf)
+        reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData()
         
@@ -228,20 +228,20 @@ class Main():
         
         
         # constructs the entity builder
-        builder = EntityBuilder()
+#        builder = EntityBuilder()
         
         # performs a full build of entities for loading
         # the input are files in /misc/output
         # the result are files for DB loading in /misc/sql
           
-        builder.fullBuild()
+#        builder.fullBuild()
         
         # Database loading is handled as a separate, un-coupled step.
             
 
 resourceConfFile = "../../config/external_resource_config.txt"                
-main = Main(resoureceConfFile)
-main.runEverything()
+main = Main()
+main.runEverything(resourceConfigFile = resoureceConfFile)
 
 
 
