@@ -161,20 +161,23 @@ class hmdbData(MetabolomicsData):
         file_proteins = proteinConfig.sourceFileName
         proteins_url = proteinConfig.sourceURL
         
-        dir = metConfig.localDir
+        localDir = metConfig.localDir
+        
+        print("getting HMDB files, localDir = "+localDir)
+        
         # check if this path exists
-        self.check_path(dir)
-        if file_metabolites.replace('.zip', '.xml') not in os.listdir(dir) or file_proteins.replace('.zip', '.xml') not in os.listdir(dir):
+        self.check_path(localDir)
+        if file_metabolites.replace('.zip', '.xml') not in os.listdir(localDir) or file_proteins.replace('.zip', '.xml') not in os.listdir(localDir):
             # Download files from given url and path
             print('####### Downloading HMDB source file #######')
-            self.download_files(mets_url, dir+file_metabolites)
-            self.download_files(proteins_url, dir+file_proteins)
+            self.download_files(mets_url, localDir+file_metabolites)
+            self.download_files(proteins_url, localDir+file_proteins)
             # Open zip file if file are downloaded.
-            with zipfile.ZipFile(dir+file_metabolites,"r") as zip_ref:
-                zip_ref.extractall(dir)
+            with zipfile.ZipFile(localDir+file_metabolites,"r") as zip_ref:
+                zip_ref.extractall(localDir)
                 
-            with zipfile.ZipFile(dir+file_proteins,"r") as zip_ref:
-                zip_ref.extractall(dir)
+            with zipfile.ZipFile(localDir+file_proteins,"r") as zip_ref:
+                zip_ref.extractall(localDir)
         else:
             print('HMDB source files are ready ...')
                     
@@ -1258,11 +1261,11 @@ class hmdbData(MetabolomicsData):
             
         '''
 
-rConf = RampConfig()
-rConf.loadConfig("../../config/external_resource_config.txt")
+#rConf = RampConfig()
+#rConf.loadConfig("../../config/external_resource_config.txt")
 
-hmdb = hmdbData(rConf)  
-hmdb.getDatabaseFiles()
+#hmdb = hmdbData(rConf)  
+#hmdb.getDatabaseFiles()
 #hmdb.getOntology(None, "100_hmdb.xml")
 
 

@@ -4,7 +4,7 @@ Created on Nov 6, 2020
 @author: braistedjc
 '''
 
-class sourceConfig(object):
+class SourceConfig(object):
     '''
     classdocs
     '''
