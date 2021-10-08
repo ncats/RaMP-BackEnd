@@ -13,8 +13,11 @@ class reactomeData(MetabolomicsData):
     This class contains all dict stored and distributed from Reactome Official websites.
     
     '''
-    def __init__(self):
+    def __init__(self, resConfig):
         super().__init__()
+        
+        self.resourceConfig = resConfig
+        
         # key: Chebi ID from reactome Value: common Name by querying Chebi Database
         self.metaboliteCommonName = dict()
         #key: ID for pathway, Value: pathway name
@@ -101,17 +104,17 @@ class reactomeData(MetabolomicsData):
         '''This function gets the files that make up reactome and places them into the reactome folder. 
 
         '''
-        url_proteins,dir_proteins,file_proteins = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
-                                                            "../misc/data/reactome/",
-                                                            "UniProt2Reactome_All_Levels.txt")
+        proteinConfig = self.resourceConfig.getConfig("reactome_gene")
+        metConfig = self.resourceConfig.getConfig("reactome_met")
+        
+        
+        url_proteins,dir_proteins,file_proteins = (proteinConfig.sourceURL, proteinConfig.localDir, proteinConfig.extractFileName)
         
 #         url_genes,dir_proteins,file_genes = ("http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt",
 #                                                             "../misc/data/reactome/",
 #                                                             "NCBI2Reactome_All_Levels.txt")
         
-        url_metabolites, dir_metabolites, file_metabolites = ("http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt",
-                                                              "../misc/data/reactome/",
-                                                              "ChEBI2Reactome_All_Levels.txt")
+        url_metabolites, dir_metabolites, file_metabolites = (metConfig.sourceURL, metConfig.localDir, metConfig.extractFileName)
 #        existed = os.listdir(dir_proteins)
 
 #        if self.check_path(dir_proteins) :  
@@ -437,9 +440,9 @@ class reactomeData(MetabolomicsData):
 #         print(path.exists("../misc/data/Uniprot/"))
 #         print(len(files))
              
-rd = reactomeData()
-rd.getDatabaseFiles()
-rd.getEverything(True)          
+# rd = reactomeData()
+# rd.getDatabaseFiles()
+# rd.getEverything(True)          
 
 #print("In reactome land")
 #files = os.listdir("../misc/data/Uniprot/")

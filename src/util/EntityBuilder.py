@@ -1570,9 +1570,9 @@ class MappingExclusionList(object):
         print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
         
 
-builder = EntityBuilder()
+# builder = EntityBuilder()
 #builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
-builder.fullBuild()
+# builder.fullBuild()
 # print("starting to load metabolites")
 # builder.loadMetaboList()
 # print("finished metabolite loading")

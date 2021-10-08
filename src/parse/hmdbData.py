@@ -47,14 +47,14 @@ class hmdbData(MetabolomicsData):
     
     '''
     
-    def __init__(self, resourceConfig):
+    def __init__(self, resConfig):
         
         super().__init__()
         #self.tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
         #self.tree2 = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
         ####DICTIONARIES IN COMMON WITH OTHER CLASSES######################################
 
-        self.resourceConfig = resourceConfig
+        self.resourceConfig = resConfig
         
         # common name dictionary Key: HMDB ID Value: Common Name
         self.metaboliteCommonName = dict()
@@ -151,10 +151,9 @@ class hmdbData(MetabolomicsData):
 #         file_proteins = "hmdb_proteins.zip"
 #         download_url = "https://hmdb.ca/system/downloads/current/"
         
-        metConfig = self.resourceConfig.getConfig("hmdb_mets")
-        proteinConfig = self.resourceConfig.getConfig("hmdb_genes")
-        
-        
+        metConfig = self.resourceConfig.getConfig("hmdb_met")
+        proteinConfig = self.resourceConfig.getConfig("hmdb_gene")
+                
         file_metabolites = metConfig.sourceFileName
         mets_url = metConfig.sourceURL
         
@@ -808,7 +807,7 @@ class hmdbData(MetabolomicsData):
                         if term not in self.healthEffect[metId]:
                             self.healthEffect[metId].append(term)
                     else:
-                        self.healtEffect[metId] = [term]       
+                        self.healthEffect[metId] = [term]       
            
         
     

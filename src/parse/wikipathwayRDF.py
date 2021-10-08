@@ -13,8 +13,12 @@ from builtins import str
 from writeToSQL import writeToSQL
 
 class WikipathwaysRDF(MetabolomicsData):
-    def __init__(self):
+    
+    def __init__(self, resConfig):
         super().__init__()
+        
+        self.resourceConfig = resConfig
+        
         # key: ID for metabolites Value: Common Name (the only name in this database)
         self.metaboliteCommonName = dict()
         #key: ID for pathway, Value: pathway name
@@ -89,14 +93,18 @@ class WikipathwaysRDF(MetabolomicsData):
         The url is from current(latest) version of wikipathways
         if the file name is wrong, go the the url to check if the file is updated
         '''
-        url = 'http://data.wikipathways.org/current/rdf/'
-        filename = 'wikipathways-20210610-rdf-wp.zip'
-        path = '../misc/data/wikipathwaysRDF/'
+        
+        wikiConf = self.resourceConfig.getConf("wiki_pathways_mets_genes")
+        
+        url = wikiConf.sourceURL
+        filename = wikiConf.sourceFileName
+        path = wikiConf.localDir
+        
         self.check_path(path)
         existed = os.listdir(path)
         if filename not in existed:
             #print(path + filename)
-            self.download_files(url+filename, path + filename)
+            self.download_files(url, path + filename)
             with zipfile.ZipFile(path+filename,'r') as zip_ref:
                 zip_ref.extractall(path)
         else:
@@ -585,8 +593,8 @@ class WikipathwaysRDF(MetabolomicsData):
         return id
 
 # test
-wikipathways = WikipathwaysRDF()
-wikipathways.getEverything(writeToFile=True)
+# wikipathways = WikipathwaysRDF()
+# wikipathways.getEverything(writeToFile=True)
 #wikipathways.write_myself_files(database ="wiki")
 
 # sql = writeToSQL()
