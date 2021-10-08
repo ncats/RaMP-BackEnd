@@ -7,6 +7,7 @@ import time
 import os
 from parse.MetabolomicsData import MetabolomicsData
 import pandas as pd
+from rampConfig.RampConfig import RampConfig
 
 class hmdbData(MetabolomicsData):
     
@@ -46,12 +47,15 @@ class hmdbData(MetabolomicsData):
     
     '''
     
-    def __init__(self):
+    def __init__(self, resourceConfig):
         
         super().__init__()
         #self.tree = ET.parse('../misc/data/hmdb/hmdb_metabolites.xml')
         #self.tree2 = ET.parse('../misc/data/hmdb/hmdb_proteins.xml')
         ####DICTIONARIES IN COMMON WITH OTHER CLASSES######################################
+
+        self.resourceConfig = resourceConfig
+        
         # common name dictionary Key: HMDB ID Value: Common Name
         self.metaboliteCommonName = dict()
         #pathway dictionary. Key: hsaID for pathway, Value: pathway name
@@ -143,17 +147,28 @@ class hmdbData(MetabolomicsData):
 		
         '''
         # Define file name and url for downloading file
-        file_metabolites = "hmdb_metabolites.zip"
-        file_proteins = "hmdb_proteins.zip"
-        download_url = "https://hmdb.ca/system/downloads/current/"
-        dir = "../misc/data/hmdb/"
+#         file_metabolites = "hmdb_metabolites.zip"
+#         file_proteins = "hmdb_proteins.zip"
+#         download_url = "https://hmdb.ca/system/downloads/current/"
+        
+        metConfig = self.resourceConfig.getConfig("hmdb_mets")
+        proteinConfig = self.resourceConfig.getConfig("hmdb_genes")
+        
+        
+        file_metabolites = metConfig.sourceFileName
+        mets_url = metConfig.sourceURL
+        
+        file_proteins = proteinConfig.sourceFileName
+        proteins_url = proteinConfig.sourceURL
+        
+        dir = metConfig.localDir
         # check if this path exists
         self.check_path(dir)
         if file_metabolites.replace('.zip', '.xml') not in os.listdir(dir) or file_proteins.replace('.zip', '.xml') not in os.listdir(dir):
             # Download files from given url and path
             print('####### Downloading HMDB source file #######')
-            self.download_files(download_url+file_metabolites, dir+file_metabolites)
-            self.download_files(download_url+file_proteins, dir+file_proteins)
+            self.download_files(mets_url, dir+file_metabolites)
+            self.download_files(proteins_url, dir+file_proteins)
             # Open zip file if file are downloaded.
             with zipfile.ZipFile(dir+file_metabolites,"r") as zip_ref:
                 zip_ref.extractall(dir)
@@ -162,10 +177,8 @@ class hmdbData(MetabolomicsData):
                 zip_ref.extractall(dir)
         else:
             print('HMDB source files are ready ...')
-            
-        
-                            
-        
+                    
+                                    
     def getMetaboliteOtherIDs(self,tree = None,dir = 'hmdb_metabolites.xml'):     
         '''
         This functions finds a number of alternative ids for the main metabolite identifier and places them into: 
@@ -1244,9 +1257,13 @@ class hmdbData(MetabolomicsData):
         result.to_csv('../misc/output/metabolites_class.csv')
             
         '''
- 
-# hmdb = hmdbData()  
-# hmdb.getOntology(None, "100_hmdb.xml")
+
+rConf = RampConfig()
+rConf.loadConfig("../../config/external_resource_config.txt")
+
+hmdb = hmdbData(rConf)  
+hmdb.getDatabaseFiles()
+#hmdb.getOntology(None, "100_hmdb.xml")
 
 
 
