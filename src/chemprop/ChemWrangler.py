@@ -21,64 +21,73 @@ class ChemWrangler(object):
     The ChemWrangler class has production and utility methods for working with molecular information
     associated with RaMP Metabolites.
     '''
-    def __init__(self):
+    def __init__(self, resConfig):
         '''
-        Constructor
+        Constructor        
         '''
+        
+        self.resourceConfig = resConfig
+        
         self.chemLibDict = dict()
 
 
     """
     Fetch compound properties
     """    
-    def fetchCompoundPropertiesFiles(self):
+    def fetchCompoundPropertiesFiles(self, sources):
         
         print(os.getcwd())
         
         metData = MetabolomicsData()
-        dir = "../../misc/data/chemprops/"
-        url = "https://hmdb.ca/system/downloads/current/structures.zip"
-        remoteFile = "structures.zip"
                 
-        metData.download_files(url, dir+remoteFile)
-        
-        
-        with zipfile.ZipFile(dir+remoteFile,"r") as zip_ref:
-            zip_ref.extractall(dir)
-                 
-        dir = "../../misc/data/chemprops/"
-        url = "ftp://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete.sdf.gz"
-        remoteFile = "ChEBI_complete.sdf.gz"
-        extractFile = "ChEBI_complete.sdf"
-                 
-        metData.download_files(url, dir+remoteFile)
-        
-        with gzip.open(dir+remoteFile, 'rb') as f_in:
-            with open(dir+extractFile, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-
-    
-        """
-    Fetch compound properties
-    """    
-    def fetchFile(self, source, outputDir, fetchURL, remoteFile, compressionMode = 'gzip'):
-        
-        print(os.getcwd())
-        
-        metData = MetabolomicsData()
-        url = fetchURL
-        targetDest = outputDir+"/"+remoteFile
-        metData.download_files(url, targetDest)
-        
-        if compressionMode == 'zip':
-            with zipfile.ZipFile(targetDest,"r") as zip_ref:
-                zip_ref.extractall(outputDir)
-        
-        if compressionMode == 'gzip':
-            extractTarget = targetDest.replace(".gz", '')      
-            with gzip.open(targetDest, 'rb') as f_in:
-                with open(extractTarget, 'wb') as f_out:
+        if "hmdb" in sources:        
+            
+            conf = self.resourceConfig['hmdb_met_sdf']
+            localDir = conf.localDir
+            url = conf.sourceURL
+            remoteFile = conf.sourceFileName
+                   
+            metData.download_files(url, localDir+remoteFile)
+                        
+            with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
+                zip_ref.extractall(localDir)
+            
+        if "chebi" in sources:
+            
+            conf = self.resourceConfig['chebi_met_sdf']
+            localDir = conf.localDir
+            url = conf.sourceURL
+            remoteFile = conf.sourceFileName
+            extractFile = conf.extractFileName
+   
+            metData.download_files(url, localDir+remoteFile)
+            
+            with gzip.open(localDir+remoteFile, 'rb') as f_in:
+                with open(localDir+extractFile, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
+    
+    
+#     """
+#     Fetch compound properties
+#     """    
+#     def fetchFile(self, source, outputDir, fetchURL, remoteFile, compressionMode = 'gzip'):
+#         
+#         print(os.getcwd())
+#         
+#         metData = MetabolomicsData()
+#         url = fetchURL
+#         targetDest = outputDir+"/"+remoteFile
+#         metData.download_files(url, targetDest)
+#         
+#         if compressionMode == 'zip':
+#             with zipfile.ZipFile(targetDest,"r") as zip_ref:
+#                 zip_ref.extractall(outputDir)
+#         
+#         if compressionMode == 'gzip':
+#             extractTarget = targetDest.replace(".gz", '')      
+#             with gzip.open(targetDest, 'rb') as f_in:
+#                 with open(extractTarget, 'wb') as f_out:
+#                     shutil.copyfileobj(f_in, f_out)
                 
                 
     
@@ -349,12 +358,16 @@ class ChemWrangler(object):
         """
         Populates the chemical record list for the list of passed sources.
         """
+        self.fetchCompoundPropertiesFiles(sources)
+        
         for source in sources:
             if source == 'hmdb':
-                file = "../../misc/data/chemprops/structures.sdf"
+                sdfConfig = self.resourceConfig['hmdb_met_sdf']
+                file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('hmdb', file)
             if source == 'chebi':
-                file = "../../misc/data/chemprops/ChEBI_complete.sdf"
+                sdfConfig = self.resourceConfig['chebi_met_sdf']
+                file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('chebi', file)
             if source == 'kegg':
                 file = "../../misc/data/chemprops/kegg_compound.txt"
@@ -363,7 +376,8 @@ class ChemWrangler(object):
                 file = "../../misc/data/chemprops/pubchem_id_mi_inchikey_issue_set.txt"
                 self.readSDF('pubchem', file) 
             if source == 'lipidmaps':
-                file = "../../misc/data/chemprops/lipidmaps/structures.sdf" 
+                sdfConfig = self.resourceConfig['lipidmaps_met']
+                file = sdfConfig.localDir + sdfConfig.extractFileName 
                 self.readSDF("lipidmaps", file)      
            
            

@@ -229,13 +229,13 @@ class Main():
         
         
         # constructs the entity builder
-#        builder = EntityBuilder()
+        builder = EntityBuilder()
         
         # performs a full build of entities for loading
         # the input are files in /misc/output
         # the result are files for DB loading in /misc/sql
           
-#        builder.fullBuild()
+        builder.fullBuild()
         
         # Database loading is handled as a separate, un-coupled step.
             
