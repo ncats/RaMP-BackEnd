@@ -10,20 +10,20 @@ class lipidmapsChemData(MetabolomicsData):
     This data source does not conform to typical MetabolimicsData but is better suited specifically as a collection of Molecule entries.
     '''
     
-    def __init__(self):
+    def __init__(self, resConfig):
         
         super().__init__()
 
+        self.resourceConfig = resConfig
+        
         self.moleculeList = list()
         
         self.sourceName = "LIPIDMAPS"
- 
-        self.sourceFile = "../misc/data/chemprops/lipidmaps/structures.sdf"
 
-        self.chemPropsDir = "../misc/data/chemprops/"
-
-        self.lipidMapsDir = "../misc/data/chemprops/lipidmaps"
-        
+#         self.chemPropsDir = "../misc/data/chemprops/"
+# 
+#         self.lipidMapsDir = "../misc/data/chemprops/lipidmaps"
+#         
         
         ####DICTIONARIES IN COMMON WITH OTHER CLASSES######################################
         # common name dictionary Key: HMDB ID Value: Common Name
@@ -102,9 +102,14 @@ class lipidmapsChemData(MetabolomicsData):
             # directory already exists
             pass
 
-        chemist.fetchFile(self.sourceName, self.lipidMapsDir, "https://www.lipidmaps.org/files/?file=LMSD&ext=sdf.zip", "LMSD.sdf.zip", "zip")
+        # handled in get database files
+        # chemist.fetchFile(self.sourceName, self.lipidMapsDir, "https://www.lipidmaps.org/files/?file=LMSD&ext=sdf.zip", "LMSD.sdf.zip", "zip")
 
-        chemist.readLipidMapsSDF(self.sourceName, self.sourceFile)
+        metConfig = self.resourceConfig.getConfig("lipidmaps_met")
+        localDir = metConfig.localDir
+        metFile = metConfig.sourceFileName
+
+        chemist.readLipidMapsSDF(self.sourceName, localDir + metFile)
         lipidMapMolecules = chemist.chemLibDict[self.sourceName]
 
         if writeToFile:
@@ -112,14 +117,12 @@ class lipidmapsChemData(MetabolomicsData):
             self.writeFiles(lipidMapMolecules)
 
 
-    def writeFiles(self, molDict):
+    def writeFiles(self, molDict, lipidMapsOutputDir):
                           
         classFile = "lipidmapsmetaboliteClass.txt"
         metIdFile = "lipidmapsmetaboliteIDDictionary.txt"
         commonNameFile = "lipidmapsmetaboliteCommonName.txt"
-        
-        lipidMapsOutputDir = "../misc/output/lipidmaps/"
-        
+              
         try:
             os.makedirs(lipidMapsOutputDir)
         except FileExistsError:
@@ -149,7 +152,23 @@ class lipidmapsChemData(MetabolomicsData):
         
         
     def getEverything(self, writeToFile = False):
+        # get file resources
+        self.getDatabaseFiles()
         self.parseLipidMaps(writeToFile)    
+    
+    def getDatabaseFiles(self):
+        
+        metConfig = self.resourceConfig.getConfig("lipidmaps_met")
+                
+        metFile = metConfig.sourceFileName
+        metUrl = metConfig.sourceURL
+
+        localDir = metConfig.localDir
+    
+        # check if this path exists
+        self.check_path(localDir)
+    
+        self.download_files(metUrl, localDir + metFile)
     
 #     print(len(lipidMapMolecules))
 #     
