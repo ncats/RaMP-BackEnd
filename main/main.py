@@ -26,7 +26,7 @@ class Main():
         wikipathways = WikipathwaysRDF(resourceConf)
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
-        lipidmaps = lipidmapsChemData()
+        lipidmaps = lipidmapsChemData(resourceConf)
         
         # works based on your computer, setup working directory
         os.chdir('../main/')
