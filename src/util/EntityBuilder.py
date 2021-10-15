@@ -870,7 +870,7 @@ class EntityBuilder(object):
         """
         Write final files for analyte source
         """
-        sourcefile  = open("../../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
+        sourcefile  = open("../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
         mets = self.metaboliteList.getUniqueMetabolites()
         
@@ -912,7 +912,7 @@ class EntityBuilder(object):
         """
         write analyte to pathway mappings to final files
         """
-        sourcefile  = open("../../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
+        sourcefile  = open("../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
         
         mets = self.metaboliteList.getUniqueMetabolites()
         
@@ -931,7 +931,7 @@ class EntityBuilder(object):
         """
         Write pathway object records for all data sources
         """
-        sourcefile  = open("../../misc/sql/pathway.txt", "w+", encoding='utf-8')
+        sourcefile  = open("../misc/sql/pathway.txt", "w+", encoding='utf-8')
 
         for pathway in self.pathList.getPathwaysAsList():
             sourcefile.write(pathway.toPathwayString())
@@ -943,7 +943,7 @@ class EntityBuilder(object):
         """
         Writes analyte list for all data sources.
         """
-        sourcefile  = open("../../misc/sql/analyte.txt", "w+", encoding='utf-8')
+        sourcefile  = open("../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
         for met in self.metaboliteList.getUniqueMetabolites():
             sourcefile.write(met.rampId + "\tcompound\n")
@@ -958,7 +958,7 @@ class EntityBuilder(object):
         """
         Writes chemcial properties file for all data sources.
         """
-        chemPropsFile  = open("../../misc/sql/chemProps.txt", "w+", encoding='utf-8')
+        chemPropsFile  = open("../misc/sql/chemProps.txt", "w+", encoding='utf-8')
         mets = self.metaboliteList.getUniqueMetabolites()
         for met in mets:
             if len(met.chemPropsMolecules) > 0:
@@ -971,7 +971,7 @@ class EntityBuilder(object):
         """
         Writes analyte synonym annotations to file for all data sources
         """
-        synonymfile  = open("../../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
+        synonymfile  = open("../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
         
         mets = self.metaboliteList.getUniqueMetabolites()
         
@@ -992,7 +992,7 @@ class EntityBuilder(object):
         """
         Writes analyte synonym annotations to file for all data sources
         """
-        file = open("../../misc/sql/catalyzes.txt", "w+", encoding='utf-8')
+        file = open("../misc/sql/catalyzes.txt", "w+", encoding='utf-8')
         
         mets = self.metaboliteList.getUniqueMetabolites()
         
@@ -1008,7 +1008,7 @@ class EntityBuilder(object):
         """
         Writes analyte synonym annotations to file for all data sources
         """
-        file = open("../../misc/sql/ontology.txt", "w+", encoding='utf-8')        
+        file = open("../misc/sql/ontology.txt", "w+", encoding='utf-8')        
         
         ontos = self.ontologyList.getFullOntologyList()
         
@@ -1023,7 +1023,7 @@ class EntityBuilder(object):
     def writeOntologyAssociations(self):
         mets = self.metaboliteList.getUniqueMetabolites()
 
-        file = open("../../misc/sql/analyteToOntology.txt", "w+", encoding='utf-8')
+        file = open("../misc/sql/analyteToOntology.txt", "w+", encoding='utf-8')
         for met in mets:
             s = met.toMetaboliteOntologyString()
             if len(s) > 0:
@@ -1035,7 +1035,7 @@ class EntityBuilder(object):
     def writeMetaboliteClass(self):
         mets = self.metaboliteList.getUniqueMetabolites()
 
-        file = open("../../misc/sql/metaboliteClass.txt", "w+", encoding='utf-8')
+        file = open("../misc/sql/metaboliteClass.txt", "w+", encoding='utf-8')
         for met in mets:
             file.write(met.toMetaboliteClassString())
             
@@ -1182,7 +1182,7 @@ class EntityBuilder(object):
             
             totalMismatches.extend(mismatchList)
                   
-        with open("../../misc/resourceConfig/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
+        with open("../misc/resourceConfig/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
     
@@ -1523,9 +1523,9 @@ class DataSource(object):
         
         self.sourceName = "hmdb"
         self.filePrefix = "hmdb"
-        self.sourceLocPath = "../../misc/output/hmdb"
+        self.sourceLocPath = "../misc/output/hmdb"
         self.haveChemClassInfo = True
-        self.exportPath = "../../misc/sql"
+        self.exportPath = "../misc/sql"
         
      
 class MappingExclusionList(object):        
