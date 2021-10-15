@@ -78,7 +78,7 @@ class EntityBuilder(object):
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
-        self.dataSource2.sourceLocPath = '../../misc/output/reactome';
+        self.dataSource2.sourceLocPath = '../misc/output/reactome';
          
         self.sourceList.append(self.dataSource2)
          
@@ -86,7 +86,7 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
-        self.dataSource3.sourceLocPath = '../../misc/output/wikiPathwayRDF';        
+        self.dataSource3.sourceLocPath = '../misc/output/wikiPathwayRDF';        
          
         self.sourceList.append(self.dataSource3)
          
@@ -94,7 +94,7 @@ class EntityBuilder(object):
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
         self.dataSource4.haveChemClassInfo = True
-        self.dataSource4.sourceLocPath = '../../misc/output/lipidmaps/';        
+        self.dataSource4.sourceLocPath = '../misc/output/lipidmaps/';        
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
@@ -106,7 +106,7 @@ class EntityBuilder(object):
         # mapping exclusion list and population of the list
         # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
-        self.mappingExclustionList.populateExclusionList("../../misc/resourceConfig/curation_mapping_issues_list.txt")
+        self.mappingExclustionList.populateExclusionList("../misc/resourceConfig/curation_mapping_issues_list.txt")
     
         # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()
