@@ -22,7 +22,7 @@ class lipidmapsChemData(MetabolomicsData):
 
 #         self.chemPropsDir = "../misc/data/chemprops/"
 # 
-#         self.lipidMapsDir = "../misc/data/chemprops/lipidmaps"
+        self.lipidMapsOutputDir = "../misc/output/lipidmaps/"
 #         
         
         ####DICTIONARIES IN COMMON WITH OTHER CLASSES######################################
@@ -87,17 +87,12 @@ class lipidmapsChemData(MetabolomicsData):
         # value as the class name
         self.metaboliteClass = dict()
 
+
     def parseLipidMaps(self, writeToFile=False):
-        chemist = ChemWrangler()
+        chemist = ChemWrangler(self.resourceConfig)
 
         try:
-            os.makedirs(self.chemPropsDir)
-        except FileExistsError:
-            # directory already exists
-            pass
-
-        try:
-            os.makedirs(self.lipidMapsDir)
+            os.makedirs(self.lipidMapsOutputDir)
         except FileExistsError:
             # directory already exists
             pass
@@ -114,7 +109,7 @@ class lipidmapsChemData(MetabolomicsData):
 
         if writeToFile:
             self.write_myself_files('lipidmaps')
-            self.writeFiles(lipidMapMolecules)
+            self.writeFiles(lipidMapMolecules, self.lipidMapsOutputDir)
 
 
     def writeFiles(self, molDict, lipidMapsOutputDir):
