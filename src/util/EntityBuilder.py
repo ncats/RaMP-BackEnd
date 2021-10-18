@@ -78,7 +78,7 @@ class EntityBuilder(object):
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
-        self.dataSource2.sourceLocPath = '../misc/output/reactome';
+        self.dataSource2.sourceLocPath = '../misc/output/reactome/';
          
         self.sourceList.append(self.dataSource2)
          
@@ -86,7 +86,7 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
-        self.dataSource3.sourceLocPath = '../misc/output/wikiPathwayRDF';        
+        self.dataSource3.sourceLocPath = '../misc/output/wikipathwayRDF/';        
          
         self.sourceList.append(self.dataSource3)
          
