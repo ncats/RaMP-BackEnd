@@ -253,14 +253,15 @@ class ChemWrangler(object):
         
         classDict = { "> <CATEGORY>":"LipidMaps_category", "> <MAIN_CLASS>":"LipidMaps_main_class", "> <SUB_CLASS>":"LipidMaps_sub_class"}
         
+        print(filePath)
+        
         i = 0
-#        sdfDB = open(filePath, 'r+', encoding="utf-8")
-        sdfDB = open(filePath, 'r+', encoding='ISO-8859-1')
+        sdfDB = open(filePath, 'r+', encoding = 'utf-8')
 
         molDict = dict()
         mol = Molecule()
         mol.source = source
-        
+
         while True:
             line = sdfDB.readline()
 
