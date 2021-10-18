@@ -2,7 +2,7 @@ import urllib.request
 import os
 from parse.MetabolomicsData import MetabolomicsData
 from chemprop.ChemWrangler import ChemWrangler
-
+from rampConfig.RampConfig import RampConfig
 
 class lipidmapsChemData(MetabolomicsData):
     '''This class parses lipidmaps SDF file to capture lipidmaps structures specifically for the following tables
@@ -102,7 +102,7 @@ class lipidmapsChemData(MetabolomicsData):
 
         metConfig = self.resourceConfig.getConfig("lipidmaps_met")
         localDir = metConfig.localDir
-        metFile = metConfig.sourceFileName
+        metFile = metConfig.extractFileName
 
         chemist.readLipidMapsSDF(self.sourceName, localDir + metFile)
         lipidMapMolecules = chemist.chemLibDict[self.sourceName]
@@ -113,7 +113,9 @@ class lipidmapsChemData(MetabolomicsData):
 
 
     def writeFiles(self, molDict, lipidMapsOutputDir):
-                          
+        
+        print("Writing LipidMaps mol count=" + str(len(molDict)))
+        
         classFile = "lipidmapsmetaboliteClass.txt"
         metIdFile = "lipidmapsmetaboliteIDDictionary.txt"
         commonNameFile = "lipidmapsmetaboliteCommonName.txt"
@@ -177,5 +179,9 @@ class lipidmapsChemData(MetabolomicsData):
 #     
 #     print(mol.toClassString())
     
-    
+resourceConfFile = "../../config/external_resource_config.txt" 
+resourceConf = RampConfig()
+resourceConf.loadConfig(resourceConfFile)
+lpData = lipidmapsChemData(resourceConf)
+lpData.getEverything(True)       
         
