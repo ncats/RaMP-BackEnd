@@ -49,10 +49,12 @@ class EntityBuilder(object):
     __rampPathStartId = 0
     __rampOntStartId = 0
 
-    def __init__(self):
+    def __init__(self, resourceConfig):
         '''
         Constructor
         '''
+        # config for data sources
+        self.resConfig = resourceConfig
         
         # The full metabolite list object
         self.metaboliteList = MetaboliteList()
@@ -1053,9 +1055,7 @@ class EntityBuilder(object):
         """
         Loads chemistry for sources
         """
-        cw = ChemWrangler()
-        # sources = ["hmdb","chebi"]
-        # sources = ["hmdb","chebi","kegg","pubchem"]
+        cw = ChemWrangler(self.resConfig)
         cw.loadRampChemRecords(sources)
         self.chemSourceRecords = cw.getChemSourceRecords()
         
