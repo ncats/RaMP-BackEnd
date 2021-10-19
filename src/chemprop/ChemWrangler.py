@@ -42,7 +42,7 @@ class ChemWrangler(object):
                 
         if "hmdb" in sources:        
             
-            conf = self.resourceConfig['hmdb_met_sdf']
+            conf = self.resourceConfig.getConfig('hmdb_met_sdf')
             localDir = conf.localDir
             url = conf.sourceURL
             remoteFile = conf.sourceFileName
@@ -54,7 +54,7 @@ class ChemWrangler(object):
             
         if "chebi" in sources:
             
-            conf = self.resourceConfig['chebi_met_sdf']
+            conf = self.resourceConfig.getConfig('chebi_met_sdf')
             localDir = conf.localDir
             url = conf.sourceURL
             remoteFile = conf.sourceFileName
@@ -66,6 +66,7 @@ class ChemWrangler(object):
                 with open(localDir+extractFile, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
     
+        # lipid maps were fetched during parse for dictionaries
     
 #     """
 #     Fetch compound properties
