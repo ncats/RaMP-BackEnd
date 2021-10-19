@@ -167,21 +167,10 @@ class lipidmapsChemData(MetabolomicsData):
     
         self.download_files(metUrl, localDir + metFile)
     
-#     print(len(lipidMapMolecules))
-#     
-#     mol = lipidMapMolecules["LIPIDMAPS:LMGP10070002"]
-#     
-#     print(mol.toChemPropsString())
+# Test    
+# resourceConfFile = "../../config/external_resource_config.txt" 
+# resourceConf = RampConfig()
+# resourceConf.loadConfig(resourceConfFile)
+# lpData = lipidmapsChemData(resourceConf)
+# lpData.getEverything(True)       
 #         
-#     print(mol.toSourceString())
-#     
-#     print(mol.toCommonNameString())
-#     
-#     print(mol.toClassString())
-    
-resourceConfFile = "../../config/external_resource_config.txt" 
-resourceConf = RampConfig()
-resourceConf.loadConfig(resourceConfFile)
-lpData = lipidmapsChemData(resourceConf)
-lpData.getEverything(True)       
-        

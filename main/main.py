@@ -229,7 +229,7 @@ class Main():
         
         
         # constructs the entity builder
-        builder = EntityBuilder()
+        builder = EntityBuilder(resourceConf)
         
         # performs a full build of entities for loading
         # the input are files in /misc/output
