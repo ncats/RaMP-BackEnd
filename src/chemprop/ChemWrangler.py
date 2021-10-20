@@ -552,12 +552,12 @@ class ChemWrangler(object):
 #cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
 
 # Test    
-resourceConfFile = "../../config/external_resource_config.txt" 
-resourceConf = RampConfig()
-resourceConf.loadConfig(resourceConfFile)
-cw = ChemWrangler(resourceConf)
-sources = ["hmdb", "chebi", "lipidmaps"]
-cw.fetchCompoundPropertiesFiles(sources) 
-cw.loadRampChemRecords(sources)
+# resourceConfFile = "../../config/external_resource_config.txt" 
+# resourceConf = RampConfig()
+# resourceConf.loadConfig(resourceConfFile)
+# cw = ChemWrangler(resourceConf)
+# sources = ["hmdb", "chebi", "lipidmaps"]
+# cw.fetchCompoundPropertiesFiles(sources) 
+# cw.loadRampChemRecords(sources)
 
      
