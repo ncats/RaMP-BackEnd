@@ -4,12 +4,14 @@ Created on Dec 7, 2020
 @author: braistedjc
 '''
 import sys, os
+from os.path import exists
 from rampEntity.Molecule import Molecule
 from parse.MetabolomicsData import MetabolomicsData
 import zipfile
 import gzip
 import shutil
 import re
+from rampConfig.RampConfig import RampConfig
 
 from rampEntity.Metabolite import Metabolite
 
@@ -24,8 +26,7 @@ class ChemWrangler(object):
     def __init__(self, resConfig):
         '''
         Constructor        
-        '''
-        
+        '''        
         self.resourceConfig = resConfig
         
         self.chemLibDict = dict()
@@ -35,9 +36,7 @@ class ChemWrangler(object):
     Fetch compound properties
     """    
     def fetchCompoundPropertiesFiles(self, sources):
-        
-        print(os.getcwd())
-        
+                
         metData = MetabolomicsData()
                 
         if "hmdb" in sources:        
@@ -46,11 +45,19 @@ class ChemWrangler(object):
             localDir = conf.localDir
             url = conf.sourceURL
             remoteFile = conf.sourceFileName
-                   
-            metData.download_files(url, localDir+remoteFile)
+            extractFile = conf.extractFileName
+            
+            # makes the dir if needed
+            metData.check_path(localDir)
+            
+            if not exists(localDir + extractFile):
+                metData.download_files(url, localDir+remoteFile)
                         
-            with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
-                zip_ref.extractall(localDir)
+                with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
+                    zip_ref.extractall(localDir)
+            else:
+                print("HMDB SDF extists. Using cached copy of SDF.")
+
             
         if "chebi" in sources:
             
@@ -59,14 +66,39 @@ class ChemWrangler(object):
             url = conf.sourceURL
             remoteFile = conf.sourceFileName
             extractFile = conf.extractFileName
-   
-            metData.download_files(url, localDir+remoteFile)
+
+            # makes the dir if needed
+            metData.check_path(localDir)   
+
+            if not exists(localDir + extractFile):
+
+                metData.download_files(url, localDir+remoteFile)
             
-            with gzip.open(localDir+remoteFile, 'rb') as f_in:
-                with open(localDir+extractFile, 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-    
-        # lipid maps were fetched during parse for dictionaries
+                with gzip.open(localDir+remoteFile, 'rb') as f_in:
+                    with open(localDir+extractFile, 'wb') as f_out:
+                        shutil.copyfileobj(f_in, f_out)
+            else:
+                print("Chebi SDF extists. Using cached copy of SDF.")
+                
+                
+        if "lipidmaps" in sources:        
+            
+            conf = self.resourceConfig.getConfig('lipidmaps_met')
+            localDir = conf.localDir
+            url = conf.sourceURL
+            remoteFile = conf.sourceFileName
+            extractFile = conf.extractFileName
+            
+            # makes the dir if needed
+            metData.check_path(localDir)
+            
+            if not exists(localDir + extractFile):
+                metData.download_files(url, localDir+remoteFile)
+                        
+                with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
+                    zip_ref.extractall(localDir)
+            else:
+                print("LipidMaps SDF extists. Using cached copy of SDF.")                
     
 #     """
 #     Fetch compound properties
@@ -98,6 +130,8 @@ class ChemWrangler(object):
         """
         Utility method to read HMDB SDF file for specific data types to populate Molecule objects.
         """
+        print("HMDB SDF")
+        
         i = 0
         sdfDB = open(filePath, 'r+', encoding="utf-8")
         molDict = dict()
@@ -138,13 +172,13 @@ class ChemWrangler(object):
                 mol.formula = sdfDB.readline().strip()
 
         self.chemLibDict[source] = molDict
+        print("Finished HMDB chemprops: size="+str(len(molDict)))
        
         
     def readChebiSDF(self, source, filePath):
         """
         Utility method to read Chebi SDF file for specific data types to populate Molecule objects.
         """        
-        print(sys.getdefaultencoding())
         print("ChEBI SDF")
 
         i = 0
@@ -187,6 +221,7 @@ class ChemWrangler(object):
                 mol.formula = sdfDB.readline().strip()
 
         self.chemLibDict[source] = molDict
+        print("Finished ChEBI chemprops: size="+str(len(molDict)))
 
 
     def readKEGGCompound(self, source, filePath):
@@ -239,7 +274,7 @@ class ChemWrangler(object):
         """
         Utility method to read Chebi SDF file for specific data types to populate Molecule objects.
         """        
-        print(sys.getdefaultencoding())
+        
         print("Lipidmaps SDF")
 
         idDict = {
@@ -253,9 +288,7 @@ class ChemWrangler(object):
         }
         
         classDict = { "> <CATEGORY>":"LipidMaps_category", "> <MAIN_CLASS>":"LipidMaps_main_class", "> <SUB_CLASS>":"LipidMaps_sub_class"}
-        
-        print(filePath)
-        
+
         i = 0
         sdfDB = open(filePath, 'r+', encoding = 'utf-8')
 
@@ -362,15 +395,22 @@ class ChemWrangler(object):
         """
         Populates the chemical record list for the list of passed sources.
         """
+        
+        print("Fetching Compound Properties SDF Files")
+
+        
         self.fetchCompoundPropertiesFiles(sources)
+        
+        print("Finished fetching compound property files.")
+        print("Processing compound property source files. Building molecule list.")
         
         for source in sources:
             if source == 'hmdb':
-                sdfConfig = self.resourceConfig['hmdb_met_sdf']
+                sdfConfig = self.resourceConfig.getConfig('hmdb_met_sdf')
                 file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('hmdb', file)
             if source == 'chebi':
-                sdfConfig = self.resourceConfig['chebi_met_sdf']
+                sdfConfig = self.resourceConfig.getConfig('chebi_met_sdf')
                 file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('chebi', file)
             if source == 'kegg':
@@ -380,10 +420,12 @@ class ChemWrangler(object):
                 file = "../../misc/data/chemprops/pubchem_id_mi_inchikey_issue_set.txt"
                 self.readSDF('pubchem', file) 
             if source == 'lipidmaps':
-                sdfConfig = self.resourceConfig['lipidmaps_met']
+                sdfConfig = self.resourceConfig.getConfig('lipidmaps_met')
                 file = sdfConfig.localDir + sdfConfig.extractFileName 
                 self.readSDF("lipidmaps", file)      
-           
+        
+        print("Finished processing compound property source files.")
+   
            
          
     def getChemSourceRecords(self):
@@ -508,4 +550,14 @@ class ChemWrangler(object):
         
 #cw = ChemWrangler()
 #cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
-        
+
+# Test    
+resourceConfFile = "../../config/external_resource_config.txt" 
+resourceConf = RampConfig()
+resourceConf.loadConfig(resourceConfFile)
+cw = ChemWrangler(resourceConf)
+sources = ["hmdb", "chebi", "lipidmaps"]
+cw.fetchCompoundPropertiesFiles(sources) 
+cw.loadRampChemRecords(sources)
+
+     
