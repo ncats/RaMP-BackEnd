@@ -117,6 +117,8 @@ class EntityBuilder(object):
         # Ths captures all primary associations between source id 
         self.sourceIdToIDDict = dict()
         
+        # this counts the number of manually curated errors that are still found in the input.
+        self.curationAvoidanceCount = 0
         
     def fullBuild(self):
         """
@@ -168,7 +170,8 @@ class EntityBuilder(object):
         self.writeOntologyAssociations()
         self.writeChemProps()
         self.writeMetaboliteClass()
-            
+        
+        print("Number of problem associations skipped (curationAvoidanceCount): " + str(self.curationAvoidanceCount))
         
         
     def loadMetaboList(self, eqMetric = 0):
@@ -211,6 +214,9 @@ class EntityBuilder(object):
                 
                 # check exclusion mapping list
                 excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
+                
+                if excludeMappingConnection:
+                    self.curationAvoidanceCount = self.curationAvoidanceCount + 1
                 
                 metabolite = self.metaboliteList.getMetaboliteBySourceId(currSourceId)
                 altMetabolite = self.metaboliteList.getMetaboliteBySourceId(altId)
