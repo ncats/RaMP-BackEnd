@@ -9,15 +9,25 @@ from pandas.api.types import is_string_dtype
 import os.path
 from os import path
 from sqlalchemy import create_engine
+from sqlalchemy import MetaData
+from sqlalchemy.orm import sessionmaker
 import logging
 from jproperties import Properties
 from pprint import pprint
-    
+  
 class rampDBBulkLoader(object):
     
-    def __init__(self, dbConf):
+    def __init__(self, dbPropsFile):
         print("rampDBBulkLoaer__init__")
-        self.dbConf = dbConf
+        
+        # holds db credentials
+        self.dbConf = dbConfig(dbPropsFile)
+        
+        logging.basicConfig()
+        logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
+         
+        pd.set_option('display.max_columns', None)   
+     
    
     
     def remove_whitespace(self, dF):     
@@ -206,7 +216,7 @@ class rampDBBulkLoader(object):
         print("nothing")
 
         
-    def load(self, dbConf, rampResourceConfigFile):
+    def load(self, rampResourceConfigFile):
     
         resourceConfig = pd.read_csv(rampResourceConfigFile, sep='\t', index_col=None)
         resourceConfig = pd.DataFrame(resourceConfig)
@@ -346,6 +356,63 @@ class rampDBBulkLoader(object):
 
             print("finished update entity summary")
 
+
+    def updateDBVersion(self, incrementOrReplace = 'increment', optionalVersion = None, optionalNote = None):
+        
+        self.dbConf.dumpConfig()
+        
+        engine = create_engine(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname), echo=False)
+        
+        versionSQL = "select * from db_version where load_timestamp = (select max(load_timestamp) from db_version)"
+
+        print("Updating DB Version")
+                
+        with engine.connect() as conn:
+            
+            meta_data = MetaData(bind=conn)
+            meta_data.reflect()
+            db_version = meta_data.tables['db_version']
+            
+            if incrementOrReplace != 'specified':
+                                
+                rp = conn.execute(versionSQL)
+                res = rp.fetchone()
+                                
+                print("have current version of ramp: " + str(res['ramp_version']) + " " + str(res['load_timestamp']))
+
+                vers = res['ramp_version']
+                
+                if incrementOrReplace == 'increment_patch_release':
+                    end = vers.rfind(".")
+                    start = end + 1                
+                    newPatchLevel = (int)(vers[start:]) + 1                
+                    newVersion = vers[0:start] + str(newPatchLevel)
+                    print("increment patch release - new version = " + newVersion)
+                elif incrementOrReplace == 'increment_minor_release':
+                    end = vers.find(".") + 1
+                    end2 = vers.rfind(".")
+                    releaseVersion = (int)(vers[end:end2]) + 1
+                    newVersion = vers[0:end] + str(releaseVersion) + ".0"
+                    print("increment minor release - new version = " + newVersion)
+
+            else:
+                newVersion = optionalVersion
+                print('set explicit db version = ' + newVersion)
+            
+            valDict = dict()
+            valDict['ramp_version'] = newVersion
+            
+            if optionalNote is not None:
+                valDict['version_notes'] = optionalNote
+
+            vals = []
+            vals.append(valDict)
+            
+            conn.execute(db_version.insert(), vals)            
+            conn.close()
+            
+            
+
 class dbConfig(object):
     
     def __init__(self, configFile):
@@ -390,38 +457,10 @@ class rampFileResource(object):
         pprint(vars(self))
                         
         
-################# DB Loading Instructions
 
-# Sets logging level
-logging.basicConfig()
-logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
-pd.set_option('display.max_columns', None)   
+loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
 
-# config file holds login credentials in this format:
-# host=<host_uri>
-# dbname=<db_name_usually_ramp>
-# username=<db_user_name_often_root>
-# conpass=<db_connection_password>
-dbConf = dbConfig("../../misc/resourceConfig/ramp_dev_db_config.txt")
-
-# pass the credentials object to the constructed rampDBBulLoader
-loader = rampDBBulkLoader(dbConf)
-
-# update methods
-# the sql_resource_config.txt is a tab delimited file indicating which resources to load
-# those marked as 'ready' will be updated. Usually all database tables are updated in one run.
-rampResourceConfigFile = "../../misc/resourceConfig/sql_resource_config.txt"
-# this method loads the intermediate parsing results from the ../../misc/sql/ directory.
-loader.load(dbConf, rampResourceConfigFile)     
-
-# this optional method tracks database version information supplied in this file.
-#loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
-
-# this method populates a table that reflects teh current status of the database.
-# metrics such as gene and metabolite counts for reach data sets are tallied.
-loader.updateDataStatusSummary()
-
-        
-
-
+loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
+loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
+loader.updateDBVersion('specified', "v3.0.0", "Testing explicit version set")
 
