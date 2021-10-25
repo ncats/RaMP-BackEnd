@@ -37,13 +37,13 @@ class mainDBLoad():
         # the sql_resource_config.txt is a tab delimited file indicating which resources to load
         # those marked as 'ready' will be updated. Usually all database tables are updated in one run.
         # this method loads the intermediate parsing results from the ../../misc/sql/ directory.
-        loader(dbConf, self.dbConfigFilePath)     
+        loader.load(self.dbConfigFilePath)     
         
-        loader.updateDBVersion(incrementLevel, optionalVersionOverride, optionalNote)
+        loader.updateDBVersion(incrementLevel = 'increment_patch_release')
         
         
         # this optional method tracks database version information supplied in this file.
-        #loader.updateVersionInfo("../../misc/resourceConfig/ramp_version_update_info.txt")
+        # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
         
         # this method populates a table that reflects teh current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
@@ -52,5 +52,5 @@ class mainDBLoad():
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None):
+loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None)
 

@@ -10,7 +10,6 @@ import os.path
 from os import path
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
-from sqlalchemy.orm import sessionmaker
 import logging
 from jproperties import Properties
 from pprint import pprint
@@ -81,7 +80,7 @@ class rampDBBulkLoader(object):
     def loadFile(self, resource, engine):
         print(os.path.abspath(os.getcwd()))
 
-        file_path = "../../misc/sql/"+resource.stagingFile
+        file_path = "../misc/sql/"+resource.stagingFile
         colNames = resource.columnNames
         
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
@@ -357,7 +356,7 @@ class rampDBBulkLoader(object):
             print("finished update entity summary")
 
 
-    def updateDBVersion(self, incrementOrReplace = 'increment', optionalVersion = None, optionalNote = None):
+    def updateDBVersion(self, incrementLevel = 'increment_patch_release', optionalVersion = None, optionalNote = None):
         
         self.dbConf.dumpConfig()
         
@@ -373,7 +372,7 @@ class rampDBBulkLoader(object):
             meta_data.reflect()
             db_version = meta_data.tables['db_version']
             
-            if incrementOrReplace != 'specified':
+            if incrementLevel != 'specified':
                                 
                 rp = conn.execute(versionSQL)
                 res = rp.fetchone()
@@ -382,13 +381,13 @@ class rampDBBulkLoader(object):
 
                 vers = res['ramp_version']
                 
-                if incrementOrReplace == 'increment_patch_release':
+                if incrementLevel == 'increment_patch_release':
                     end = vers.rfind(".")
                     start = end + 1                
                     newPatchLevel = (int)(vers[start:]) + 1                
                     newVersion = vers[0:start] + str(newPatchLevel)
                     print("increment patch release - new version = " + newVersion)
-                elif incrementOrReplace == 'increment_minor_release':
+                elif incrementLevel == 'increment_minor_release':
                     end = vers.find(".") + 1
                     end2 = vers.rfind(".")
                     releaseVersion = (int)(vers[end:end2]) + 1
@@ -458,9 +457,9 @@ class rampFileResource(object):
                         
         
 
-loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-
-loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
-loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
-loader.updateDBVersion('specified', "v3.0.0", "Testing explicit version set")
+# loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+# 
+# loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
+# loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
+# loader.updateDBVersion('specified', "v3.0.0", "Testing explicit version set")
 
