@@ -512,6 +512,7 @@ class WikipathwaysRDF(MetabolomicsData):
         print('{} pathway has at least one metabolites'.format(len(self.pathwaysWithMetabolitesDictionary)))
         '''
         #print('WIKI  Total metabolites in this version of pathways (roughly):{}'.format(len(self.metaboliteIDDictionary)))
+
     # helper functions 
     def getIDFromGraphLinks(self,g,subject):
         '''
@@ -587,9 +588,9 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'gene_symbol:' + id
         elif prefix == "common_name":
             id = 'gene_symbol:' + id
-            
-            
-            
+        elif prefix == 'kegg.glycan' or prefix == 'kegg_glycan':
+            id = 'kegg_glycan:' +id
+
         return id
 
 # test
