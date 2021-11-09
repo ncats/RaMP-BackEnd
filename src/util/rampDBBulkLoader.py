@@ -15,7 +15,7 @@ from jproperties import Properties
 from pprint import pprint
   
 class rampDBBulkLoader(object):
-    
+
     def __init__(self, dbPropsFile):
         print("rampDBBulkLoaer__init__")
         
