@@ -634,3 +634,6 @@ hmdb	hmdb:HMDB0037776	name	chemspider:467713	name	improper_match
 hmdb	hmdb:HMDB0039525	name	chemspider:10197108	name	improper_match
 hmdb	hmdb:HMDB0039641	name	chemspider:39146	name	improper_match
 hmdb	hmdb:HMDB0040468	name	chemspider:9963072	name	improper_match
+hmdb	hmdb:HMDB0060437	name	kegg:C07645	name	improper_match
+hmdb	hmdb:HMDB0060438	name	chebi:2560	name	improper_match
+hmdb	hmdb:HMDB0060439	name	pubchem:107744	name	improper_match
