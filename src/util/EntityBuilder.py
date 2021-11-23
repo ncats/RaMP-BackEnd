@@ -562,7 +562,7 @@ class EntityBuilder(object):
         """
   
         # biofluids
-        parentTerm = 'biofluid'
+        parentTerm = 'Biofluid and excreta'
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "biofluidLocation.txt"
             
@@ -579,7 +579,7 @@ class EntityBuilder(object):
                 self.recordOntology(parentTerm, childTerm, metId)
                 
         # origins
-        parentTerm = 'origins'
+        parentTerm = 'Source'
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "exoEndoDictionary.txt"
             
@@ -596,7 +596,7 @@ class EntityBuilder(object):
                 self.recordOntology(parentTerm, childTerm, metId)
 
         # cellular location
-        parentTerm = 'cellular location'        
+        parentTerm = 'Subcellular'        
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "cellularLocation.txt"
             
@@ -613,7 +613,7 @@ class EntityBuilder(object):
                 self.recordOntology(parentTerm, childTerm, metId)
 
         # tissue location
-        parentTerm = 'tissue location'
+        parentTerm = 'Tissue and substructures'
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "tissueLocation.txt"
             
@@ -628,9 +628,25 @@ class EntityBuilder(object):
                 metId = row[0]
                 childTerm = row[1]
                 self.recordOntology(parentTerm, childTerm, metId)
+
+        parentTerm = 'Organ and components'
+        for src in self.sourceList:
+            file = src.sourceLocPath + "/" + src.filePrefix + "organLocation.txt"
+            
+            if not(path.exists(file)):
+                break
+
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            df = pd.DataFrame(data)
+            df = self.remove_whitespace(df)
+
+            for i,row in df.iterrows():
+                metId = row[0]
+                childTerm = row[1]
+                self.recordOntology(parentTerm, childTerm, metId)
         
         # metabolite application
-        parentTerm = 'application'      
+        parentTerm = 'Industrial application'      
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteApplication.txt"
             
@@ -647,8 +663,7 @@ class EntityBuilder(object):
                 self.recordOntology(parentTerm, childTerm, metId)
                 
         # health effect
-        parentTerm = 'health condition'
-        
+        parentTerm = 'Health condition'        
         for src in self.sourceList:
             file = src.sourceLocPath + "/" + src.filePrefix + "healthEffect.txt"
             
