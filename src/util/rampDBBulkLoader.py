@@ -12,8 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 import logging
 from jproperties import Properties
-from pprint import pprint
-  
+
 class rampDBBulkLoader(object):
 
     def __init__(self, dbPropsFile):
@@ -451,9 +450,6 @@ class rampFileResource(object):
         self.primaryKey = resource.primaryKey
         self.columnNames = resource.colNames.split(",")
         
-    
-    def printResource(self):
-        pprint(vars(self))
                         
         
 

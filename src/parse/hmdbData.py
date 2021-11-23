@@ -375,7 +375,10 @@ class hmdbData(MetabolomicsData):
                 # Find accession number
                 if accessiontag is not None and accessiontag.text is not None:
                     metabohmdbid = 'hmdb:' + accessiontag.text
-                    self.metaInchi[metabohmdbid] = inchi.text
+                    inchiID = inchi.text
+                    if inchiID is not None:
+                        self.metaInchi[metabohmdbid] = inchiID
+                    
                     if metabohmdbid not in self.metabolitesWithSynonymsDictionary:
                         self.metabolitesWithSynonymsDictionary[metabohmdbid] =[]
                     if metabohmdbid not in self.metabolitesWithPathwaysDictionary:

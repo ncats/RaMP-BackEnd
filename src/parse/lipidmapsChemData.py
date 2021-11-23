@@ -1,5 +1,6 @@
 import urllib.request
 import os
+import zipfile
 from parse.MetabolomicsData import MetabolomicsData
 from chemprop.ChemWrangler import ChemWrangler
 from rampConfig.RampConfig import RampConfig
@@ -166,6 +167,9 @@ class lipidmapsChemData(MetabolomicsData):
         self.check_path(localDir)
     
         self.download_files(metUrl, localDir + metFile)
+        
+        with zipfile.ZipFile(localDir+metFile,"r") as zip_ref:
+            zip_ref.extractall(localDir)
     
 # Test    
 # resourceConfFile = "../../config/external_resource_config.txt" 

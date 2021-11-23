@@ -411,8 +411,9 @@ class reactomeData(MetabolomicsData):
                                         mapping = self.geneInfoDictionary['uniprot:'+geneid]
                                         mapping["common_name"] = "gene_symbol:"+name.text
                                     except KeyError:
-                                        print("Raw data does not have this ID ...")
-                                        print(geneid)
+                                        pass
+                                        # print("Raw data does not have this ID ...")
+                                        # print(geneid)
                                         
                         # we now have uniprot to 'common_name', really gene id.
                         # now we want to grab the NCBI/Entrez 'GeneID'                 
