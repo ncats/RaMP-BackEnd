@@ -18,12 +18,13 @@ class OntologyList(object):
         
         self.ontolDict = dict()
         
-        self.ontolDict["origins"] = dict()
-        self.ontolDict["biofluid"] = dict()
-        self.ontolDict["cellular location"] = dict()
-        self.ontolDict["tissue location"] = dict()
-        self.ontolDict["application"] = dict()
-        self.ontolDict["health condition"] = dict()
+        self.ontolDict["Source"] = dict()
+        self.ontolDict["Biofluid or excreta"] = dict()
+        self.ontolDict["Subcellular"] = dict()
+        self.ontolDict["Tissue location"] = dict()
+        self.ontolDict["Organ or component"] = dict()        
+        self.ontolDict["Industrial application"] = dict()
+        self.ontolDict["Health condition"] = dict()
                                      
     def addOntologyRecord(self, ontology):
         if ontology not in self.simpleOntolList:
@@ -37,7 +38,7 @@ class OntologyList(object):
                 
     def getOntologyFromParentChild(self, parentTerm, childTerm):
         ontology = None
-        if self.ontolDict[parentTerm] is not None:
+        if self.ontolDict.get(parentTerm, None) is not None:
             ontology = self.ontolDict[parentTerm].get(childTerm, None)
         return ontology
         
