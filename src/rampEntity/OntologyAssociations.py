@@ -29,12 +29,12 @@ class OnologyAssocations(object):
         
         # pre-load theese into termDict to have central access
         self.termDict['Source'] = self.origins
-        self.termDict['Biofluid or excreta'] = self.biofluid
+        self.termDict['Biofluid and excreta'] = self.biofluid
         self.termDict['Subcellular'] = self.cellularLoc
         self.termDict['Tissue location'] = self.tissueLoc
-        self.ontolDict["Organ or component"] = dict() 
+        self.ontolDict["Organ and components"] = dict() 
         self.termDict['Industrial application'] = self.metApp
-        self.termDict['Health effect'] = self.healthEffect
+        self.termDict['Health condition'] = self.healthEffect
         
         
     def addOrigin(self, origin):        

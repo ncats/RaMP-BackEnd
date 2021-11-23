@@ -19,10 +19,10 @@ class OntologyList(object):
         self.ontolDict = dict()
         
         self.ontolDict["Source"] = dict()
-        self.ontolDict["Biofluid or excreta"] = dict()
+        self.ontolDict["Biofluid and excreta"] = dict()
         self.ontolDict["Subcellular"] = dict()
         self.ontolDict["Tissue location"] = dict()
-        self.ontolDict["Organ or component"] = dict()        
+        self.ontolDict["Organ and components"] = dict()        
         self.ontolDict["Industrial application"] = dict()
         self.ontolDict["Health condition"] = dict()
                                      
@@ -30,6 +30,7 @@ class OntologyList(object):
         if ontology not in self.simpleOntolList:
             print("append ontology")
             self.simpleOntolList.append(ontology)
+            print(ontology.ontolParent+" p and c "+ontology.ontolChild)
             self.ontolDict[ontology.ontolParent][ontology.ontolChild] = ontology
         
     def forceAddOntologyRecord(self, ontology):
