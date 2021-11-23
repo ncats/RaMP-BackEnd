@@ -109,9 +109,13 @@ class hmdbData(MetabolomicsData):
         self.exoEndo = dict()
         #key: metaboliteID, value: tissue_locations
         self.tissueLocation = dict()
+
+        #key: metaboliteId, value: organ_location        
+        self.organLocation = dict()
         
         #key: tissue location, value : "placeholder"
         self.tissue = dict()
+        
         self.idDictForMetabolite = dict()
         # key: source ID e.g. HMDBID, value: dictionary that has key of sub,class,super class
         # value as the class name
@@ -707,19 +711,19 @@ class hmdbData(MetabolomicsData):
                         self.tissueLocation[metId] = [term]
                         
         if oAndCNode is not None:
-            for tissueDec in oAndCNode.iter('{http://www.hmdb.ca}descendant'):
-                termNode = tissueDec.find('{http://www.hmdb.ca}term')
+            for organComp in oAndCNode.iter('{http://www.hmdb.ca}descendant'):
+                termNode = organComp.find('{http://www.hmdb.ca}term')
                 if termNode is not None:
                     term = termNode.text.strip()
                     
                     if term in keyTerms:
                         continue
              
-                    if metId in self.tissueLocation:
-                        if term not in self.tissueLocation[metId]:
-                            self.tissueLocation[metId].append(term)
+                    if metId in self.organLocation:
+                        if term not in self.organLocation[metId]:
+                            self.organLocation[metId].append(term)
                     else:
-                        self.tissueLocation[metId] = [term]               
+                        self.organLocation[metId] = [term]               
                                 
                            
     def parseBiofluid(self, ontology, metId):
