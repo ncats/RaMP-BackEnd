@@ -24,7 +24,7 @@ import numpy as np
 from pandas.io.common import file_path_to_url
 from pandas.api.types import is_string_dtype
 from pandas.io.html import _remove_whitespace
-from collections import defaultdict
+#from collections import defaultdict
 
 import pubchempy as pcp
 import time

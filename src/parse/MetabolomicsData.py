@@ -80,6 +80,7 @@ class MetabolomicsData(object):
 		for key in attrs:
 			# Write the file if the dictionary is not empty.
 			if type(attrs[key]) is dict and len(attrs[key]) > 0:
+				print("Working on export of "+path+database+key+".txt")
 				with open(path+database+key+".txt",'wb') as f:
 					for id, value in attrs[key].items():
 						if type(value) is not dict and type(value) is not list:
