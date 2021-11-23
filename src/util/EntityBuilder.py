@@ -665,7 +665,7 @@ class EntityBuilder(object):
         # health effect
         parentTerm = 'Health condition'        
         for src in self.sourceList:
-            file = src.sourceLocPath + "/" + src.filePrefix + "healthEffect.txt"
+            file = src.sourceLocPath + "/" + src.filePrefix + "healthCondition.txt"
             
             if not(path.exists(file)):
                 break
