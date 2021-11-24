@@ -31,7 +31,7 @@ class OnologyAssocations(object):
         self.termDict['Source'] = self.origins
         self.termDict['Biofluid and excreta'] = self.biofluid
         self.termDict['Subcellular'] = self.cellularLoc
-        self.termDict['Tissue location'] = self.tissueLoc
+        self.termDict['Tissue and substructures'] = self.tissueLoc
         self.ontolDict["Organ and components"] = dict() 
         self.termDict['Industrial application'] = self.metApp
         self.termDict['Health condition'] = self.healthEffect
