@@ -21,7 +21,7 @@ class OntologyList(object):
         self.ontolDict["Source"] = dict()
         self.ontolDict["Biofluid and excreta"] = dict()
         self.ontolDict["Subcellular"] = dict()
-        self.ontolDict["Tissue location"] = dict()
+        self.ontolDict["Tissue and substructures"] = dict()
         self.ontolDict["Organ and components"] = dict()        
         self.ontolDict["Industrial application"] = dict()
         self.ontolDict["Health condition"] = dict()
