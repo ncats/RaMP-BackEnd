@@ -1282,7 +1282,7 @@ class hmdbData(MetabolomicsData):
             status = metabolite.find(prefix+'status')
             
             if hmdbid != None and status != None:
-                self.metStatus[hmdbid] = status
+                self.metStatus[hmdbid] = status.text
             
             
 
