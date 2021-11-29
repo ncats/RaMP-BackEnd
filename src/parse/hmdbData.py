@@ -127,6 +127,9 @@ class hmdbData(MetabolomicsData):
         # holds industrial application, like 'Drug', 'Self Care Product'
         self.healthCondition = dict()
         
+        # holds HMDB status for each metabolite
+        self.metStatus = dict()
+        
     def getEverything(self,writeToFile = False):
         '''
         Run all the function to get everything from hmdb source
@@ -1266,6 +1269,22 @@ class hmdbData(MetabolomicsData):
         result.to_csv('../misc/output/metabolites_class.csv')
             
         '''
+
+    def getStatus(self, tree = None,file = 'hmdb_metabolites.xml'):
+        if tree is None:
+            tree = ET.parse('../misc/data/hmdb/' + file)
+        root = tree.getroot()
+        prefix = '{http://www.hmdb.ca}'
+
+        for metabolite in root.findall(prefix+'metabolite'):
+            hmdbid = metabolite.find(prefix+'accession')
+            status = metabolite.find(prefix+'status')
+            
+            if hmdbid != None and status != None:
+                self.metStatus[hmdbid] = status
+            
+            
+
 
 #rConf = RampConfig()
 #rConf.loadConfig("../../config/external_resource_config.txt")
