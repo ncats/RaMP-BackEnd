@@ -145,6 +145,7 @@ class hmdbData(MetabolomicsData):
         # self.getBiofluidCellularLocationDisease(tree)
         self.getPathwaysLinkedToGene()
         self.getMetabolitesClasses(tree)
+        self.getStatus(tree)
         if writeToFile:
             self.write_myself_files('hmdb')
         
