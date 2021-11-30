@@ -282,6 +282,10 @@ class Metabolite(object):
         """
         lines = 0
         s = ""
+        if self.hmdbStatus is not None:
+            status = self.hmdbStatus
+        else:
+            status = "NA"
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
                 idSplit = id.split(":")
@@ -296,7 +300,7 @@ class Metabolite(object):
                         currSource = 'hmdb_kegg'
                     if source == 'wiki':
                         currSource = 'wikipathways_kegg'    
-                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + str(currSource) + "\n"
+                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + status + "\t" + str(currSource) + "\n"
             #s = s.strip()
 
 #         for source in self.idDict:
