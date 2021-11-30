@@ -1,6 +1,6 @@
 status	file	table	loadType	primaryKey	colNames
 ready	pathway.txt	pathway	bulk	pathwayRampId	"pathwayRampId,sourceId,type,pathwayCategory,pathwayName"
-ready	analytesource.txt	source	bulk	None	"sourceId,rampId,IDtype,geneOrCompound,commonName,dataSource"
+ready	analytesource.txt	source	bulk	None	"sourceId,rampId,IDtype,geneOrCompound,commonName,priorityHMDBStatus,dataSource"
 ready	analyteSynonym.txt	analytesynonym	bulk	None	"Synonym,rampId,geneOrCompound,source"
 ready	analytetopathway.txt	analytehaspathway	bulk	None	"rampId,pathwayRampId,pathwaySource"
 ready	analyte.txt	analyte	bulk	rampId	"rampId,type"

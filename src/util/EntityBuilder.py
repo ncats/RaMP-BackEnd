@@ -149,6 +149,7 @@ class EntityBuilder(object):
         # load metabolite list, over all sources and hamonization during build
         self.loadMetaboList()
         self.addMetaboliteCommonName()
+        self.addMetaboliteHMDBStatus()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
         
@@ -318,8 +319,7 @@ class EntityBuilder(object):
         for met in mets:
             met.resolveCommonNames()
     
-    def addMetaboliteHMDBStatus(self):
-        
+    def addMetaboliteHMDBStatus(self):        
         for src in self.sourceList:
             if src.filePrefix == 'hmdb':
                 hmdbSrc = src
