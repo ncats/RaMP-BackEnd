@@ -285,7 +285,7 @@ class Metabolite(object):
         if self.hmdbStatus is not None:
             status = self.hmdbStatus
         else:
-            status = "NA"
+            status = "no_HMDB_status"
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
                 idSplit = id.split(":")

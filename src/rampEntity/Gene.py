@@ -160,10 +160,10 @@ class Gene(object):
                     if source == 'wiki':
                         currSource = 'wikipathways_kegg'
                     # add a row for current source, embedded kegg
-                    s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + str(currSource) + "\n"
+                    s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + "N/A" + "\t" + str(currSource) + "\n"
                         
                              
-                s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + str(source) + "\n"
+                s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + "N/A" + "\t" + str(source) + "\n"
                 
         return s
        

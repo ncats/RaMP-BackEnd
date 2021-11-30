@@ -306,7 +306,8 @@ class rampDBBulkLoader(object):
                 
             rs = conn.execute(sqlKeggGenes)
             for row in rs:
-                statusTable["Genes"]['kegg'] = row[0]     
+                if row[0] > 0:
+                    statusTable["Genes"]['kegg'] = row[0]     
             
             rs = conn.execute(sqlPathways)
             statusTable["Pathways"] = dict()
