@@ -28,6 +28,7 @@ from pandas.io.html import _remove_whitespace
 
 import pubchempy as pcp
 import time
+from pythonwin.pywin.dialogs import status
 
 class EntityBuilder(object):
     '''
@@ -119,6 +120,8 @@ class EntityBuilder(object):
         
         # this counts the number of manually curated errors that are still found in the input.
         self.curationAvoidanceCount = 0
+        
+        self.hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
         
     def fullBuild(self):
         """
@@ -315,7 +318,39 @@ class EntityBuilder(object):
         for met in mets:
             met.resolveCommonNames()
     
-    
+    def addMetaboliteHMDBStatus(self):
+        
+        for src in self.sourceList:
+            if src.filePrefix == 'hmdb':
+                hmdbSrc = src
+        
+        if hmdbSrc is not None:
+            # capture id to status dictionary
+            hmdbStatus = dict()
+            file = src.sourceLocPath + "/" + src.filePrefix + "metStatus.txt"
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+
+            for i,row in data.iterrows():
+                hmdbStatus[row[0]] = row[1]
+            
+            # traverse metabolite list
+            mets = self.metaboliteList.getUniqueMetabolites()
+            for met in mets:
+                idlist = met.idDict.get("hmdb", None)
+                if idlist is not None:
+                    for id in idlist:
+                        status = hmdbStatus.get(id,None)
+                        if status is not None:
+                            self.setPriorityHMDBStatus(met, status)
+                
+    def setPriorityHMDBStatus(self, met, status):
+        if met.hmdbStatus is None:
+            met.hmdbStatus = status
+        else:
+            if self.hmdbStatusLevel[status] > self.hmdbStatusLevel[met.hmdbStatus]:
+                met.hmdbStatus = status
+            
+           
     def addMetaboliteSynonyms(self):
         """
         Adds all metabolite synonyms for all data sources
