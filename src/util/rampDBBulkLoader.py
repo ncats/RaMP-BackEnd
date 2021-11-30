@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 import logging
 from jproperties import Properties
-from urllib.parse import quote
+from urllib.parse import quote_plus
 
 class rampDBBulkLoader(object):
 
@@ -228,7 +228,7 @@ class rampDBBulkLoader(object):
             fileResource.initFileResource(config)            
             resources.append(fileResource)
             
-        engine = create_engine(quote(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
 
         print("Hey in loading loop now") 
         for resource in resources:
@@ -247,7 +247,7 @@ class rampDBBulkLoader(object):
     def updateVersionInfo(self, infoFile):
         print("Updating Version Info")
 
-        engine = create_engine(quote(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
        
         versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None)
 
@@ -264,7 +264,7 @@ class rampDBBulkLoader(object):
         
         print("starting update entity summary")
         
-        engine = create_engine(quote(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
         
         sqlMets = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource not like '%%kegg' group by dataSource"
         sqlKeggMets = "select count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource like '%%_kegg'"
@@ -361,7 +361,7 @@ class rampDBBulkLoader(object):
         
         self.dbConf.dumpConfig()
         
-        engine = create_engine(quote(("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
         
         versionSQL = "select * from db_version where load_timestamp = (select max(load_timestamp) from db_version)"
 
@@ -422,7 +422,7 @@ class dbConfig(object):
         with open(configFile, 'rb') as config_file:
             dbConfig.load(config_file)
         
-        self.conpass = dbConfig.get("conpass").data
+        self.conpass = quote_plus(dbConfig.get("conpass").data)
         self.username = dbConfig.get("username").data
         self.host = dbConfig.get("host").data
         self.dbname = dbConfig.get("dbname").data
