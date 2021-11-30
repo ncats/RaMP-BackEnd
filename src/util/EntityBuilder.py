@@ -28,7 +28,6 @@ from pandas.io.html import _remove_whitespace
 
 import pubchempy as pcp
 import time
-from pythonwin.pywin.dialogs import status
 
 class EntityBuilder(object):
     '''
