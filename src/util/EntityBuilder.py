@@ -326,7 +326,7 @@ class EntityBuilder(object):
         if hmdbSrc is not None:
             # capture id to status dictionary
             hmdbStatus = dict()
-            file = src.sourceLocPath + "/" + src.filePrefix + "metStatus.txt"
+            file = hmdbSrc.sourceLocPath + "/" + hmdbSrc.filePrefix + "metStatus.txt"
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
 
             for i,row in data.iterrows():
