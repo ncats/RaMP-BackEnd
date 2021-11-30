@@ -47,6 +47,8 @@ class Metabolite(object):
         self.metClasses = dict()
       
         self.ontologyTerms = list()
+        
+        self.hmdbStatus = None
                  
     def __eq__(self, other):
         """
@@ -440,6 +442,6 @@ class Metabolite(object):
         return jointMembership
     
             
-                
+    #def setStatus(self):            
     
     
