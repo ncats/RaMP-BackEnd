@@ -406,7 +406,6 @@ class WikipathwaysRDF(MetabolomicsData):
                 'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata',
                 'chemspider_id':'http://vocabularies.wikipathways.org/wp#bdbChemspider',
                 'LIPIDMAPS':'http://vocabularies.wikipathways.org/wp#bdbLipidMaps'        
-                #'LIPIDMAPS':'http://identifiers.org/lipidmaps'
             }
             # metabolites id mapping created each loop
             metaboliteMapping = {
@@ -448,11 +447,9 @@ class WikipathwaysRDF(MetabolomicsData):
                         if link_id == "LMFA01010000":
                             print("have LMFA01010000")
                         metabolite_list.add(link_id)
-                        
-                        if link_id == 'N':
-                            print("HEYYYYY Found ID N")
+
                         # add id to the metabolites id mapping 
-                        if metaboliteMapping[key] == 'na' and type(link_id) is str:
+                        if metaboliteMapping[key] == 'NA' and type(link_id) is str:
                             metaboliteMapping[key] = [link_id]
                         elif type(metaboliteMapping[key]) is list and type(link_id) is str:
                             if link_id not in metaboliteMapping[key]:
