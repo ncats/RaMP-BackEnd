@@ -394,7 +394,7 @@ class WikipathwaysRDF(MetabolomicsData):
             # predicate in RDF is defined here, this the subject/object with these predicates are extracted.
             
             # JCB Lets get the commonName...
-            commonName = g.label(metabolites, default="na")
+            commonName = g.label(metabolites, default="NA")
             
             if source == 'LIPIDMAPS':
                 self.lipidMapsIdCounterDict[metabolites_id] 
@@ -405,33 +405,33 @@ class WikipathwaysRDF(MetabolomicsData):
                 'pubchem_compound_id':'http://vocabularies.wikipathways.org/wp#bdbPubChem',
                 'WikiData':'http://vocabularies.wikipathways.org/wp#bdbWikidata',
                 'chemspider_id':'http://vocabularies.wikipathways.org/wp#bdbChemspider',
-                'LIPIDMAPS':'http://vocabularies.wikipathways.org/wp#bdbLipidMaps'           
+                'LIPIDMAPS':'http://vocabularies.wikipathways.org/wp#bdbLipidMaps'        
                 #'LIPIDMAPS':'http://identifiers.org/lipidmaps'
             }
             # metabolites id mapping created each loop
             metaboliteMapping = {
-                              "chebi_id": "na", 
-                              "drugbank_id": "na", 
-                              "drugbank_metabolite_id": "na", 
-                              "phenol_explorer_compound_id": "na", 
-                              "phenol_explorer_metabolite_id": "na", 
-                              "foodb_id": "na", 
-                              "knapsack_id": "na", 
-                              "chemspider_id": "na",
-                              "kegg_id": "na",
-                              "biocyc_id": "na",
-                              "bigg_id": "na",
-                              "wikipedia": "na",
-                              "nugowiki": "na",
-                              "metagene": "na",
-                              "metlin_id": "na",
-                              "pubchem_compound_id": "na",
-                              "het_id": "na",
-                              "hmdb_id": "na",
-                              "CAS": "na",
-                              "LIPIDMAPS":"na",
-                              "WikiData":"na",
-                              "kegg_glycan":"na"}
+                              "chebi_id": "NA", 
+                              "drugbank_id": "NA", 
+                              "drugbank_metabolite_id": "NA", 
+                              "phenol_explorer_compound_id": "NA", 
+                              "phenol_explorer_metabolite_id": "NA", 
+                              "foodb_id": "NA", 
+                              "knapsack_id": "NA", 
+                              "chemspider_id": "NA",
+                              "kegg_id": "NA",
+                              "biocyc_id": "NA",
+                              "bigg_id": "NA",
+                              "wikipedia": "NA",
+                              "nugowiki": "NA",
+                              "metagene": "NA",
+                              "metlin_id": "NA",
+                              "pubchem_compound_id": "NA",
+                              "het_id": "NA",
+                              "hmdb_id": "NA",
+                              "CAS": "NA",
+                              "LIPIDMAPS":"NA",
+                              "WikiData":"NA",
+                              "kegg_glycan":"NA"}
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
             if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey']:
@@ -448,6 +448,9 @@ class WikipathwaysRDF(MetabolomicsData):
                         if link_id == "LMFA01010000":
                             print("have LMFA01010000")
                         metabolite_list.add(link_id)
+                        
+                        if link_id == 'N':
+                            print("HEYYYYY Found ID N")
                         # add id to the metabolites id mapping 
                         if metaboliteMapping[key] == 'na' and type(link_id) is str:
                             metaboliteMapping[key] = [link_id]
@@ -482,6 +485,9 @@ class WikipathwaysRDF(MetabolomicsData):
                         self.metaboliteIDDictionary[metabolites_id][source] = [metabolites_id]
                     else:
                         if metabolites_id not in self.metaboliteIDDictionary[metabolites_id][source]:
+                            print(metabolites_id)
+                            print(source)
+                            print(self.metaboliteIDDictionary[metabolites_id][source])
                             self.metaboliteIDDictionary[metabolites_id][source].append(metabolites_id)
                          
                 # else, run through the linked ids for the main metabolite id and add them as needed.
