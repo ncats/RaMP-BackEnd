@@ -564,12 +564,19 @@ class ChemWrangler(object):
         #print(conMat.index)
         #print(conMat.columns)
         # base connetivity
-        for i, row in catMat.iterrows():
+#         for i, row in catMat.iterrows():
+#             if(i % 10000 == 0):
+#                 print(str(i))
+#             conMat.loc[row[0], row[1]] = 1
+        
+         
+        rowCnt = catMat.shape()[0] - 1    
+        for i in range(0, rowCnt):
             if(i % 10000 == 0):
                 print(str(i))
-            conMat.loc[row[0], row[1]] = 1
-         
-        
+            conMat.loc[catMat.iloc[i,0], catMat.iloc[i,1]] = 1
+            
+                
 
         print("connectivity shape")
         print(conMat.shape)
