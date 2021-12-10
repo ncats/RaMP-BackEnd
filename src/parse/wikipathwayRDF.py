@@ -9,6 +9,7 @@ from rdflib import URIRef,Graph
 import rdflib.namespace
 from rdflib.namespace import RDF, FOAF,RDFS,DC,DCTERMS
 from builtins import str
+from rampConfig.RampConfig import RampConfig
 
 from writeToSQL import writeToSQL
 
@@ -428,9 +429,9 @@ class WikipathwaysRDF(MetabolomicsData):
                               "het_id": "NA",
                               "hmdb_id": "NA",
                               "CAS": "NA",
-                              'LIPIDMAPS':'NA',
-                              'WikiData':'NA',
-                              'kegg_glycan':'NA'}
+                              "LIPIDMAPS":"NA",
+                              "WikiData":"NA",
+                              "kegg_glycan":"NA"}
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
             if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey']:
@@ -590,11 +591,18 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'gene_symbol:' + id
         elif prefix == 'kegg.glycan' or prefix == 'kegg_glycan':
             id = 'kegg_glycan:' +id
+        else:
+            id = 'UNKNOWN_ID_TYPE_HEYYYYYY:' + id
 
         return id
 
-# test
-# wikipathways = WikipathwaysRDF()
+
+
+# rConf = RampConfig()
+# rConf.loadConfig("../../config/external_resource_config.txt")
+# 
+# # test
+# wikipathways = WikipathwaysRDF(rConf)
 # wikipathways.getEverything(writeToFile=True)
 #wikipathways.write_myself_files(database ="wiki")
 
