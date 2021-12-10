@@ -11,6 +11,8 @@ import zipfile
 import gzip
 import shutil
 import re
+import pandas as pd
+import numpy as np
 from rampConfig.RampConfig import RampConfig
 
 from rampEntity.Metabolite import Metabolite
@@ -529,26 +531,130 @@ class ChemWrangler(object):
             # now add classes
             for classLevel in mol.classDict:
                 met.addMetClass(source, met.sourceId, classLevel, mol.classDict)
-    
+                
+        
+    def getCatalyticDistances(self, catalyzesFile):        
+        print("computing catalytic distances")
+        
+        catMat = pd.read_csv(catalyzesFile, sep='\t', header=None)
+        catMat.columns = ["compound","protein"]
 
-    def testDownloadKeggFile(self):
-        ftpUrl = "ftp.kegg.net"
-        user = "BJ2383"
-        pw = "Nc@tskegg2**"
-        remPath = "kegg/ligand"
-        file = "README.ligand"
-        localPath = "C:/Tools/"
+        lowestDist = dict()
+        print("g to c shape")
+        print(catMat.shape)
+        #print(catMat)
         
-        ftp = FTP(ftpUrl)
-        ftp.login(user,pw)
-        ftp.cwd(remPath)
-        with open(localPath+file, 'wb') as testReadme:
-            ftp.retrbinary("RETR "+file, testReadme.write)
-        ftp.quit()
-        testReadme.close()
-            
+        #print(catMat["protein"].to_list())
+        #print(catMat["compound"].to_list())
+      
         
-#cw = ChemWrangler()
+        # build base connectivity
+        # gene by compound
+        conMat = pd.DataFrame(index=np.unique(catMat["compound"].to_list()), columns=np.unique(catMat["protein"].to_list()))
+        print("connectivity shape")
+        print(conMat.shape)
+        
+        conMat = conMat.fillna(0)
+#         
+        print("connectivity shape")
+        print(conMat.shape)
+        
+        #print(conMat)
+#
+        #print(conMat.index)
+        #print(conMat.columns)
+        # base connetivity
+        for i, row in catMat.iterrows():
+            if(i % 10000 == 0):
+                print(str(i))
+            conMat.loc[row[0], row[1]] = 1
+         
+        
+
+        print("connectivity shape")
+        print(conMat.shape)
+#       
+        # level 1 connectivity, adjacency matrix
+        #adjMat = conMat.dot(conMat.transpose())
+        adjMat = np.matmul(conMat, conMat.transpose())
+        
+        np.fill_diagonal(adjMat.values, 0)
+        
+        print("adjMat shape")
+        print(adjMat.shape)
+        
+        self.collectNonZeroEntries(adjMat, lowestDist, 1)
+        
+        levelMat = adjMat
+        
+        for level in range(2,10):
+            levelMat = levelMat.dot(adjMat)
+            np.fill_diagonal(levelMat.values, 0)
+            self.collectNonZeroEntries(levelMat, lowestDist, level)
+        
+        # set self distance to 0
+        #conMat2.values[[np.arange(conMat2.shape[0])]*2] = 0
+        
+        
+        
+#         print("one step")
+#         print(conMat2)
+# 
+#         conMat3 = conMat2.dot(conMat2)
+#         #conMat3 = conMat2.dot(conMat)
+#         np.fill_diagonal(conMat3.values, 0)
+# 
+#         self.collectNonZeroEntries(conMat3, lowestDist, 2)
+#         
+#         print("two steps")        
+#         print(conMat3)
+# 
+#         conMat4 = conMat3.dot(conMat2)
+#         np.fill_diagonal(conMat4.values, 0)
+#         
+#         self.collectNonZeroEntries(conMat4, lowestDist, 3)
+# 
+#         print("three steps")
+#         print(conMat4)
+#         
+#         conMat5 = conMat4.dot(conMat2)
+#         np.fill_diagonal(conMat5.values, 0)
+#         
+#         print("four steps")
+#         print(conMat5)
+#         
+#         self.collectNonZeroEntries(conMat5, lowestDist, 4)
+# 
+#         print(conMat5.values.nonzero()[1])
+        
+        for key in lowestDist:
+            print(key + " " + str(lowestDist[key]))
+
+    def collectNonZeroEntries(self, matrix, lowestDist, level):
+        
+        newPath = False        
+        nonzero = matrix.values.nonzero()
+        print("heres the non zero")
+        print(nonzero)
+        for i in range(0,len(nonzero[0])-1):
+            print(i)
+            comp1 = matrix.index[nonzero[0][i]]
+            comp2 = matrix.columns[nonzero[1][i]]
+            compKey = comp1 + ":" + comp2
+            compKey2 = comp2 + ":" + comp1            
+            if compKey not in lowestDist and compKey2 not in lowestDist:                
+                lowestDist[compKey] = level
+                newPath = True
+        
+        return newPath        
+
+resourceConfFile = "../../config/external_resource_config.txt" 
+resourceConf = RampConfig()
+cw = ChemWrangler(resourceConf)
+
+#cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/src/testCatal.txt")
+cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/misc/sql/catalyzes.txt")
+
 #cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
 
 # Test    
