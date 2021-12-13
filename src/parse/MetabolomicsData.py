@@ -88,19 +88,19 @@ class MetabolomicsData(object):
 									+ value.encode('utf-8') +b'\n')
 						elif type(value) is list:
 							for item in value:
-								if item is not None and item is not 'NA':
+								if item is not None and item != 'NA':
 									f.write(id.encode('utf-8') +b'\t'
 											+ item.encode('utf-8') +b'\n')
 						elif type(value) is dict:
 							for source,sourceid in value.items():
 								if type(sourceid) is list:
 									for each in sourceid:
-										if each is not None and each is not 'NA':
+										if each is not None and each != 'NA':
 											f.write(id.encode('utf-8') +b'\t'
 											+ source.encode('utf-8')+b'\t'
 											+ each.encode('utf-8') +b'\n')
 								else:
-									if sourceid is not None and sourceid is not 'NA':
+									if sourceid is not None and sourceid != 'NA':
 										f.write(id.encode('utf-8') +b'\t'
 											+ source.encode('utf-8')+b'\t'
 											+ str(sourceid).encode('utf-8') +b'\n')
