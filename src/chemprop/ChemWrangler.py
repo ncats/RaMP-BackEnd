@@ -14,6 +14,7 @@ import re
 import pandas as pd
 import numpy as np
 from rampConfig.RampConfig import RampConfig
+import itertools
 
 from rampEntity.Metabolite import Metabolite
 
@@ -533,7 +534,10 @@ class ChemWrangler(object):
                 met.addMetClass(source, met.sourceId, classLevel, mol.classDict)
                 
         
-    def getCatalyticDistances(self, catalyzesFile):        
+    def getCatalyticDistances(self, catalyzesFile):
+        # prototype method exploration
+        # collecting metablolite distances based on catalyzed table
+            
         print("computing catalytic distances")
         
         catMat = pd.read_csv(catalyzesFile, sep='\t', header=None)
@@ -546,8 +550,7 @@ class ChemWrangler(object):
         
         #print(catMat["protein"].to_list())
         #print(catMat["compound"].to_list())
-      
-        
+              
         # build base connectivity
         # gene by compound
         conMat = pd.DataFrame(index=np.unique(catMat["compound"].to_list()), columns=np.unique(catMat["protein"].to_list()))
@@ -570,7 +573,7 @@ class ChemWrangler(object):
 #             conMat.loc[row[0], row[1]] = 1
         
          
-        rowCnt = catMat.shape()[0] - 1    
+        rowCnt = catMat.shape[0] - 1    
         for i in range(0, rowCnt):
             if(i % 10000 == 0):
                 print(str(i))
@@ -581,27 +584,51 @@ class ChemWrangler(object):
         print("connectivity shape")
         print(conMat.shape)
 #       
+        #let's transpose, then collect tuple sets
+        conMat = conMat.transpose()
+        adjMat = list()
+        overallCount = 0
+        for ind, row in conMat.iterrows():
+            cList = list()
+            for i in range(0,len(row)-1):
+                overallCount = overallCount + 1
+                if(overallCount % 1000000 == 0):
+                    print(str(overallCount))
+                if row[i] == 1:
+                    cList.append(conMat.columns[i])
+            adjMat.append(itertools.combinations(cList,2))        
+            
+        print("length adjMat = " + str(len(adjMat)))
+        
+        adjMat = pd.DataFrame(adjMat)
+        
+        print("adjMat shape = " + str(adjMat.shape))
+        adjMat = adjMat.drop_duplicates()
+        
+        print("adjMat shape = " + str(adjMat.shape))
+                
+        
         # level 1 connectivity, adjacency matrix
-        #adjMat = conMat.dot(conMat.transpose())
-        adjMat = np.matmul(conMat, conMat.transpose())
-        
-        # have adjacency matrix 
-        # cast back into a sparse representation.
-        
-        
-        np.fill_diagonal(adjMat.values, 0)
-        
-        print("adjMat shape")
-        print(adjMat.shape)
-        
-        self.collectNonZeroEntries(adjMat, lowestDist, 1)
-        
-        levelMat = adjMat
-        
-        for level in range(2,10):
-            levelMat = levelMat.dot(adjMat)
-            np.fill_diagonal(levelMat.values, 0)
-            self.collectNonZeroEntries(levelMat, lowestDist, level)
+#         #adjMat = conMat.dot(conMat.transpose())
+#         adjMat = np.matmul(conMat, conMat.transpose())
+#         
+#         # have adjacency matrix 
+#         # cast back into a sparse representation.
+#         
+#         
+#         np.fill_diagonal(adjMat.values, 0)
+#         
+#         print("adjMat shape")
+#         print(adjMat.shape)
+#         
+#         self.collectNonZeroEntries(adjMat, lowestDist, 1)
+#         
+#         levelMat = adjMat
+#         
+#         for level in range(2,10):
+#             levelMat = levelMat.dot(adjMat)
+#             np.fill_diagonal(levelMat.values, 0)
+#             self.collectNonZeroEntries(levelMat, lowestDist, level)
         
         # set self distance to 0
         #conMat2.values[[np.arange(conMat2.shape[0])]*2] = 0
@@ -638,8 +665,8 @@ class ChemWrangler(object):
 # 
 #         print(conMat5.values.nonzero()[1])
         
-        for key in lowestDist:
-            print(key + " " + str(lowestDist[key]))
+#         for key in lowestDist:
+#             print(key + " " + str(lowestDist[key]))
 
     def collectNonZeroEntries(self, matrix, lowestDist, level):
         
@@ -659,12 +686,12 @@ class ChemWrangler(object):
         
         return newPath        
 
-resourceConfFile = "../../config/external_resource_config.txt" 
-resourceConf = RampConfig()
-cw = ChemWrangler(resourceConf)
-
-#cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/src/testCatal.txt")
-cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/misc/sql/catalyzes.txt")
+# resourceConfFile = "../../config/external_resource_config.txt" 
+# resourceConf = RampConfig()
+# cw = ChemWrangler(resourceConf)
+# 
+# #cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/src/testCatal.txt")
+# cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/misc/sql/catalyzes.txt")
 
 #cw.loadRampChemRecords(["hmdb","chebi","lipidmaps"])
 
@@ -676,5 +703,3 @@ cw.getCatalyticDistances("C:/Tools/git_projects/ramp/RaMP-BackEnd/misc/sql/catal
 # sources = ["hmdb", "chebi", "lipidmaps"]
 # cw.fetchCompoundPropertiesFiles(sources) 
 # cw.loadRampChemRecords(sources)
-
-     
