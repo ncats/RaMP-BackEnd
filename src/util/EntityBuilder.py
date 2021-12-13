@@ -1676,6 +1676,8 @@ class MappingExclusionList(object):
 # else:
 #     print("None met")
     
-    
-    
+# rConf = RampConfig()
+# rConf.loadConfig("../config/external_resource_config.txt")
+# eBuild = EntityBuilder(rConf)
+# eBuild.fullBuild()
     
