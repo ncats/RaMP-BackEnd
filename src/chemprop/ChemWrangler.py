@@ -585,6 +585,10 @@ class ChemWrangler(object):
         #adjMat = conMat.dot(conMat.transpose())
         adjMat = np.matmul(conMat, conMat.transpose())
         
+        # have adjacency matrix 
+        # cast back into a sparse representation.
+        
+        
         np.fill_diagonal(adjMat.values, 0)
         
         print("adjMat shape")
