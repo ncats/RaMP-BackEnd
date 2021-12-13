@@ -215,9 +215,9 @@ class WikipathwaysRDF(MetabolomicsData):
             # get pathways id
             this_pathway = each.replace('.ttl','')
 
-            if this_pathway == 'WP3668' or this_pathway == 'WP4944':
-                print("Skipping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :" + this_pathway)
-                continue
+#             if this_pathway == 'WP3668' or this_pathway == 'WP4944':
+#                 print("Skipping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :" + this_pathway)
+#                 continue
 
 
             #print('{}/{} ID:{}'.format(i,total_files,this_pathway))
@@ -458,12 +458,6 @@ class WikipathwaysRDF(MetabolomicsData):
 
                         if key == 'LIPIDMAPS':
                             self.lipidMapsIdCounterDict[link_id] = link_id
-                        if link_id == "LMFA01010000":
-                            print("have LMFA01010000")
-                        
-                        if link_id == 'N' or link_id == 'A' or link_id == 'N/A':
-                            print("Have the AN link id")
-                            print("in pathway" + this_pathway)
                             
                         metabolite_list.add(link_id)
 
@@ -489,33 +483,34 @@ class WikipathwaysRDF(MetabolomicsData):
                 # JCB have to be careful here. A metabolite id is likely found in multiple pathways
                 # so this line might have over written the dictionary associated with a metabolite id
                 # commenting out
-                # self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
+                #self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
                 
                 # JCB replacement code. If the metabolite ids exists, run through metaboliteMapping to add entries.
                 # JCB if the id isn't in the mapping dict, just add it
+                
                 if metabolites_id not in self.metaboliteIDDictionary:
                     self.metaboliteIDDictionary[metabolites_id] = metaboliteMapping
-                    
+                     
                     # this is the first time we've seen the metabolite id. Add it 'metabolite_id' to it's own mapping
                     if source not in self.metaboliteIDDictionary[metabolites_id]:
                         self.metaboliteIDDictionary[metabolites_id][source] = [metabolites_id]
                     else:
                         if metabolites_id not in self.metaboliteIDDictionary[metabolites_id][source]:
-                            print(metabolites_id)
-                            print(source)
-                            print(self.metaboliteIDDictionary[metabolites_id][source])
                             self.metaboliteIDDictionary[metabolites_id][source].append(metabolites_id)
-                         
+                           
                 # else, run through the linked ids for the main metabolite id and add them as needed.
                 else:
                     idDict = self.metaboliteIDDictionary[metabolites_id]
                     for idType in metaboliteMapping:
-                        if idType not in idDict:
-                            idDict[idType] = metaboliteMapping[idType]
-                        else:
-                            for id in metaboliteMapping[idType]:
-                                if id not in idDict[idType]:
-                                    idDict[idType].append(id)
+                        
+                        # need to make sure we have a list here, else the NA will be processed as N and A
+                        if type(metaboliteMapping[idType]) == list:
+                            if idType not in idDict:
+                                idDict[idType] = metaboliteMapping[idType]
+                            else:
+                                for id in metaboliteMapping[idType]:
+                                    if id not in idDict[idType]:
+                                        idDict[idType].append(id)
                 
                 
                 
@@ -621,12 +616,12 @@ class WikipathwaysRDF(MetabolomicsData):
 
 
  
-rConf = RampConfig()
-rConf.loadConfig("../../config/external_resource_config.txt")
-# 
-# # test
-wikipathways = WikipathwaysRDF(rConf)
-wikipathways.getEverything(writeToFile=True)
+# rConf = RampConfig()
+# rConf.loadConfig("../../config/external_resource_config.txt")
+# # 
+# # # test
+# wikipathways = WikipathwaysRDF(rConf)
+# wikipathways.getEverything(writeToFile=True)
 #wikipathways.write_myself_files(database ="wiki")
 
 # sql = writeToSQL()
