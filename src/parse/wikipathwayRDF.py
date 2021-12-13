@@ -214,6 +214,12 @@ class WikipathwaysRDF(MetabolomicsData):
             
             # get pathways id
             this_pathway = each.replace('.ttl','')
+
+            if this_pathway == 'WP3668' or this_pathway == 'WP4944':
+                print("Skipping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :" + this_pathway)
+                continue
+
+
             #print('{}/{} ID:{}'.format(i,total_files,this_pathway))
             #print('Path '+path + " Each "+each)
             g = Graph()
@@ -428,14 +434,22 @@ class WikipathwaysRDF(MetabolomicsData):
                               "het_id": "NA",
                               "hmdb_id": "NA",
                               "CAS": "NA",
-                              "LIPIDMAPS":"NA",
-                              "WikiData":"NA",
-                              "kegg_glycan":"NA"}
+                              "WikiData": "NA",
+                              "kegg_glycan": "NA",
+                              "LIPIDMAPS": "NA"                              
+                              }
+            
+            for key in metaboliteMapping:
+                if type(metaboliteMapping[key]) == list:
+                    print("Have list type for NA, for key:" + key)
+            
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
             if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
+                
                 metabolite_list.add(metabolites_id)
+                
                 for key,value in id_mapping.items():
                     for links in g.objects(metabolites,URIRef(value)):
                         link_id = links.split('/')
@@ -446,13 +460,18 @@ class WikipathwaysRDF(MetabolomicsData):
                             self.lipidMapsIdCounterDict[link_id] = link_id
                         if link_id == "LMFA01010000":
                             print("have LMFA01010000")
+                        
+                        if link_id == 'N' or link_id == 'A' or link_id == 'N/A':
+                            print("Have the AN link id")
+                            print("in pathway" + this_pathway)
+                            
                         metabolite_list.add(link_id)
 
                         # add id to the metabolites id mapping 
-                        if metaboliteMapping[key] == 'NA' and type(link_id) is str:
+                        if metaboliteMapping[key] == "NA" and type(link_id) is str:
                             metaboliteMapping[key] = [link_id]
                         elif type(metaboliteMapping[key]) is list and type(link_id) is str:
-                            if link_id not in metaboliteMapping[key]:
+                            if link_id not in metaboliteMapping[key]:                     
                                 metaboliteMapping[key].append(link_id) 
                                 
                         # JCB populate metabolites to pathway dictionary, this was not previously populated
@@ -526,6 +545,7 @@ class WikipathwaysRDF(MetabolomicsData):
         for label in g.objects(URIRef(subject),DCTERMS.identifier):
             return label
         return 'NA'
+    
     def getCatalyzation(self,g,this_pathway):
         '''
         This function get all catalyzation relations between metabolites and genes from the graph
@@ -577,7 +597,7 @@ class WikipathwaysRDF(MetabolomicsData):
         elif prefix == 'lipidmaps':
             id = 'LIPIDMAPS:' + id
         elif prefix == 'LIPIDMAPS':
-            id = 'LIPIDMAPS:' + id    
+            id = 'LIPIDMAPS:' + id
         elif prefix == 'ncbigene' or prefix == 'Entrez':
             id = 'entrez:' + id
         elif prefix == 'uniprot' or prefix == 'UniProt':
