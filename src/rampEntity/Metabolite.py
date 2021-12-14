@@ -331,10 +331,7 @@ class Metabolite(object):
         """
         s = ""
         for source in self.synonymDict:
-            for syn in self.synonymDict[source]:
-                if(syn.startswith("gene_symbol:")):
-                    syn = syn.split(":")[1]
-                    
+            for syn in self.synonymDict[source]:                    
                 s = s + str(syn) + "\t" + self.rampId + "\tcompound\t" + source + "\n" 
         
         return s
