@@ -185,6 +185,8 @@ class Gene(object):
         s = ""
         for source in self.synonymDict:
             for syn in self.synonymDict[source]:
+                if(syn.startswith("gene_symbol:")):
+                    syn = syn.split(":")[1]
                 s = s + syn + "\t" + self.rampId + "\tgene\t" + source + "\n" 
         
         return s
