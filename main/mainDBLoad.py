@@ -41,8 +41,14 @@ class mainDBLoad():
         # this method loads the intermediate parsing results from the ../../misc/sql/ directory.
         loader.load(self.dbConfigFilePath)     
         
+        # sets the new updated version
         loader.updateDBVersion(incrementLevel = 'increment_patch_release')
         
+        # sets the analyte intercept json in the version table.
+        # precondition: the updateDBVersion must have been set so that the
+        # intersections can be attached to the current version
+        loader.updateEntityIntersects()
+
         
         # this optional method tracks database version information supplied in this file.
         # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
@@ -51,6 +57,7 @@ class mainDBLoad():
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
 
+        start = time.time()
 
 
 loader = mainDBLoad()
