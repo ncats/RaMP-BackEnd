@@ -3,6 +3,7 @@ Created on Aug 25, 2020
 
 @author: braistedjc
 '''
+import sys
 import mysql.connector
 import pandas as pd
 from pandas.api.types import is_string_dtype
@@ -13,6 +14,9 @@ from sqlalchemy import MetaData
 import logging
 from jproperties import Properties
 from urllib.parse import quote_plus
+import itertools
+import time
+import json
 
 class rampDBBulkLoader(object):
 
@@ -22,12 +26,23 @@ class rampDBBulkLoader(object):
         # holds db credentials
         self.dbConf = dbConfig(dbPropsFile)
         
+        self.currDBVersion = None
+        
+        self.sourceDisplayNames = {'kegg':'KEGG',
+                                   'wikipathways_kegg':'KEGG',
+                                   'hmdb_kegg':'KEGG',
+                                   'hmdb':'HMDB',
+                                   'reactome':'Reactome',
+                                   'wiki':'WikPathways',
+                                   'lipidmaps':'LIPIDMAPS'}
+        
+        
         logging.basicConfig()
         logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
          
         pd.set_option('display.max_columns', None)   
      
-   
+        
     
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
@@ -114,9 +129,6 @@ class rampDBBulkLoader(object):
             df = df.drop_duplicates(ignore_index=False, inplace=False, keep='first')
             print(str(df.shape))
 
-    
-            
-    
         print(df.head(n=5))
         table = resource.destTable
         # this loads the data frame into the table.
@@ -285,7 +297,7 @@ class rampDBBulkLoader(object):
 
         statusTable = dict()
         
-        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'Lipid Maps', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI'}
+        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'LIPIDMAPS', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI'}
         
         with engine.connect() as conn:
 
@@ -372,6 +384,7 @@ class rampDBBulkLoader(object):
             meta_data = MetaData(bind=conn)
             meta_data.reflect()
             db_version = meta_data.tables['db_version']
+            newVersion = ""
             
             if incrementLevel != 'specified':
                                 
@@ -411,8 +424,90 @@ class rampDBBulkLoader(object):
             conn.execute(db_version.insert(), vals)            
             conn.close()
             
+            self.currDBVersion = newVersion
             
+    
+    def updateEntityIntercepts(self, filterComps=False):
+        print("resolving analyte intersects")
+        cmpdIntersects =  self.collectEntityIntersects(analyteType= 'compound', format='json', filterMets=filterComps)
+        geneIntersects =  self.collectEntityIntersects(analyteType= 'gene', format='json', filterMets=filterComps)
+        vals = list()
+        vals.append({'met_intersects_json':cmpdIntersects, 'gene_intersects_json':geneIntersects})
+        
+        if self.currDBVersion != None:
+            engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+            
+            with engine.connect() as conn:
+                meta_data = MetaData(bind=conn)
+                meta_data.reflect()
+                db_version = meta_data.tables['db_version']
+                conn.execute(db_version.update().where(db_version.c.ramp_version == self.currDBVersion).values(
+                    met_intersects_json=cmpdIntersects, gene_intersects_json=geneIntersects))
+                #conn.execute(db_version.update().where(db_version.db_version == self.currDBVersion).values(vals))
+            conn.close()
+        print("updated DB analyte intersects")
+    
+            
+    def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
+        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.DataFrame(sourceInfo)
+        sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
+        #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
+        #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
+        
+        for source in self.sourceDisplayNames:
+            sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+        
+        if filterMets:
+            sourceInfo = sourceInfo[~sourceInfo['status'].isin(['predicted', 'expected'])]
+        
+        
+        sourceInfo = sourceInfo[sourceInfo['analyteType'] == analyteType]
+        sourceSet = set(sourceInfo['dataSource'])
+        smSourceData = sourceInfo[['rampId', 'dataSource', 'analyteType']]            
+        smSourceData = smSourceData.drop_duplicates()
+        combos = []
+        nodeList = list()
+        for r in range(1,len(sourceSet)+1):
+            currCombos = itertools.combinations(sourceSet, r)
+            combos += list(currCombos)
+        
+        intersectIndex = 0
+        
+        for comb in combos:
+            intersectIndex += 1
+            combSet = set()
+            combIndex = 0
 
+            for s in comb:
+                if combIndex == 0:
+                    currCombSet = set(smSourceData.loc[smSourceData['dataSource'] == s]['rampId'])
+                else:
+                    currCombSet = currCombSet.intersection(set(smSourceData.loc[smSourceData['dataSource'] == s]['rampId']))
+                    
+                combIndex += 1
+                                
+            restData = smSourceData.loc[~smSourceData['dataSource'].isin(comb)]
+            restSet = set(restData['rampId'])
+            
+            node = intersectNode()
+            node.sets = list(comb)
+            node.size = len(currCombSet-restSet)
+            if(analyteType == 'compound'):
+                node.id = "cmpd_src_set_" + str(intersectIndex)
+            else:
+                node.id = "gene_src_set_" + str(intersectIndex)
+                    
+            nodeList.append(node) 
+            
+        if format == 'json':
+            jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=None)
+            print(jsonRes)
+            return jsonRes
+        
+        return nodeList
+        
 class dbConfig(object):
     
     def __init__(self, configFile):
@@ -451,11 +546,29 @@ class rampFileResource(object):
         self.destTable = resource.table
         self.primaryKey = resource.primaryKey
         self.columnNames = resource.colNames.split(",")
-        
-                        
-        
 
-# loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+class intersectList(object):
+
+    def __init__(self):
+        self.sets = list()
+        self.size = 0
+        self.id = "" 
+      
+class intersectNode(object):
+
+    def __init__(self):
+        self.sets = list()
+        self.size = 0
+        self.id = ""              
+        
+# start = time.time()
+loader = rampDBBulkLoader("../../config/ramp_db_props.txt")       
+# # #loader.collectEntityIntersects(analyteType = 'compound', format='json')
+# loader.currDBVersion = "v2.0.4"
+# loader.updateEntityIntercepts(filterComps=False)
+
+loader.updateDataStatusSummary()
+# print(str(time.time()-start))
 # 
 # loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
 # loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
