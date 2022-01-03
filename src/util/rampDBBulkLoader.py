@@ -16,6 +16,7 @@ from jproperties import Properties
 from urllib.parse import quote_plus
 import itertools
 import time
+from datetime import date
 import json
 
 class rampDBBulkLoader(object):
@@ -261,14 +262,31 @@ class rampDBBulkLoader(object):
 
         engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
        
+        sql = "select ramp_version, load_timestamp from db_version order by load_timestamp desc limit 1"
+        
+        dbVersion = None
+        
+        with engine.connect() as conn:
+            dbVersionDF = conn.execute(sql)
+        
+        dbVersionDF = pd.DataFrame(dbVersionDF)
+        print(dbVersionDF.iloc[0,0])
+        dbVersion = dbVersionDF.iloc[0,0]
+        today = dbVersionDF.iloc[0,1].date()
+
         versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None)
+
+        versionInfo['ramp_db_version'] = dbVersion
+        versionInfo['db_mod_date'] = today
+
+        print(versionInfo)
 
         # change current status to archive
         sql = "update version_info set status = 'archive' where status = 'current'"
-
+  
         with engine.connect() as conn:
             conn.execute(sql)
-            
+              
         versionInfo.to_sql("version_info", engine, if_exists = 'append', index=False)
 
         
@@ -562,12 +580,13 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-loader = rampDBBulkLoader("../../config/ramp_db_props.txt")       
+loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
 # # #loader.collectEntityIntersects(analyteType = 'compound', format='json')
 # loader.currDBVersion = "v2.0.4"
 # loader.updateEntityIntercepts(filterComps=False)
 
-loader.updateDataStatusSummary()
+#loader.updateDataStatusSummary()
 # print(str(time.time()-start))
 # 
 # loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
