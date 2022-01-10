@@ -288,6 +288,12 @@ class hmdbData(MetabolomicsData):
                     self.metaboliteIDDictionary[metabohmdbid] = mapping
                 if commonName is not None:
                     self.metaboliteCommonName[metabohmdbid] = commonName
+
+                    # append the commonName as another synonym
+                    if metabohmdbid not in self.metabolitesWithSynonymsDictionary:
+                        self.metabolitesWithSynonymsDictionary[metabohmdbid] = []                    
+                    if commonName not in self.metabolitesWithSynonymsDictionary[metabohmdbid]:
+                        self.metabolitesWithSynonymsDictionary[metabohmdbid].append(commonName)
                 else:
                     self.metaboliteCommonName[metabohmdbid] = "NA"        
                         
@@ -462,7 +468,10 @@ class hmdbData(MetabolomicsData):
                 if synonyms is not None:
                     for synonym in synonyms:
                         if synonym is not None and synonym.text is not None:
-                            self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
+                            if synonym.text not in self.metabolitesWithSynonymsDictionary[metabohmdbid]:
+                                # add synonym if not already there.
+                                self.metabolitesWithSynonymsDictionary[metabohmdbid].append(synonym.text)
+                                
         print("count global: ", countGlobal, " count micro ", countMicrobe)
         print("lipid super class", lipidCount)
         for key in self.pathwayCategory:
