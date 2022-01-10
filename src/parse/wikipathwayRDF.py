@@ -40,7 +40,7 @@ class WikipathwaysRDF(MetabolomicsData):
         #key: pathwayId, value: list of metabolites
         self.pathwaysWithMetabolitesDictionary = dict()
         
-        #empty for reactome
+        #empty for wikiPathways
         self.metabolitesWithSynonymsDictionary = dict()
         
         #only not empty when a catalyzed class exists 
@@ -524,6 +524,8 @@ class WikipathwaysRDF(MetabolomicsData):
                 
                 # JCB grep the 'label' as common name
                 self.metaboliteCommonName[metabolites_id] = commonName
+                # add the label as a synonym
+                self.metabolitesWithSynonymsDictionary[metabolites_id] = commonName
         '''
         print('At pathway {}:{}, there are {} metabolites'\
               .format(this_pathway,self.pathwayDictionary[this_pathway],len(self.metaboliteIDDictionary)))
