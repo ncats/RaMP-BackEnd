@@ -108,7 +108,7 @@ class EntityBuilder(object):
         # mapping exclusion list and population of the list
         # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
-        self.mappingExclustionList.populateExclusionList("../misc/resourceConfig/curation_mapping_issues_list.txt")
+        self.mappingExclustionList.populateExclusionList("../config/curation_mapping_issues_list.txt")
     
         # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()

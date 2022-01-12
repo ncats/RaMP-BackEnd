@@ -4,6 +4,6 @@ hmdb_gene	http	https://hmdb.ca/system/downloads/current/hmdb_proteins.zip	hmdb_p
 hmdb_met_sdf	http	https://hmdb.ca/system/downloads/current/structures.zip	structures.zip	structures.sdf	../misc/data/chemprops/hmdb/	zip	chem_props_sdf
 reactome_met	http	http://www.reactome.org/download/current/ChEBI2Reactome_All_Levels.txt	ChEBI2Reactome_All_Levels.txt	ChEBI2Reactome_All_Levels.txt	../misc/data/reactome/	none	pathways_mets
 reactome_gene	http	http://www.reactome.org/download/current/UniProt2Reactome_All_Levels.txt	UniProt2Reactome_All_Levels.txt	UniProt2Reactome_All_Levels.txt	../misc/data/reactome/	none	pathways_genes
-wiki_pathways_mets_genes	http	http://data.wikipathways.org/current/rdf/wikipathways-20211210-rdf-wp.zip	wikipathways-20211210-rdf-wp.zip	./wp/	../misc/data/wikipathwaysRDF/	zip	pathways_mets_genes
+wiki_pathways_mets_genes	http	http://data.wikipathways.org/current/rdf/wikipathways-20220110-rdf-wp.zip	wikipathways-20220110-rdf-wp.zip	./wp/	../misc/data/wikipathwaysRDF/	zip	pathways_mets_genes
 chebi_met_sdf	ftp	https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_complete_3star.sdf.gz	ChEBI_complete_3star.sdf.gz	ChEBI_complete_3star.sdf	../misc/data/chemprops/chebi/	gzip	chem_props_sdf
 lipidmaps_met	http	https://www.lipidmaps.org/files/?file=LMSD&ext=sdf.zip	LMSD.sdf.zip	structures.sdf	../misc/data/chemprops/lipidmaps/	zip	chem_props_sdf
