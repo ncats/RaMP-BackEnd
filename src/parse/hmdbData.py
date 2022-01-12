@@ -595,8 +595,9 @@ class hmdbData(MetabolomicsData):
                                          #   print("for HMDB0004970:", [prefix[mapping_key] + sourceid.text], mapping_key)
                                         mapping[mapping_key] = [prefix[mapping_key] + sourceid.text]
                                     else:
-                                        if mapping_key == 'gene_name':
+                                        if mapping_key == 'gene_name' or mapping_key == 'common_name':
                                             mapping[mapping_key] = "gene_symbol:" + sourceid.text
+                                            mapping['common_name'] = "gene_symbol:" + sourceid.text
                             
                             proteinacc = mapping['HMDB_protein_accession'][0]
                             # print(proteinacc)

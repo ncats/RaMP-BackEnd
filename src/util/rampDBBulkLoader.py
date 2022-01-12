@@ -445,7 +445,7 @@ class rampDBBulkLoader(object):
             self.currDBVersion = newVersion
             
     
-    def updateEntityIntercepts(self, filterComps=False):
+    def updateEntityIntersects(self, filterComps=False):
         print("resolving analyte intersects")
         cmpdIntersects =  self.collectEntityIntersects(analyteType= 'compound', format='json', filterMets=filterComps)
         geneIntersects =  self.collectEntityIntersects(analyteType= 'gene', format='json', filterMets=filterComps)
@@ -467,7 +467,7 @@ class rampDBBulkLoader(object):
     
             
     def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
-        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
