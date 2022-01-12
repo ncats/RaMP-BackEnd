@@ -57,9 +57,6 @@ class mainDBLoad():
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
 
-        start = time.time()
-
-
 loader = mainDBLoad()
 loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None)
 
