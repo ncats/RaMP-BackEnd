@@ -1,7 +1,7 @@
 ramp_db_version	db_mod_date	status	data_source_id	data_source_name	data_source_url	data_source_version
-v2.0.4	2021-12-13	current	hmdb	HMDB	https://hmdb.ca/	v5.0 (2021-11-17)
-v2.0.4	2021-12-13	current	reactome	Reactome	https://reactome.org/	v78 (October 2021)
-v2.0.4	2021-12-13	current	wiki	WikiPathways	https://www.wikipathways.org/index.php/WikiPathways	v20211210 (2021-12-10)
-v2.0.4	2021-12-13	current	kegg	KEGG	https://www.genome.jp/kegg/	from HMDB (v5.0) (2021-11-17) 
-v2.0.4	2021-12-13	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 206 (2021-12-01)
-v2.0.4	2021-12-13	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release 2021-12-07
+v2.0.5	1/10/2022	current	hmdb	HMDB	https://hmdb.ca/	v5.0 (2021-11-17)
+v2.0.5	1/10/2022	current	reactome	Reactome	https://reactome.org/	v78 (October 2021)
+v2.0.5	1/10/2022	current	wiki	WikiPathways	https://www.wikipathways.org/index.php/WikiPathways	v20220110 (2022-01-10)
+v2.0.5	1/10/2022	current	kegg	KEGG	https://www.genome.jp/kegg/	from HMDB (v5.0) (2021-11-17) 
+v2.0.5	1/10/2022	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 207 (2022-01-01)
+v2.0.5	1/10/2022	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release 2022-01-10
