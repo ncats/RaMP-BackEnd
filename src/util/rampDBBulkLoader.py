@@ -580,8 +580,8 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
+#loader = rampDBBulkLoader("../config/ramp_db_props.txt")
+#loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
 # # #loader.collectEntityIntersects(analyteType = 'compound', format='json')
 # loader.currDBVersion = "v2.0.4"
 # loader.updateEntityIntercepts(filterComps=False)
