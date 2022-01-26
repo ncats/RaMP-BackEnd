@@ -41,6 +41,12 @@ class mainDBLoad():
         # this method loads the intermediate parsing results from the ../../misc/sql/ directory.
         loader.load(self.dbConfigFilePath)     
         
+        # update Ontology Metabolite counts
+        loader.updateOntologyMetaboliteCounts()
+        
+        # update Source pathwayCount
+        loader.updateSourcePathwayCount()
+        
         # sets the new updated version
         loader.updateDBVersion(incrementLevel = 'increment_patch_release')
         
@@ -48,7 +54,6 @@ class mainDBLoad():
         # precondition: the updateDBVersion must have been set so that the
         # intersections can be attached to the current version
         loader.updateEntityIntersects()
-
         
         # this optional method tracks database version information supplied in this file.
         # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")

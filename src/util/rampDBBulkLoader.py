@@ -34,7 +34,7 @@ class rampDBBulkLoader(object):
                                    'hmdb_kegg':'KEGG',
                                    'hmdb':'HMDB',
                                    'reactome':'Reactome',
-                                   'wiki':'WikPathways',
+                                   'wiki':'WikiPathways',
                                    'lipidmaps':'LIPIDMAPS'}
         
         
@@ -449,8 +449,12 @@ class rampDBBulkLoader(object):
         print("resolving analyte intersects")
         cmpdIntersects =  self.collectEntityIntersects(analyteType= 'compound', format='json', filterMets=filterComps)
         geneIntersects =  self.collectEntityIntersects(analyteType= 'gene', format='json', filterMets=filterComps)
+        
+        cmpdIntersectsInPW =  self.collectEntityIntersectsMappingToPathways(analyteType= 'compound', format='json', filterMets=filterComps)
+        geneIntersectsInPW =  self.collectEntityIntersectsMappingToPathways(analyteType= 'gene', format='json', filterMets=filterComps)
+                
         vals = list()
-        vals.append({'met_intersects_json':cmpdIntersects, 'gene_intersects_json':geneIntersects})
+        vals.append({'met_intersects_json':cmpdIntersects, 'gene_intersects_json':geneIntersects, 'met_intersects_json_pw_mapped':cmpdIntersectsInPW, 'gene_intersects_json_pw_mapped':geneIntersectsInPW})
         
         if self.currDBVersion != None:
             engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
@@ -460,14 +464,101 @@ class rampDBBulkLoader(object):
                 meta_data.reflect()
                 db_version = meta_data.tables['db_version']
                 conn.execute(db_version.update().where(db_version.c.ramp_version == self.currDBVersion).values(
-                    met_intersects_json=cmpdIntersects, gene_intersects_json=geneIntersects))
+                    met_intersects_json=cmpdIntersects, gene_intersects_json=geneIntersects, met_intersects_json_pw_mapped=cmpdIntersectsInPW, gene_intersects_json_pw_mapped=geneIntersectsInPW))
                 #conn.execute(db_version.update().where(db_version.db_version == self.currDBVersion).values(vals))
             conn.close()
         print("updated DB analyte intersects")
     
             
+    def collectEntityIntersectsMappingToPathways(self, analyteType='compound', format='json', filterMets=False, dropSMPD=False):
+        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.DataFrame(sourceInfo)
+        sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
+        #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
+        #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
+        
+        mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
+        mappingToPathways = pd.DataFrame(mappingToPathways)
+        mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
+        
+        mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
+        mappingToPathways = pd.DataFrame(mappingToPathways)
+        mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
+        
+        pathwayInfo = pd.read_table('../../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
+        pathwayInfo = pd.DataFrame(pathwayInfo)
+        pathwayInfo.columns = ['pathwayRampId','pathwayId','pathwaySource','pathwayCat', 'pathwayName']
+        smpdbVersions = ['smpdb2', 'smpdb3']
+        
+        #eliminate pathways mapping to smpdb
+        pathwayInfo = pathwayInfo[~pathwayInfo['pathwayCat'].isin(smpdbVersions)]
+        
+        #now restrict mappingToPathways to this subset
+        mappingToPathways = mappingToPathways[mappingToPathways['pathwayRampId'].isin(pathwayInfo['pathwayRampId'])]
+        
+        #here are the ramp ids that count
+        rampIdsInPathways = mappingToPathways['rampId']
+        
+        # limit ramp ids to pathway mapping, non-smpdb
+        sourceInfo = sourceInfo[sourceInfo['rampId'].isin(rampIdsInPathways)]
+        
+        for source in self.sourceDisplayNames:
+            sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+        
+        if filterMets:
+            sourceInfo = sourceInfo[~sourceInfo['status'].isin(['predicted', 'expected'])]
+        
+        
+        sourceInfo = sourceInfo[sourceInfo['analyteType'] == analyteType]
+        sourceSet = set(sourceInfo['dataSource'])
+        smSourceData = sourceInfo[['rampId', 'dataSource', 'analyteType']]            
+        smSourceData = smSourceData.drop_duplicates()
+        combos = []
+        nodeList = list()
+        for r in range(1,len(sourceSet)+1):
+            currCombos = itertools.combinations(sourceSet, r)
+            combos += list(currCombos)
+        
+        intersectIndex = 0
+        
+        for comb in combos:
+            intersectIndex += 1
+            combSet = set()
+            combIndex = 0
+
+            for s in comb:
+                if combIndex == 0:
+                    currCombSet = set(smSourceData.loc[smSourceData['dataSource'] == s]['rampId'])
+                else:
+                    currCombSet = currCombSet.intersection(set(smSourceData.loc[smSourceData['dataSource'] == s]['rampId']))
+                    
+                combIndex += 1
+                                
+            restData = smSourceData.loc[~smSourceData['dataSource'].isin(comb)]
+            restSet = set(restData['rampId'])
+            
+            node = intersectNode()
+            node.sets = list(comb)
+            node.size = len(currCombSet-restSet)
+            if(analyteType == 'compound'):
+                node.id = "cmpd_src_set_" + str(intersectIndex)
+            else:
+                node.id = "gene_src_set_" + str(intersectIndex)
+                                            
+            if(node.size > 0):
+                nodeList.append(node) 
+            
+        if format == 'json':
+            jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=None)
+            print(jsonRes)
+            return jsonRes
+        
+        return nodeList
+        
+        
     def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
-        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
@@ -515,8 +606,9 @@ class rampDBBulkLoader(object):
                 node.id = "cmpd_src_set_" + str(intersectIndex)
             else:
                 node.id = "gene_src_set_" + str(intersectIndex)
-                    
-            nodeList.append(node) 
+            
+            if(node.size > 0):
+                nodeList.append(node) 
             
         if format == 'json':
             jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
@@ -525,6 +617,42 @@ class rampDBBulkLoader(object):
             return jsonRes
         
         return nodeList
+    
+    
+    def updateSourcePathwayCount(self):
+        print("Started: updating pathway counts in source table")
+        
+        sql = "update source, "\
+        "(select ap.rampId, count(distinct(ap.pathwayRampId)) as pathwayCount from analytehaspathway ap "\
+        "where ap.pathwaySource != 'hmdb' group by ap.rampId) as metPathwayInfo "\
+        "set source.pathwayCount = metPathwayInfo.pathwayCount where source.rampId = metPathwayInfo.rampId"
+                
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+   
+        with engine.connect() as conn:
+            conn.execute(sql)
+            conn.close()
+    
+        print("Finished: updating pathway counts in source table")
+    
+    
+    def updateOntologyMetaboliteCounts(self):
+        print("Started: updating metabolite counts in ontology table")
+        
+        sql = "update ontology,"\
+        "(select rampOntologyId, count(distinct(rampCompoundId)) as metCount from analytehasontology group by rampOntologyId)"\
+        "as ontologyMetInfo set ontology.metCount = ontologyMetInfo.metCount where ontology.rampOntologyId = ontologyMetInfo.rampOntologyId"
+    
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+   
+        with engine.connect() as conn:
+            conn.execute(sql)
+            conn.close()
+    
+        print("Finished: updating metabolite counts in ontology table")
+        
+
+    
         
 class dbConfig(object):
     
@@ -580,11 +708,16 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-#loader = rampDBBulkLoader("../config/ramp_db_props.txt")
-#loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
-# # #loader.collectEntityIntersects(analyteType = 'compound', format='json')
-# loader.currDBVersion = "v2.0.4"
-# loader.updateEntityIntercepts(filterComps=False)
+#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+#loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
+#loader.collectEntityIntersects(analyteType = 'compound', format='json')
+#loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
+
+#loader.currDBVersion = "v2.0.6"
+#loader.updateSourcePathwayCount()
+
+
+#loader.updateEntityIntersects(filterComps=False)
 
 #loader.updateDataStatusSummary()
 # print(str(time.time()-start))
