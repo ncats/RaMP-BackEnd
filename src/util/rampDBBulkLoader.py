@@ -37,6 +37,8 @@ class rampDBBulkLoader(object):
                                    'wiki':'WikiPathways',
                                    'lipidmaps':'LIPIDMAPS'}
         
+        self.keggSubSources = ['hmdb_kegg', 'wikipathways_kegg']
+        
         
         logging.basicConfig()
         logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
@@ -502,8 +504,8 @@ class rampDBBulkLoader(object):
         # limit ramp ids to pathway mapping, non-smpdb
         sourceInfo = sourceInfo[sourceInfo['rampId'].isin(rampIdsInPathways)]
         
-        for source in self.sourceDisplayNames:
-            sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+#         for source in self.sourceDisplayNames:
+#             sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
         
         if filterMets:
             sourceInfo = sourceInfo[~sourceInfo['status'].isin(['predicted', 'expected'])]
@@ -519,7 +521,7 @@ class rampDBBulkLoader(object):
             currCombos = itertools.combinations(sourceSet, r)
             combos += list(currCombos)
         
-        intersectIndex = 0
+        intersectIndex = 0        
         
         for comb in combos:
             intersectIndex += 1
@@ -547,7 +549,37 @@ class rampDBBulkLoader(object):
                                             
             if(node.size > 0):
                 nodeList.append(node) 
-            
+        
+        # need to deal with wikipathways_kegg and hmdb_kegg entities
+        # if it's one of these, it should overlap hmdb or wiki
+        # remove kegg subsource if only kegg subsource, add to the parent source tally         
+        for node in nodeList:
+            print(node.id)
+            print(node.sets)
+            print(str(node.size))
+            for s in node.sets:
+                if len(node.sets) == 1 and s in self.keggSubSources:                                        
+                    mainSource = s.replace("_kegg", "")                    
+                    print("Node sets with kegg subsource: " + s)
+                    if s == 'wikipathways_kegg':
+                        nodeList.remove(node)
+                        for n2 in nodeList:
+                            if len(n2.sets) == 2 and 'wiki' in n2.sets and 'wikipathways_kegg' in n2.sets:
+                                n2.size = n2.size + node.size
+                    if s == 'hmdb_kegg':
+                        nodeList.remove(node)
+                        for n2 in nodeList:
+                            if len(n2.sets) == 2 and 'hmdb' in n2.sets and 'hmdb_kegg' in n2.sets:
+                                n2.size = n2.size + node.size
+                                                            
+        # drop in display names        
+        for node in nodeList:
+            sourceIndex = 0
+            for source in node.sets: 
+                node.sets[sourceIndex] = self.sourceDisplayNames[source] 
+                sourceIndex = sourceIndex + 1  
+        
+           
         if format == 'json':
             jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
             sort_keys=True, indent=None)
@@ -563,9 +595,11 @@ class rampDBBulkLoader(object):
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
         #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
+  
         
-        for source in self.sourceDisplayNames:
-            sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+        # drop mapping to display name for now
+#        for source in self.sourceDisplayNames:
+#            sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
         
         if filterMets:
             sourceInfo = sourceInfo[~sourceInfo['status'].isin(['predicted', 'expected'])]
@@ -609,7 +643,37 @@ class rampDBBulkLoader(object):
             
             if(node.size > 0):
                 nodeList.append(node) 
-            
+                
+        # need to deal with wikipathways_kegg and hmdb_kegg entities
+        # if it's one of these, it should overlap hmdb or wiki
+        # remove kegg subsource if only kegg subsource, add to the parent source tally         
+        for node in nodeList:
+            print(node.id)
+            print(node.sets)
+            print(str(node.size))
+            for s in node.sets:
+                if len(node.sets) == 1 and s in self.keggSubSources:                                        
+                    mainSource = s.replace("_kegg", "")                    
+                    print("Node sets with kegg subsource: " + s)
+                    if s == 'wikipathways_kegg':
+                        nodeList.remove(node)
+                        for n2 in nodeList:
+                            if len(n2.sets) == 2 and 'wiki' in n2.sets and 'wikipathways_kegg' in n2.sets:
+                                n2.size = n2.size + node.size
+                    if s == 'hmdb_kegg':
+                        nodeList.remove(node)
+                        for n2 in nodeList:
+                            if len(n2.sets) == 2 and 'hmdb' in n2.sets and 'hmdb_kegg' in n2.sets:
+                                n2.size = n2.size + node.size
+                                                            
+        # drop in display names        
+        for node in nodeList:
+            sourceIndex = 0
+            for source in node.sets: 
+                node.sets[sourceIndex] = self.sourceDisplayNames[source] 
+                sourceIndex = sourceIndex + 1              
+#                source.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+        
         if format == 'json':
             jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
             sort_keys=True, indent=None)
@@ -710,7 +774,9 @@ class intersectNode(object):
 # start = time.time()
 #loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
 #loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
-#loader.collectEntityIntersects(analyteType = 'compound', format='json')
+#sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
+#print('have json res')
+#print(jsonRes)
 #loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 
 #loader.currDBVersion = "v2.0.6"
