@@ -472,44 +472,51 @@ class rampDBBulkLoader(object):
         print("updated DB analyte intersects")
     
             
+
     def collectEntityIntersectsMappingToPathways(self, analyteType='compound', format='json', filterMets=False, dropSMPD=False):
         sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
         #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
-        
+        print(sourceInfo.shape)
         mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
         mappingToPathways = pd.DataFrame(mappingToPathways)
         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
-        
-        mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
-        mappingToPathways = pd.DataFrame(mappingToPathways)
-        mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
-        
+        print(mappingToPathways.shape)
+#         mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
+#         mappingToPathways = pd.DataFrame(mappingToPathways)
+#         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
+#         print(mappingToPathways.shape)
         pathwayInfo = pd.read_table('../../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
         pathwayInfo = pd.DataFrame(pathwayInfo)
         pathwayInfo.columns = ['pathwayRampId','pathwayId','pathwaySource','pathwayCat', 'pathwayName']
         smpdbVersions = ['smpdb2', 'smpdb3']
-        
+        print(pathwayInfo.shape)
         #eliminate pathways mapping to smpdb
         pathwayInfo = pathwayInfo[~pathwayInfo['pathwayCat'].isin(smpdbVersions)]
-        
+        print(pathwayInfo.shape)
         #now restrict mappingToPathways to this subset
         mappingToPathways = mappingToPathways[mappingToPathways['pathwayRampId'].isin(pathwayInfo['pathwayRampId'])]
-        
+        print(mappingToPathways.shape)
+
         #here are the ramp ids that count
         rampIdsInPathways = mappingToPathways['rampId']
-        
+        print(rampIdsInPathways.shape)
         # limit ramp ids to pathway mapping, non-smpdb
         sourceInfo = sourceInfo[sourceInfo['rampId'].isin(rampIdsInPathways)]
+        print(sourceInfo.shape)
         
-#         for source in self.sourceDisplayNames:
-#             sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
+        #  we used to collapse to display names here, but later moved this back in the process
+        #  after we do more kegg accounting.
+        
+        #  for source in self.sourceDisplayNames:
+        #      sourceInfo.replace(source, value=self.sourceDisplayNames[source], inplace=True)
         
         if filterMets:
             sourceInfo = sourceInfo[~sourceInfo['status'].isin(['predicted', 'expected'])]
         
+        print(sourceInfo.shape)
         
         sourceInfo = sourceInfo[sourceInfo['analyteType'] == analyteType]
         sourceSet = set(sourceInfo['dataSource'])
@@ -517,11 +524,18 @@ class rampDBBulkLoader(object):
         smSourceData = smSourceData.drop_duplicates()
         combos = []
         nodeList = list()
+        print("source set")
+        print(sourceSet)
         for r in range(1,len(sourceSet)+1):
             currCombos = itertools.combinations(sourceSet, r)
+            #print("currCombos")
+            #print(currCombos)
             combos += list(currCombos)
         
         intersectIndex = 0        
+        
+        #print("combos")
+        #print(combos)
         
         for comb in combos:
             intersectIndex += 1
@@ -552,14 +566,26 @@ class rampDBBulkLoader(object):
         
         # need to deal with wikipathways_kegg and hmdb_kegg entities
         # if it's one of these, it should overlap hmdb or wiki
-        # remove kegg subsource if only kegg subsource, add to the parent source tally         
+        # remove kegg subsource if only kegg subsource, add to the parent source tally
+        print("node list length, initial: "+str(len(nodeList)))
         for node in nodeList:
-            print(node.id)
-            print(node.sets)
-            print(str(node.size))
+            #print(node.id)
+            #print(node.sets)
+            #print(str(node.size))
             for s in node.sets:
+                
+                #### NOTE below here only happens if the current set has exactly 1 data source in the set and its either wikipathways_kegg or hmdb_kegg
+                #### So this creates a node called 'mainSource' of the primary data source, *But currently isn't doing anything with 'mainSource' ???
+                #### Then it seems to remove that single _kegg entry leaving an empty node.set, this is at a high level removing
+                #### a node with one _kegg source in it's set. 
+                #### then it traverses the entire nodeList until it finds a ndoe that has set size 2 and the two items are *_kegg and * where * is the primary source
+                #### now we increment this particular joint node's count by the singleton _kegg node's size.
+                #### This gives credit to the main source.
+                
+                #### This is ok because there should be no single-item set nodes that are *_kegg. So these are eliminated and the main source is incremented.                
+                
                 if len(node.sets) == 1 and s in self.keggSubSources:                                        
-                    mainSource = s.replace("_kegg", "")                    
+                    #mainSource = s.replace("_kegg", "")                
                     print("Node sets with kegg subsource: " + s)
                     if s == 'wikipathways_kegg':
                         nodeList.remove(node)
@@ -572,14 +598,59 @@ class rampDBBulkLoader(object):
                             if len(n2.sets) == 2 and 'hmdb' in n2.sets and 'hmdb_kegg' in n2.sets:
                                 n2.size = n2.size + node.size
                                                             
-        # drop in display names        
+        # drop in display names
+        # 20220517 - correcting issue. We now have possibly more than one kegg node.
         for node in nodeList:
             sourceIndex = 0
             for source in node.sets: 
                 node.sets[sourceIndex] = self.sourceDisplayNames[source] 
                 sourceIndex = sourceIndex + 1  
         
-           
+        # Now we have to correct node sets that have two KEGG nodes. 
+        # The node level accounting is the same, it's just that wikipathways_kegg and hmdb_kegg are both 
+        # changed just to KEGG and now some nodes have two KEGG's listed.
+        # So it's fair to drop a kegg entry within a node that has two keggs in it's set... but the set may or will become redundant, perhaps...
+        for node in nodeList:
+            keggCount = node.sets.count("KEGG")
+            #print("keggCount = "+str(keggCount))
+            if keggCount == 2:
+                for s in node.sets:
+                    if(s == "KEGG"):
+                        node.sets.remove(s)
+                        break
+                #print("keggCountFixed = "+str(node.sets.count("KEGG")))
+                #print(node.sets)
+                
+        # OK, redundant KEGG nodes have removed, BUT now we may have replicates sets
+        # Hmmmm doesn't seem like we have redundant source nodes now. 
+        nodesToRemove = list()
+        touchedNodePairs = list()
+        eqCount = 0
+        for n in nodeList:
+            for n2 in nodeList:
+                if n.id != n2.id:
+                    if (n.id+n2.id) not in touchedNodePairs and (n2.id+n.id) not in touchedNodePairs:
+                        touchedNodePairs.append(n.id+n2.id)
+                        touchedNodePairs.append(n2.id+n.id)
+                        if n.sets == n2.sets:
+                            eqCount = eqCount + 1
+                            n.size = n.size + n2.size
+                            if n2 not in nodesToRemove:
+                                nodesToRemove.append(n2)
+             
+        for n in nodesToRemove:
+            nodeList.remove(n)
+                       
+
+        # now we have fewer nodes left, lets add new ids:
+        nid = 0
+        for n in nodeList:
+            nid = nid + 1
+            if(analyteType == 'compound'):
+                n.id = "cmpd_src_set_" + str(nid)
+            else:
+                n.id = "gene_src_set_" + str(nid)
+        
         if format == 'json':
             jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
             sort_keys=True, indent=None)
@@ -587,8 +658,9 @@ class rampDBBulkLoader(object):
             return jsonRes
         
         return nodeList
-        
-        
+    
+       
+       
     def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
         sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
@@ -648,13 +720,13 @@ class rampDBBulkLoader(object):
         # if it's one of these, it should overlap hmdb or wiki
         # remove kegg subsource if only kegg subsource, add to the parent source tally         
         for node in nodeList:
-            print(node.id)
-            print(node.sets)
-            print(str(node.size))
+            #print(node.id)
+            #print(node.sets)
+            #print(str(node.size))
             for s in node.sets:
                 if len(node.sets) == 1 and s in self.keggSubSources:                                        
                     mainSource = s.replace("_kegg", "")                    
-                    print("Node sets with kegg subsource: " + s)
+                    #print("Node sets with kegg subsource: " + s)
                     if s == 'wikipathways_kegg':
                         nodeList.remove(node)
                         for n2 in nodeList:
@@ -674,6 +746,51 @@ class rampDBBulkLoader(object):
                 sourceIndex = sourceIndex + 1              
 #                source.replace(source, value=self.sourceDisplayNames[source], inplace=True)
         
+        
+        # Now we have to correct node sets that have two KEGG nodes. 
+        # The node level accounting is the same, it's just that wikipathways_kegg and hmdb_kegg are both 
+        # changed just to KEGG and now some nodes have two KEGG's listed.
+        # So it's fair to drop a kegg entry within a node that has two keggs in it's set... but the set may or will become redundant, perhaps...
+        for node in nodeList:
+            keggCount = node.sets.count("KEGG")
+            #print("keggCount = "+str(keggCount))
+            if keggCount == 2:
+                for s in node.sets:
+                    if(s == "KEGG"):
+                        node.sets.remove(s)
+                        break
+                #print("keggCountFixed = "+str(node.sets.count("KEGG")))
+                #print(node.sets)
+                
+        # OK, redundant KEGG nodes have removed, BUT now we may have replicates sets
+        # Hmmmm doesn't seem like we have redundant source nodes now. 
+        nodesToRemove = list()
+        touchedNodePairs = list()
+        eqCount = 0
+        for n in nodeList:
+            for n2 in nodeList:
+                if n.id != n2.id:
+                    if (n.id+n2.id) not in touchedNodePairs and (n2.id+n.id) not in touchedNodePairs:
+                        touchedNodePairs.append(n.id+n2.id)
+                        touchedNodePairs.append(n2.id+n.id)
+                        if n.sets == n2.sets:
+                            eqCount = eqCount + 1
+                            n.size = n.size + n2.size
+                            if n2 not in nodesToRemove:
+                                nodesToRemove.append(n2)
+             
+        for n in nodesToRemove:
+            nodeList.remove(n)
+                       
+        # now we have fewer nodes left, lets add new ids:
+        nid = 0
+        for n in nodeList:
+            nid = nid + 1
+            if(analyteType == 'compound'):
+                n.id = "cmpd_src_set_" + str(nid)
+            else:
+                n.id = "gene_src_set_" + str(nid)        
+                
         if format == 'json':
             jsonRes = json.dumps(nodeList, default=lambda o: o.__dict__, 
             sort_keys=True, indent=None)
@@ -715,9 +832,26 @@ class rampDBBulkLoader(object):
     
         print("Finished: updating metabolite counts in ontology table")
         
-
-    
+    def updateCurrentDBVersionDumpURL(self, dumpUrl):
+        self.dbConf.dumpConfig()
         
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        
+        print("Updating DB Version")
+                
+        with engine.connect() as conn:
+            ts = conn.execute("select max(load_timestamp) from db_version")
+            print(ts)
+            ts = pd.DataFrame(ts)
+            print(ts.shape)
+            print(ts)
+            print(ts.iloc[0,0])
+            dbDumpURLUpdateSQL = "update db_version set db_sql_url = '"+dumpUrl+"' where load_timestamp = '"+str(ts.iloc[0,0])+"'"
+            print(dbDumpURLUpdateSQL)
+            conn.execute(dbDumpURLUpdateSQL)
+            conn.close()
+                
+            
 class dbConfig(object):
     
     def __init__(self, configFile):
@@ -772,23 +906,25 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
 #loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')
 #print(jsonRes)
 #loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 
-#loader.currDBVersion = "v2.0.6"
+loader.currDBVersion = "v2.0.7"
 #loader.updateSourcePathwayCount()
-
-
-#loader.updateEntityIntersects(filterComps=False)
+loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/34990387")
+#ei = loader.collectEntityIntersects("compound", 'json', False)
+#ei = loader.collectEntityIntersects("compound", 'json', False)
+#print(ei)
+# loader.updateEntityIntersects(filterComps=False)
 
 #loader.updateDataStatusSummary()
 # print(str(time.time()-start))
 # 
-# loader.updateDBVersion('increment_patch_release', None, "Testing the increment patch release")
+#loader.updateDBVersion('increment_patch_release', None, "Indexing pathway columns and other table columns. Just indexing.")
 # loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
 # loader.updateDBVersion('specified', "v3.0.0", "Testing explicit version set")
 
