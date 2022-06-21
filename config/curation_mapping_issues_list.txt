@@ -1,4 +1,4 @@
-source	source_id	source_common_name	external_id	ext_common_name	issue_type
+source	ID1	ID1_common_name	ID2	ID2_common_name	issue_type
 hmdb	hmdb:HMDB0029225	Coutaric acid	kegg:C01327	Hydrochloric acid	improper_match
 hmdb	pubchem:449034	Coutaric acid	kegg:C01327	Hydrochloric acid	improper_match
 hmdb	hmdb:HMDB0039641	Ganoderic acid J	pubchem:14730796	"11,12,13-Trinor-1,3,5-bisabolatrien-10-oic acid"	improper_match
