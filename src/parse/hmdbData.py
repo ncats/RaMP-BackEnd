@@ -1174,11 +1174,13 @@ class hmdbData(MetabolomicsData):
         This function is used to give categories of hmdb pathways
         The raw data is from SMPDB.txt, which depends on the version of SMPDB
         '''
-        SMPDB2 = []
-        with open('../misc/SMPDB.txt', 'r') as f:
-            for line in f:
-                SMPDB2.append(line.rstrip('\n'))
-        return SMPDB2
+#         SMPDB2 = []
+#         with open('../misc/SMPDB.txt', 'r') as f:
+#             for line in f:
+#                 SMPDB2.append(line.rstrip('\n'))
+#         return SMPDB2
+        # legacy... just return an empty list
+        return []
     
     def getExoEndo(self, tree=None, file='hmdb_metabolites.xml'):
         self.exoEndoDictionary = dict()
