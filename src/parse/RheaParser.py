@@ -20,6 +20,7 @@ from rampEntity.RheaReaction import RheaReaction
 from rampEntity.RheaCompound import RheaCompound
 from docutils.nodes import compound
 from libchebipy._parsers import __FORMULAE
+from parse.UniprotParser import UniprotParser
 
 import pandas as pd
 
@@ -44,6 +45,8 @@ class RheaParser(MetabolomicsData):
         
         self.rheaCompoundDict = dict()
         
+        self.rheaProteinDict = dict()
+        
         self.rheaLocalRdfFile = ""
         
         self.rheaLocalRheaToUniprotFile = ""
@@ -52,12 +55,45 @@ class RheaParser(MetabolomicsData):
 
         self.rheaLocalRxnDirectionFile = ""
         
-        self.distinctStatus = set()
-             
-    def parseRheaFiles(self):
+        self.humanUniprotRecordDict = dict()
+        
+        self.humanUniprotAccSet = set()
+                     
+    def processRhea(self):
+        self.buildSupportingUniprotData()
+        
         self.getRheaFiles()
         self.constructRDF()
-        self.exportIntermediatFiles()
+        
+        self.appendUniprotToReaction()
+        self.appendEcToReaction()
+        
+        self.exportIntermediateFiles()
+    
+
+
+    def buildSupportingUniprotData(self):
+        print("building uniprot data store")
+        uniParser = UniprotParser(self.config)
+        uniParser.parseUniprot()
+        self.humanUniprotRecordDict = uniParser.uniprotRecords
+        
+        threadedUniprotDict = dict()
+        
+        for acc in self.humanUniprotRecordDict:
+            self.humanUniprotAccSet.add(acc)
+            p = self.humanUniprotRecordDict[acc]
+            threadedUniprotDict[acc] = p
+            for acc2 in p.secondaryAccs:
+                self.humanUniprotAccSet.add(acc2)
+                threadedUniprotDict[acc2] = p
+                
+        self.humanUniprotRecordDict = threadedUniprotDict        
+    
+        print("in rhea uniprot build")
+        print("length of the dict"+str(len(self.humanUniprotRecordDict.keys())))
+        print("length of the set"+str(len(self.humanUniprotAccSet)))
+
     
     def getRheaFiles(self):
 
@@ -100,8 +136,7 @@ class RheaParser(MetabolomicsData):
             
             self.download_files(rhea2UniprotUrl, self.relDir + localDir + rhea2UniprotRemoteFile)            
         else:
-            print("Using cacheed Rhea Uniprot-to-Rhea file.")
-
+            print("Using cached Rhea Uniprot-to-Rhea file.")
             
         # rhea to ec
         rhea2EcFile = rheaToEcConf.extractFileName
@@ -114,7 +149,7 @@ class RheaParser(MetabolomicsData):
             
             self.download_files(rhea2EcUrl, self.relDir + localDir + rhea2EcRemoteFile)            
         else:
-            print("Using cacheed Rhea Uniprot-to-EC file.")
+            print("Using cached Rhea Uniprot-to-EC file.")
 
         #rhea_rxn_direction
         rheaReactionDirectionFile = rheaDirectionConf.extractFileName
@@ -127,7 +162,7 @@ class RheaParser(MetabolomicsData):
             
             self.download_files(rheaDirUrl, self.relDir + localDir + rheaDirRemoteFile)            
         else:
-            print("Using cacheed Rhea Uniprot-to-EC file.")
+            print("Using cached Rhea reaction direction file.")
 
 
      
@@ -214,9 +249,7 @@ class RheaParser(MetabolomicsData):
         self.processReactions(g, biDirRes)
         # now add directional info to reactions
         self.processReactionDirectionInfo()
-    
-        for status in self.distinctStatus:
-            print(status)
+        
     
     def processReactions(self, g, res):    
                 
@@ -231,7 +264,8 @@ class RheaParser(MetabolomicsData):
         name_pred = URIRef("http://rdf.rhea-db.org/name")
         html_name_pred = URIRef("http://rdf.rhea-db.org/htmlName")
         formula_pred = URIRef("http://rdf.rhea-db.org/formula")
-       
+        is_transport_pred = URIRef("http://rdf.rhea-db.org/isTransport")
+        
         for rid in res:
             s = URIRef(rid)
             
@@ -240,7 +274,8 @@ class RheaParser(MetabolomicsData):
             rxnEq = g.objects(subject=s, predicate=eq_predicate)
             rxnHtmlEq = g.objects(subject=s, predicate=html_eq_predicate)
             status = g.objects(subject=s, predicate=status_predicate)
-
+            isTransport = g.objects(subject=s, predicate=is_transport_pred)
+                        
             reaction = RheaReaction()
             
             # accession
@@ -261,9 +296,20 @@ class RheaParser(MetabolomicsData):
         
             for s in status:
                 statusVal = s.split("/")[-1]
-                reaction.status = statusVal.strip()
-                self.distinctStatus.add(statusVal)
-            
+                stat = statusVal.strip()
+                if stat == 'Obsolete':
+                    reaction.status = -1
+                elif stat == 'Preliminary':
+                    reaction.status = 0    
+                
+            for s in isTransport:
+                # this is a rdflib.term.Literal, not a string
+                # conversion is needed to use == below for equality on 'true'
+                s = str(s)
+
+                if s == "true":
+                    reaction.isTransport = 1
+                    
             # now we need to query for participants
             left_subj = URIRef(rid + "_L")
             right_subj = URIRef(rid + "_R")
@@ -330,7 +376,7 @@ class RheaParser(MetabolomicsData):
                         cmpPrefix = cmp.split(":")[0]
                         if cmpPrefix == 'generic':
                             cmp = cmp.replace('generic', 'rhea-comp')
-                        reaction.left_comp_ids.append(cmp)
+                        reaction.right_comp_ids.append(cmp)
                         compound.chebiId = cmp
                     
                     for name in compNames:
@@ -365,7 +411,7 @@ class RheaParser(MetabolomicsData):
             if dir is not None:
                 rxn.direction = dir
 
-    def exportIntermediatFiles(self):
+    def exportIntermediateFiles(self):
 
         dir = self.relDir + "../misc/output/rhea_reactions/"
         
@@ -374,12 +420,14 @@ class RheaParser(MetabolomicsData):
         
         recordsFile = "rhea_primary_records.txt"
         
+        
         recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
         for acc in self.rheaReactionDict:
             reaction = self.rheaReactionDict[acc]
             recordOut.write(reaction.getBasicRecordString())
 
         recordOut.close()
+     
      
         recordsFile = "rhea_rxn_to_chebi_and_dir.txt"
         
@@ -390,6 +438,7 @@ class RheaParser(MetabolomicsData):
 
         recordOut.close()
         
+        
         recordsFile = "rhea_compound_info.txt"
         
         recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
@@ -398,6 +447,7 @@ class RheaParser(MetabolomicsData):
             recordOut.write(compound.rheaCompoundToRecordString())
             
         recordOut.close()
+        
    
         recordsFile = "rhea_uniprot_mapping.txt"
         
@@ -408,6 +458,7 @@ class RheaParser(MetabolomicsData):
                     
         recordOut.close()
 
+
         recordsFile = "rhea_compound_to_protein_mapping.txt"
         
         recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
@@ -417,7 +468,49 @@ class RheaParser(MetabolomicsData):
                     
         recordOut.close()
 
+
+        recordsFile = "rheametaboliteIDDictionary.txt"
         
+        recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
+        for cid in self.rheaCompoundDict:      
+            recordOut.write(cid + "\t" + cid + "\n")  
+                    
+        recordOut.close()
+
+
+        recordsFile = 'rheametaboliteCommonName.txt'
+        
+        recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
+        for cid in self.rheaCompoundDict:
+            comp = self.rheaCompoundDict[cid]    
+            recordOut.write(cid + "\t" + comp.name + "\n") 
+                    
+        recordOut.close()
+
+
+        recordsFile = 'rheageneInfoDictionary.txt'
+        
+        recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
+        for rxnId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rxnId]
+
+            for pid in rxn.proteins:
+                p = self.humanUniprotRecordDict.get(pid, None)
+                if p is not None:
+                    if p.recName is not None and p.recName != "":
+                        recordOut.write(pid + "\tprotein_name\t" + p.recName + "\n")
+                    if p.hgncSymbol is not None and p.hgncSymbol != "":
+                        recordOut.write(pid + "\tcommon_name\t" + p.hgncSymbol + "\n")
+                    for secondaryAcc in p.secondaryAccs:         
+                        recordOut.write(pid + "\thuman_uniprot_acc\t" + secondaryAcc + "\n")
+                else:
+                    print("No protein for id: "+ pid)
+
+                
+        recordOut.close()
+
+
+
         
     def appendUniprotToReaction(self):
         #self.rheaLocalRheaToEcFile
@@ -430,19 +523,30 @@ class RheaParser(MetabolomicsData):
         
         for idx, row in r2u.iterrows():
             #print(row)
-            #print(str(row.RHEA_ID)+ "  " +str(row.ID))
-            unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
-            if unis is None:
-                unis = [row.ID]
-                r2uMap['rhea:'+str(row.RHEA_ID)] = unis
-            else:
-                unis.append(row.ID)
+            print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
+
+            # !!! just adding human uniprot            
+            if ("uniprot:" + row.ID) in self.humanUniprotAccSet:
+                print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
+                if unis is None:     
+                    unis = ['uniprot:'+row.ID]
+                    r2uMap['rhea:'+str(row.RHEA_ID)] = unis
+                else:
+                    unis.append('uniprot:'+row.ID)
 
         for rxn in r2uMap:
+            print('adding uniprot')
+            print('reaction '+rxn)
+            
             uniSet = r2uMap[rxn]
             currRxn = self.rheaReactionDict.get(rxn, None)
+            if currRxn is None:
+                currRxn = self.rheaReactionDict.get("rhea:"+rxn, None)
             if currRxn is not None:   
                 currRxn.proteins = uniSet
+                print("setting proteins, len:"+str(len(currRxn.proteins)))
+            
         
         
     def appendEcToReaction(self):
@@ -466,12 +570,12 @@ class RheaParser(MetabolomicsData):
         
 rConf = RampConfig()
 rConf.loadConfig("../../config/external_resource_config.txt")
-                        
+#                         
 rp = RheaParser(rConf)            
-rp.parseRheaFiles()
-rp.appendUniprotToReaction()
-rp.appendEcToReaction()
-rp.exportIntermediatFiles()
+rp.processRhea()
+# rp.appendUniprotToReaction()
+# rp.appendEcToReaction()
+# rp.exportIntermediateFiles()
 
 # rxn = rp.rheaReactionDict["RHEA:10000"]
 # print(rxn.rhea_id)
@@ -482,33 +586,33 @@ rp.exportIntermediatFiles()
 # for rightPart in rxn.right_comps:
 #     print(rightPart)
 
-acc2 = ""
-d2 = dict()
-for acc in rp.rheaReactionDict:
-    #print("**"+acc+"**")
-    d2[acc] = rp.rheaReactionDict[acc]
-    acc2 = acc
-    
-print(str(len(rp.rheaReactionDict)))
-    
-
-
-rxn = d2[acc2]
-print(rxn.rhea_id)
-print("left")
-for leftPart in rxn.left_comp_ids:
-    print(leftPart)
-print("right")
-for rightPart in rxn.right_comp_ids:
-    print(rightPart)
-
-
-rxn = d2['rhea:31411']
-print(rxn.rhea_id)
-print("left")
-for leftPart in rxn.left_comp_ids:
-    print(leftPart)
-print("right")
-for rightPart in rxn.right_comp_ids:
-    print(rightPart)
+# acc2 = ""
+# d2 = dict()
+# for acc in rp.rheaReactionDict:
+#     #print("**"+acc+"**")
+#     d2[acc] = rp.rheaReactionDict[acc]
+#     acc2 = acc
+#     
+# print(str(len(rp.rheaReactionDict)))
+#     
+# 
+# 
+# rxn = d2[acc2]
+# print(rxn.rhea_id)
+# print("left")
+# for leftPart in rxn.left_comp_ids:
+#     print(leftPart)
+# print("right")
+# for rightPart in rxn.right_comp_ids:
+#     print(rightPart)
+# 
+# 
+# rxn = d2['rhea:31411']
+# print(rxn.rhea_id)
+# print("left")
+# for leftPart in rxn.left_comp_ids:
+#     print(leftPart)
+# print("right")
+# for rightPart in rxn.right_comp_ids:
+#     print(rightPart)
 

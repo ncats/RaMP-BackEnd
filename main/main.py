@@ -6,6 +6,7 @@ from parse.hmdbData import hmdbData
 from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
 from parse.KeggData import KeggData
+from parse.RheaParser import RheaParser
 from util.EntityBuilder import EntityBuilder
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
@@ -27,6 +28,7 @@ class Main():
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData(resourceConf)
+        rhea = RheaParser(resourceConfig)
         
         # works based on your computer, setup working directory
         os.chdir('../main/')
@@ -44,6 +46,9 @@ class Main():
         # sql write will be handled by EntityBuilder
         print("Getting LipidMaps...")
         lipidmaps.getEverything(True)
+
+        print("Getting Rhea info...")
+        rhea.processRhea()
 
         #Here are the identifiers that are present for each gene:
         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'

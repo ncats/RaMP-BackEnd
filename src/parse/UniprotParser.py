@@ -82,6 +82,9 @@ class UniprotParser(MetabolomicsData):
                       
             if(prefix == "//"):
                 self.uniprotRecords[protein.uniprotAcc] = protein
+#                 print("added record protein = "+protein.uniprotAcc+" secondaryAccCount="+str(len(protein.secondaryAccs)))
+#                 for a in protein.secondaryAccs:
+#                     print("secondary:"+a)
                 
                 #print("uniprot key: "+protein.uniprotAcc)
                 protein = Protein()
@@ -103,7 +106,7 @@ class UniprotParser(MetabolomicsData):
             accs =  line.split(';')
                 
             for i in range(len(accs)):
-                accs[i] = accs[i].strip()
+                accs[i] = 'uniprot:' + accs[i].strip()
             
             if protein.uniprotAcc == "":
                 protein.uniprotAcc = accs[0]
@@ -118,9 +121,11 @@ class UniprotParser(MetabolomicsData):
             line = line.strip()
             if protein.recName == "":
                 if(line[0:7] == 'RecName'):
-                    recName = line.split(':')[1].strip()
-                    recName = recName[0:(len(recName)-1)]
-                    protein.recName = recName[5:len(recName)]
+                    line = line.replace("RecName: Full=", "")
+                    recName = line.split('{')[0].strip()
+                    if recName[-1] == ";":
+                        recName = recName[0:(len(recName)-1)]
+                    protein.recName = recName
             
         elif(prefix == 'GN'):
             # print("GN process")
@@ -172,22 +177,22 @@ class UniprotParser(MetabolomicsData):
         mappingOut.close()
             
 
-rConf = RampConfig()
-rConf.loadConfig("../../config/external_resource_config.txt")
-                        
-up = UniprotParser(rConf)
-up.parseUniprot()
-#up.parseUniprotFile("C:/Users/braistedjc/Desktop/Analysis/RaMP/Rhea/human_uniprot/uniprot_sprot_human.dat")
-print(str(len(up.uniprotRecords)))
-
-uniProtDict = up.uniprotRecords
-print("\n")
-p = uniProtDict['Q9C0D3']
-
-p.printProtein()
-print("\n")
-
-p = uniProtDict['O43149']
-
-p.printProtein()
-print("\n")
+# rConf = RampConfig()
+# rConf.loadConfig("../../config/external_resource_config.txt")
+#                         
+# up = UniprotParser(rConf)
+# up.parseUniprot()
+# #up.parseUniprotFile("C:/Users/braistedjc/Desktop/Analysis/RaMP/Rhea/human_uniprot/uniprot_sprot_human.dat")
+# print(str(len(up.uniprotRecords)))
+# 
+# uniProtDict = up.uniprotRecords
+# print("\n")
+# p = uniProtDict['Q9C0D3']
+# 
+# p.printProtein()
+# print("\n")
+# 
+# p = uniProtDict['O43149']
+# 
+# p.printProtein()
+# print("\n")
