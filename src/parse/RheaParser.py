@@ -37,7 +37,7 @@ class RheaParser(MetabolomicsData):
         Constructor
         '''
         # relative dir, use '../' for testing, use "" for production calls
-        self.relDir = "../"        
+        self.relDir = ""        
         
         self.config = resConfig
         
