@@ -92,13 +92,14 @@ class Gene(object):
             self.sources.append(sourceName)
         
             
-    def addCommonNameAndSynonym(self, id, commonName, source):
+    def addCommonNameAndSynonym(self, id, commonName, source, annoType):
         """
         Adds common names as a <source | id | common_name> triple.
         """
-        if source not in self.commonNameDict:            
-            self.commonNameDict[source] = dict()
-        self.commonNameDict[source][id] = commonName
+        if annoType == 'common_name':
+            if source not in self.commonNameDict:            
+                self.commonNameDict[source] = dict()
+            self.commonNameDict[source][id] = commonName
         self.addSynonym(commonName, source)
         
             

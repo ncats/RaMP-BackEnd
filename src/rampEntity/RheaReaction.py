@@ -29,7 +29,7 @@ class RheaReaction(object):
         #UN, LR, RL, BD
         self.direction = ""
 
-        self.status = ""
+        self.status = 1
         
         # 1:n associations
         
@@ -44,6 +44,8 @@ class RheaReaction(object):
         
         # mapping rhea id to uniprot ids, can be 1:n
         self.proteins = []
+                
+        self.isTransport = 0        
                 
         # compounds ids for left side, populate using rhea2ec tsv file.
         self.left_comp_ids = []
@@ -65,7 +67,7 @@ class RheaReaction(object):
         if dir is None:
             dir = ""
         
-        s = self.rhea_id + "\t" + self.status + "\t" + self.direction + "\t" + self.rhea_label + "\t" + self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\n" 
+        s = self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" +self.direction + "\t" + self.rhea_label + "\t" + self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\n" 
        
         return s
         

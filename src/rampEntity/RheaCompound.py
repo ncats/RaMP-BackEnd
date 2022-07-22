@@ -14,6 +14,8 @@ class RheaCompound(object):
         '''
         Constructor
         '''
+        self.rampId = ""
+        
         self.chebiId = ""
         
         self.name = ""
