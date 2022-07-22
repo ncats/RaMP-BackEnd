@@ -48,6 +48,8 @@ class EntityBuilder(object):
     __rampGeneStartId = 0
     __rampPathStartId = 0
     __rampOntStartId = 0
+    __rampRxnStartId = 0
+    
 
     def __init__(self, resourceConfig):
         '''
@@ -67,6 +69,9 @@ class EntityBuilder(object):
         
         # ontology list
         self.ontologyList = OntologyList()
+        
+        # reaction dictionary
+        self.reactionDict = dict()
         
         # List of DataSource objects. These hold data source configuration.
         self.sourceList = []
@@ -100,7 +105,15 @@ class EntityBuilder(object):
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
-                
+        
+#         self.dataSource5 = DataSource()        
+#         self.dataSource5.sourceName = 'rhea'
+#         self.dataSource5.filePrefix = 'rhea'
+#         self.dataSource5.haveChemClassInfo = False
+#         self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+#  
+#         self.sourceList.append(self.dataSource5)
+           
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
         self.metToPathAssocSourceTallies = dict()
@@ -156,6 +169,9 @@ class EntityBuilder(object):
         
         self.loadMetaboliteToGene()        
         self.metaboliteClassConnections()
+        
+        # Rhea reactions
+        self.processRheaReactionData()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
@@ -391,7 +407,9 @@ class EntityBuilder(object):
         elif(type == "OL"):
             self.__rampOntStartId = self.__rampOntStartId + 1
             return "RAMP_OL_" + (str(self.__rampOntStartId)).zfill(9)
-
+        elif(type == "R"):
+            self.__rampRxnStartId = self.__rampRxnStartId + 1
+            return "RAMP_R_" + (str(self.__rampOntStartId)).zfill(9)
 
     def loadPathways(self):
         """
@@ -533,6 +551,11 @@ class EntityBuilder(object):
             df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
+                
+                # common names (gene symbols) and secondary ids are ok, but proper names are synonyms
+                if row[0] == 'protein_name':
+                    continue
+                
                 currSourceId = row[0]
                 altId = row[2]
                 gene = self.geneList.getGeneById(currSourceId)
@@ -748,10 +771,10 @@ class EntityBuilder(object):
             df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
-                if row[1] == "common_name":
+                if row[1] == "common_name" or row[1] == 'protein_name':
                     gene = self.geneList.getGeneById(row[0])
                     if gene is not None:
-                        gene.addCommonNameAndSynonym(row[0], row[2], source)
+                        gene.addCommonNameAndSynonym(row[0], row[2], source, row[1])
 
         # resolve common name for ids without corresponding common names
         genes = self.geneList.getUniqueGenes()
@@ -1088,6 +1111,33 @@ class EntityBuilder(object):
             
         file.close()   
 
+    
+    def processRheaReactionData(self):
+        print("processing Rhea reactions")
+        
+        #adding the metabolite lists and the genes list will pull in and merge rhea metabolite and gene/protein entities
+        
+        # build a reaction dictionary based on the primary records file (id, labels, formulas, EC, status, isTransport...)
+        # read left and right metabolites file to populate left and right compound ids
+        # query the compound and gene lists to add ramp ids to rhea reaction entities
+                      
+        # collect all Rhea chebi ids.
+        # attach metabolite records - should be complete. 
+        
+        # should ramp have a reaction id, separate from Rhea?
+        
+        # considerations:
+        # 1. Reaction entities have collections of metabolites and collections of proteins/genes
+        #    Can we reconcile all of these to ramp ids based on automated intake of these entities?
+        # 2. Do we store rhea/reaction specific metadata to support reactions, in addition to the source table?
+        #    Perhaps we should for the sake of Rhea specific nomenclature, but keep a cross reference to a rampId.
+        
+        
+        
+        
+        
+        
+    
                 
     def writeMetaboliteClass(self):
         mets = self.metaboliteList.getUniqueMetabolites()
@@ -1104,6 +1154,9 @@ class EntityBuilder(object):
             if is_string_dtype(dF[colName]):
                 dF[colName] = dF[colName].str.strip()
         return dF
+    
+    
+    
     
     
     def loadChemstry(self, sources):
@@ -1130,6 +1183,11 @@ class EntityBuilder(object):
         
         self.metaboliteList.printChemPropSummaryStats()
      
+    
+    
+    
+    
+    
     
     
     def crosscheckChemPropsMW(self, mwTolerance = 0.1, pctOrAbs = 'pct'):

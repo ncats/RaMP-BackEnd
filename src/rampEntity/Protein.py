@@ -14,6 +14,8 @@ class Protein(object):
         '''
         Constructor
         '''
+        self.rampId = ""
+        
         self.uniprotAcc = ""
         
         self.secondaryAccs = []
@@ -36,10 +38,14 @@ class Protein(object):
     def getSecondaryToPrimaryRecord(self):
         s = ""
         for sec in self.secondaryAccs:
-            print(sec)
             s = s + sec + "\t" + self.uniprotAcc + "\n"
         return s
     
+    def getPrimaryToSecondaryRecord(self):
+        s = ""
+        for sec in self.secondaryAccs:
+            s = s + self.uniprotAcc + "\t" + sec + "\n"
+        return s
     
     def printProtein(self):
         s = "ACC: " + self.uniprotAcc +"\nSecondaryACC: "
