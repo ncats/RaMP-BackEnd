@@ -28,7 +28,7 @@ class Main():
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData(resourceConf)
-        rhea = RheaParser(resourceConfig)
+        rhea = RheaParser(resourceConf)
         
         # works based on your computer, setup working directory
         os.chdir('../main/')
