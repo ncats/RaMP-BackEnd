@@ -22,7 +22,7 @@ class UniprotParser(MetabolomicsData):
         '''
         
         # relative dir, use '../' for testing, use "" for production calls
-        self.relDir = "../"
+        self.relDir = ""
         
         self.resourceConfig = resConfig
         

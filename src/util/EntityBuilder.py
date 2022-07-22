@@ -106,13 +106,13 @@ class EntityBuilder(object):
         self.sourceList.append(self.dataSource4)
         # End DataSource code
         
-#         self.dataSource5 = DataSource()        
-#         self.dataSource5.sourceName = 'rhea'
-#         self.dataSource5.filePrefix = 'rhea'
-#         self.dataSource5.haveChemClassInfo = False
-#         self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
-#  
-#         self.sourceList.append(self.dataSource5)
+        self.dataSource5 = DataSource()        
+        self.dataSource5.sourceName = 'rhea'
+        self.dataSource5.filePrefix = 'rhea'
+        self.dataSource5.haveChemClassInfo = False
+        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+  
+        self.sourceList.append(self.dataSource5)
            
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()

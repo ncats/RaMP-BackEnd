@@ -29,7 +29,7 @@ class ChebiOwlParser(MetabolomicsData):
         Constructor
         '''
         # used '../' for unit testing, else set to ""
-        self.relDir = "../"
+        self.relDir = ""
         
         self.config = resConfig
         
