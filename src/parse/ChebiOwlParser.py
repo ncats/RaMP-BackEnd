@@ -12,8 +12,6 @@ import gzip
 import shutil
 from parse.MetabolomicsData import MetabolomicsData
 from rampConfig.RampConfig import RampConfig
-from networkx.classes.function import nodes
-
 
 class ChebiOwlParser(MetabolomicsData):
     '''
