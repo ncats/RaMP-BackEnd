@@ -20,6 +20,7 @@ from rampEntity.RheaReaction import RheaReaction
 from rampEntity.RheaCompound import RheaCompound
 from libchebipy._parsers import __FORMULAE
 from parse.UniprotParser import UniprotParser
+from parse.ChebiOwlParser import ChebiOwlParser
 
 import pandas as pd
 
@@ -57,15 +58,21 @@ class RheaParser(MetabolomicsData):
         self.humanUniprotRecordDict = dict()
         
         self.humanUniprotAccSet = set()
+        
+        self.chebiHumanIdSet = set()
                      
     def processRhea(self):
         self.buildSupportingUniprotData()
+        self.buildSupportingChebiData()
         
         self.getRheaFiles()
         self.constructRDF()
         
         self.appendUniprotToReaction()
         self.appendEcToReaction()
+        
+        self.setReactionHumanUniprotState()
+        self.setReactionHumanChebiState()
         
         self.exportIntermediateFiles()
     
@@ -93,6 +100,20 @@ class RheaParser(MetabolomicsData):
         print("length of the dict"+str(len(self.humanUniprotRecordDict.keys())))
         print("length of the set"+str(len(self.humanUniprotAccSet)))
 
+    def buildSupportingChebiData(self):
+        print("building chebi data store")
+        
+        cop = ChebiOwlParser(self.config)   
+        cop.getChebiFiles()
+        
+        # use this when testing if a stored graph file exists... for faster graph construction
+        # cop.deserializeGraph(None)
+        # else.... use buildGraph()
+        cop.buildGraph()
+        cop.extractHumanMetaboliteStatus()
+        
+        self.chebiHumanIdSet = cop.chebiHumanIdSet
+        
     
     def getRheaFiles(self):
 
@@ -403,16 +424,166 @@ class RheaParser(MetabolomicsData):
             dirMapping['rhea:'+str(row[1]).strip()] = "LR"
             dirMapping['rhea:'+str(row[2]).strip()] = "RL"
             dirMapping['rhea:'+str(row[3]).strip()] = "BD"
+            
+            # only the UN reactions have compound id lists
+            # others must inherit from the UN.
+
+            rxn = self.rheaReactionDict.get('rhea:'+str(row[0]).strip(), None)
+            lrRxn = self.rheaReactionDict.get('rhea:'+str(row[1]).strip(), None)
+            rlRxn = self.rheaReactionDict.get('rhea:'+str(row[2]).strip(), None)
+            bdRxn = self.rheaReactionDict.get('rhea:'+str(row[3]).strip(), None)
+            
+            if rxn is not None:
+                if lrRxn is not None:
+                    lrRxn.left_comp_ids = rxn.left_comp_ids
+                    lrRxn.right_comp_ids = rxn.right_comp_ids
+                if rlRxn is not None:
+                    # note that when rxn is R to L, then the 
+                    # formula still goes left to right when written, so relative side of compounds changes.
+                    rlRxn.left_comp_ids = rxn.right_comp_ids
+                    rlRxn.right_comp_ids = rxn.left_comp_ids
+                if bdRxn is not None:
+                    bdRxn.left_comp_ids = rxn.left_comp_ids
+                    bdRxn.right_comp_ids = rxn.right_comp_ids
+            
         
+        
+        print("In direction processing dirMapping size and reaction dict size")
+        print(str(len(dirMapping)))
+        print(str(len(self.rheaReactionDict)))
+        noDir = 0
+        obsol = 0
+        other = 0
+        noLeft = 0
+        noRight = 0
+        haveBoth = 0
+        hasHumanUniprot = 0
         for rxnId in self.rheaReactionDict:
             rxn = self.rheaReactionDict[rxnId]
             dir = dirMapping.get(rxnId, None)
+            
+            if rxn.status == -1:
+                obsol = obsol + 1
+        
+            if rxn.status == 0:
+                other = other + 1
+                
             if dir is not None:
                 rxn.direction = dir
+            else:
+                noDir = noDir + 1
+        
+            if len(rxn.left_comp_ids) == 0:
+                noLeft = noLeft + 1
 
+            if len(rxn.right_comp_ids) == 0:
+                noRight = noRight + 1
+        
+            if len(rxn.left_comp_ids) > 0 and len(rxn.right_comp_ids) > 0:
+                haveBoth = haveBoth + 1
+        
+        print("no dir count and obsolete, other count")
+        print(str(noDir))
+        print(str(obsol))
+        print(str(other))
+        print("no Left, no right or have both compound status")
+        print(str(noLeft))
+        print(str(noRight))
+        print(str(haveBoth))
+        print("")
+    
+    def setReactionHumanUniprotState(self):
+        print("setting uniprot human status")
+        
+        numHumanUniprot = 0
+        numUNHumanUniprot = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            for p in rxn.proteins:
+                if p in self.humanUniprotAccSet:
+                    if rxn.status == 1:
+                        numHumanUniprot = numHumanUniprot + 1
+                        if rxn.direction == 'UN':
+                            numUNHumanUniprot = numUNHumanUniprot + 1
+                            
+                    rxn.hasHumanEnzyme = True
+                    break
+        
+        print("number of rxn (status == 1) with human uniprot, and UN uniprot rxn count")
+        print(str(numHumanUniprot))
+        print(str(numUNHumanUniprot))
+        
+    def setReactionHumanChebiState(self):
+        print("setting chebi human status")
+        print("human chebi size = " + str(len(self.chebiHumanIdSet)))
+        
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            for c in rxn.left_comp_ids:
+                if c not in self.chebiHumanIdSet:
+                    rxn.hasOnlyHumanMetabolites = False
+                    break
+            for c in rxn. right_comp_ids:
+                if c not in self.chebiHumanIdSet:
+                    rxn.hasOnlyHumanMetabolites = False
+                    break    
+
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            for c in rxn.left_comp_ids:
+                if c in self.chebiHumanIdSet:
+                    rxn.hasAHumanMetabolite = True
+                    break
+            for c in rxn. right_comp_ids:
+                if c in self.chebiHumanIdSet:
+                    rxn.hasAHumanMetabolite = True
+                    break
+
+        # human reaction check
+        humanRxnCnt = 0
+        hasAHumanMet = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            if rxn.hasOnlyHumanMetabolites and rxn.status == 1:
+                humanRxnCnt = humanRxnCnt + 1
+            if rxn.hasAHumanMetabolite and rxn.status == 1:
+                hasAHumanMet = hasAHumanMet + 1
+                
+        humanUNRxnCnt = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            if rxn.hasOnlyHumanMetabolites and rxn.direction == 'UN':
+                humanUNRxnCnt = humanUNRxnCnt + 1
+          
+        humanLRRxnCnt = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            if rxn.hasOnlyHumanMetabolites and rxn.direction == 'LR':
+                humanLRRxnCnt = humanLRRxnCnt + 1
+
+        humanRLRxnCnt = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            if rxn.hasOnlyHumanMetabolites and rxn.direction == 'RL':
+                humanRLRxnCnt = humanRLRxnCnt + 1
+
+        humanBDRxnCnt = 0
+        for rheaId in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[rheaId]
+            if rxn.hasOnlyHumanMetabolites and rxn.direction == 'BD':
+                humanBDRxnCnt = humanBDRxnCnt + 1
+                                
+        print("chebi human reaction count = " + str(humanRxnCnt))
+        print("chebi UN human reaction count = " + str(humanUNRxnCnt))
+        print("chebi LR human reaction count = " + str(humanLRRxnCnt))
+        print("chebi RL human reaction count = " + str(humanRLRxnCnt))
+        print("chebi BD human reaction count = " + str(humanBDRxnCnt))
+        print("rxn HAS A (at least one) human chebi: " + str(hasAHumanMet))
+          
     def exportIntermediateFiles(self):
 
         dir = self.relDir + "../misc/output/rhea_reactions/"
+        
         
         if not exists(dir):
             os.mkdir(dir)
@@ -522,11 +693,11 @@ class RheaParser(MetabolomicsData):
         
         for idx, row in r2u.iterrows():
             #print(row)
-            print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
+            #print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
 
             # !!! just adding human uniprot            
             if ("uniprot:" + row.ID) in self.humanUniprotAccSet:
-                print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                #print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
                 if unis is None:     
                     unis = ['uniprot:'+row.ID]
@@ -535,8 +706,8 @@ class RheaParser(MetabolomicsData):
                     unis.append('uniprot:'+row.ID)
 
         for rxn in r2uMap:
-            print('adding uniprot')
-            print('reaction '+rxn)
+            #print('adding uniprot')
+            #print('reaction '+rxn)
             
             uniSet = r2uMap[rxn]
             currRxn = self.rheaReactionDict.get(rxn, None)
@@ -544,7 +715,7 @@ class RheaParser(MetabolomicsData):
                 currRxn = self.rheaReactionDict.get("rhea:"+rxn, None)
             if currRxn is not None:   
                 currRxn.proteins = uniSet
-                print("setting proteins, len:"+str(len(currRxn.proteins)))
+                #print("setting proteins, len:"+str(len(currRxn.proteins)))
             
         
         
@@ -569,7 +740,7 @@ class RheaParser(MetabolomicsData):
         
 # rConf = RampConfig()
 # rConf.loadConfig("../../config/external_resource_config.txt")
-# #                         
+# # #                         
 # rp = RheaParser(rConf)            
 # rp.processRhea()
 # rp.appendUniprotToReaction()

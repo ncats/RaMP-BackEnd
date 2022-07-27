@@ -72,6 +72,11 @@ class Molecule(object):
             s = s + self.id + "\t" + classLevel + "\t" + self.classDict[classLevel] + "\n"            
         return s            
             
-            
+    def toSynonymsString(self):
+        s = ""        
+        for name in self.names:
+            s = s + self.id + "\t" + name + "\n"            
+        return s            
+           
             
             

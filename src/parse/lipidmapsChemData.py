@@ -120,7 +120,8 @@ class lipidmapsChemData(MetabolomicsData):
         classFile = "lipidmapsmetaboliteClass.txt"
         metIdFile = "lipidmapsmetaboliteIDDictionary.txt"
         commonNameFile = "lipidmapsmetaboliteCommonName.txt"
-              
+        synonymsFile = "lipidmapsmetaboliteSynonyms.txt"
+      
         try:
             os.makedirs(lipidMapsOutputDir)
         except FileExistsError:
@@ -148,6 +149,12 @@ class lipidmapsChemData(MetabolomicsData):
         
         commonNameFileHandle.close()
         
+        synonymsFileHandle  = open(lipidMapsOutputDir+synonymsFile, "w+", encoding='utf-8')
+
+        for id in molDict :
+            synonymsFileHandle.write(molDict[id].toSynonymsString())
+        
+        synonymsFileHandle.close()
         
     def getEverything(self, writeToFile = False):
         # get file resources
