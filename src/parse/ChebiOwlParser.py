@@ -111,21 +111,9 @@ class ChebiOwlParser(MetabolomicsData):
             
     def buildGraph(self):
         print("building graph")
-        
-        #w = World()
-        
-        #w.get_ontology(self.localOntoFile)
-        
-        #sync_reasoner(w)
-        #self.onto.load()
-        
-        #print("loaded")
-        
-        #self.g = w.as_rdflib_graph()
-        start = time.time()
+
         self.g = Graph()
         self.g.parse(self.localOntoFile, format="application/rdf+xml")
-        end = time.time()
         
         print('finished parsing graph....')
 
