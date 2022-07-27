@@ -40,6 +40,10 @@ class UniprotParser(MetabolomicsData):
         extractFile = proteinConfig.extractFileName 
         remoteFile = proteinConfig.sourceFileName
 
+        # make the data dir if needed...
+        if not exists(self.relDir + localDir + extractFile):
+            os.mkdir(self.relDir + localDir)
+
         if not exists(self.relDir + localDir + extractFile):
 
             self.download_files(proteins_url, self.relDir + localDir + remoteFile)
