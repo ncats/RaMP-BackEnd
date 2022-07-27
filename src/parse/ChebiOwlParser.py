@@ -3,7 +3,6 @@ Created on Jul 6, 2022
 
 @author: braistedjc
 '''
-from owlready2 import *
 from rdflib import *
 import rdflib
 import sys, os
@@ -13,9 +12,6 @@ import gzip
 import shutil
 from parse.MetabolomicsData import MetabolomicsData
 from rampConfig.RampConfig import RampConfig
-from owlready2.reasoning import sync_reasoner
-import time
-from prompt_toolkit.widgets.base import CheckboxList
 from networkx.classes.function import nodes
 
 
