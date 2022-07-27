@@ -55,6 +55,8 @@ class ChebiOwlParser(MetabolomicsData):
         
         self.chebiOntoParentToChild = dict()
         
+        self.chebiHumanIdSet = set()
+        
         
     def createOwlGraph(self):
         print("creating owl graph")
@@ -406,7 +408,10 @@ class ChebiOwlParser(MetabolomicsData):
                 
         with open(self.outputDir + '\human_chebi_ids.txt', 'w') as f:
             for line in xlist:
-                f.write(self.uriToChebiId(line)+"\n") 
+                f.write(self.uriToChebiId(line)+"\n")
+                
+                # store a list of human chebi's
+                self.chebiHumanIdSet.add(self.uriToChebiId(line))
 
 #         with open(self.outputDir + '\human_chebi_ids_with_class.txt', 'w') as f:
 #             for chebiId in xdict:
@@ -913,16 +918,16 @@ class ChebiOwlParser(MetabolomicsData):
         
 
                 
-rConf = RampConfig()
-rConf.loadConfig("../../config/external_resource_config.txt")
-                        
-cop = ChebiOwlParser(rConf)   
-cop.getChebiFiles()
-#cop.buildGraph()
-cop.deserializeGraph(None)
-#cop.extractChebiOntologyAssociations()
-#cop.extractChebiOntologyStructure()
-cop.extractHumanMetaboliteStatus()
+# rConf = RampConfig()
+# rConf.loadConfig("../../config/external_resource_config.txt")
+#                         
+# cop = ChebiOwlParser(rConf)   
+# cop.getChebiFiles()
+# #cop.buildGraph()
+# cop.deserializeGraph(None)
+# #cop.extractChebiOntologyAssociations()
+# #cop.extractChebiOntologyStructure()
+# cop.extractHumanMetaboliteStatus()
 
 #cop.buildRoleRelations()
 #cop.buildMolecularEntityRelations()

@@ -4,6 +4,7 @@ Created on Jun 30, 2022
 @author: braistedjc
 '''
 
+
 class RheaReaction(object):
     '''
     classdocs
@@ -58,6 +59,13 @@ class RheaReaction(object):
         
         # compound ids for right side
         self.right_comps = dict()
+        
+        self.hasHumanEnzyme = False
+        
+        self.hasOnlyHumanMetabolites = True
+        
+        self.hasAHumanMetabolite = False
+                
                 
     def getBasicRecordString(self):
         ec = self.ec
@@ -67,7 +75,11 @@ class RheaReaction(object):
         if dir is None:
             dir = ""
         
-        s = self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" +self.direction + "\t" + self.rhea_label + "\t" + self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\n" 
+        humanEnzyme = self.hasHumanEnzyme * 1
+        onlyHumanMets = self.hasOnlyHumanMetabolites * 1
+        
+        s = (self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" +self.direction + "\t" + self.rhea_label + "\t" + 
+             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
        
         return s
         
