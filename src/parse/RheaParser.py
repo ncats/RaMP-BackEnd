@@ -192,9 +192,9 @@ class RheaParser(MetabolomicsData):
         g = Graph()
         rdfConf = self.config.getConfig('rhea_rdf')
         
-        relDir = "../"
         
-        path = relDir + rdfConf.localDir + rdfConf.extractFileName
+        
+        path = self.relDir + rdfConf.localDir + rdfConf.extractFileName
         
         g.parse(path, format="application/rdf+xml")        
         
