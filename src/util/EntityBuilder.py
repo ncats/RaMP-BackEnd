@@ -176,7 +176,7 @@ class EntityBuilder(object):
         self.metaboliteClassConnections()
         
         # Rhea reactions
-        self.processRheaReactionData()
+        self.processRheaReactions()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
