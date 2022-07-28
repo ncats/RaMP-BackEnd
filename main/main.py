@@ -18,12 +18,13 @@ class Main():
     def runEverything(self, resourceConfigFile, getDatabaseFiles = True):
         sql = writeToSQL()
         
+        # build the ramp resource config
+        resourceConf = RampConfig()
+        resourceConf.loadConfig(resourceConfigFile)
+        
 #
 # Commented out for testing
 #        
-#         # build the ramp resource config
-#         resourceConf = RampConfig()
-#         resourceConf.loadConfig(resourceConfigFile)
 #         
 #         stat = getStatistics()
 #         hmdb = hmdbData(resourceConf)
