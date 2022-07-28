@@ -931,13 +931,13 @@ class EntityBuilder(object):
     def buildRxnsFromRhea(self, path):
         print("Building Rhea Reactions")
         
-        records = pd.read_table(path)
+        records = pd.read_table(path, header = None)
         
         for idx, record in records.iterrows():
             rxn = RheaReaction()
             rxn.rxnRampId = self.generateRampId("R")
-            dataVals = record.split("/t")
-            rxn.assignPrimaryFields(dataVals)
+            
+            rxn.assignPrimaryFields(record)
 
             self.reactionDict[rxn.rhea_id] = rxn            
         
@@ -949,9 +949,9 @@ class EntityBuilder(object):
 
         # just read them in first...
         for idx, record in records.iterrows():
-            vals = record.split("\t")
-            rheaId = vals[0]
-            uniprot = vals[1]
+            
+            rheaId = record[0]
+            uniprot = record[1]
 
             rxn = self.reactionDict.get(rheaId, None)
             
@@ -970,9 +970,9 @@ class EntityBuilder(object):
 
         for idx, record in records.iterrows():
             vals = record.split("\t")
-            rheaId = vals[0]
-            chebi = vals[1]
-            rxnSide = vals[2]
+            rheaId = record[0]
+            chebi = record[1]
+            rxnSide = record[2]
             
             rxn = self.reactionDict.get(rheaId, None)            
             met = self.metaboliteList.getMetaboliteBySourceId(chebi)
