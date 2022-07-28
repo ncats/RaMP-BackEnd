@@ -551,7 +551,7 @@ class EntityBuilder(object):
             
             if not(path.exists(file)):
                 print("in add gene list... geneInfoDictionary not found for :" + file)
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
@@ -560,7 +560,7 @@ class EntityBuilder(object):
             for i,row in df.iterrows():
                 
                 # common names (gene symbols) and secondary ids are ok, but proper names are synonyms
-                if row[0] == 'protein_name':
+                if row[1] == 'protein_name':
                     continue
                 
                 currSourceId = row[0]
