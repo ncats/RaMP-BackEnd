@@ -5,6 +5,7 @@ Created on Nov 16, 2020
 '''
 import os
 from os import path
+from os.path import exists
 from rampEntity.Gene import Gene
 from rampEntity.GeneList import GeneList
 from rampEntity.Metabolite import Metabolite
@@ -179,6 +180,11 @@ class EntityBuilder(object):
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
         # loader file writes
+        
+        # make sql directory if it doesn't exist
+        if not exists("../misc/sql"):
+            os.mkdir("../misc/sql")
+        
         self.writePathways()
         self.writeAnalyteSource()
         self.writeAnalyteSynonyms()
