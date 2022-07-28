@@ -491,7 +491,7 @@ class EntityBuilder(object):
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
-            print("Number of pathway associations = " + str(data.shape[0]))
+            # print("Number of pathway associations = " + str(data.shape[0]))
         
             map = dict()
             
@@ -530,9 +530,9 @@ class EntityBuilder(object):
 #                if(i % 1000 == 0):
 #                    print("metabolites processed = " + str(i), flush=True)
 
-        print("Finished met to path mapping stranded counts (mets and paths)")
-        print(str(len(strandedMetSourceIds)))
-        print(str(len(strandedPathSourceIds)))
+        # print("Finished met to path mapping stranded counts (mets and paths)")
+        # print(str(len(strandedMetSourceIds)))
+        # print(str(len(strandedPathSourceIds)))
         
 
 
@@ -550,6 +550,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
             if not(path.exists(file)):
+                print("in add gene list... geneInfoDictionary not found for :" + file)
                 break
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
@@ -1660,11 +1661,11 @@ class MappingExclusionList(object):
     def isMappingProblem(self, sourceId, extId):    
 
         if sourceId in self.sourceIdToExtIdDict and extId in self.sourceIdToExtIdDict[sourceId]:
-            print("excluded pair (1)"+sourceId+" "+extId)
+            # print("excluded pair (1)"+sourceId+" "+extId)
             return True
 
         if extId in self.sourceIdToExtIdDict and sourceId in self.sourceIdToExtIdDict[extId]:
-            print("excluded pair (2)"+sourceId+" "+extId)
+            # print("excluded pair (2)"+sourceId+" "+extId)
             return True
 
         return False
