@@ -642,8 +642,9 @@ class RheaParser(MetabolomicsData):
         recordsFile = "rheametaboliteIDDictionary.txt"
         
         recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
-        for cid in self.rheaCompoundDict:      
-            recordOut.write(cid + "\t" + cid + "\n")  
+        for cid in self.rheaCompoundDict:
+            type = cid.split(":")[0]     
+            recordOut.write(cid + "\t" + type + "\t" + cid + "\n")  
                     
         recordOut.close()
 
@@ -672,7 +673,7 @@ class RheaParser(MetabolomicsData):
                     if p.hgncSymbol is not None and p.hgncSymbol != "":
                         recordOut.write(pid + "\tcommon_name\t" + p.hgncSymbol + "\n")
                     for secondaryAcc in p.secondaryAccs:         
-                        recordOut.write(pid + "\thuman_uniprot_acc\t" + secondaryAcc + "\n")
+                        recordOut.write(pid + "\tuniprot\t" + secondaryAcc + "\n")
                 else:
                     print("No protein for id: "+ pid)
 
