@@ -73,7 +73,7 @@ class Main():
 #         wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", kegggenenum)
 #         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", wikigenenum)
 #         print(" hmdbgenenum ", hmdbgenenum, " kegggenenum ", kegggenenum, " wikigenenum ", wikigenenum, " reactomegenenum ", reactomegenenum)
-         """        print('Write to sql file...')
+        """        print('Write to sql file...')
         hmdbnumbers = sql.write(
                  hmdb.metaboliteCommonName,
                  hmdb.pathwayDictionary,
