@@ -32,7 +32,7 @@ class Main():
 #         reactome = reactomeData(resourceConf)
 #         kegg = KeggData()
 #         lipidmaps = lipidmapsChemData(resourceConf)
-#         rhea = RheaParser(resourceConf)
+        rhea = RheaParser(resourceConf)
 #         
 #         # works based on your computer, setup working directory
 #         os.chdir('../main/')
@@ -51,8 +51,8 @@ class Main():
 #         print("Getting LipidMaps...")
 #         lipidmaps.getEverything(True)
 # 
-#         print("Getting Rhea info...")
-#         rhea.processRhea()
+        print("Getting Rhea info...")
+        rhea.processRhea()
 
 #         #Here are the identifiers that are present for each gene:
 #         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
