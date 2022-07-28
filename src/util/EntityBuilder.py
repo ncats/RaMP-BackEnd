@@ -16,6 +16,10 @@ from rampEntity.Ontology import Ontology
 from rampEntity.OntologyList import OntologyList
 from chemprop.ChemWrangler import ChemWrangler
 from rampEntity.Molecule import Molecule
+from rampEntity.RheaReaction import RheaReaction
+from rampEntity.Protein import Protein
+from rampEntity.RheaCompound import RheaCompound
+
 
 from pathlib import Path
 
@@ -195,6 +199,7 @@ class EntityBuilder(object):
         self.writeOntologyAssociations()
         self.writeChemProps()
         self.writeMetaboliteClass()
+        self.writeReactionEntities()
         
         print("Number of problem associations skipped (curationAvoidanceCount): " + str(self.curationAvoidanceCount))
         
@@ -771,7 +776,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
@@ -904,12 +909,82 @@ class EntityBuilder(object):
                     
                     
                     
+    def processRheaReactions(self):
+        
+        rheaConfig = None
+        
+        for source in self.sourceList:
+            if source.sourceName == 'rhea':
+                rheaConfig = source
+        
+        if rheaConfig is None:
+            return
+        
+        # rhea output 
+        rheaPath = rheaConfig.sourceLocPath
+        
+        self.buildRxnsFromRhea(rheaPath + "/rhea_primary_records.txt")
+        self.appendRxnProteinsFromRhea(rheaPath + "/rhea_uniprot_mapping.txt")
+        self.appendRxnParticipantsFromRhea(rheaPath + "/rhea_rxn_to_chebi_and_dir.txt")
             
                 
+    def buildRxnsFromRhea(self, path):
+        print("Building Rhea Reactions")
+        
+        records = pd.read_table(path)
+        
+        for idx, record in records.iterrows():
+            rxn = RheaReaction()
+            rxn.rxnRampId = self.generateRampId("R")
+            dataVals = record.split("/t")
+            rxn.assignPrimaryFields(dataVals)
+
+            self.reactionDict[rxn.rhea_id] = rxn            
+        
+        
+    def appendRxnProteinsFromRhea(self, path):
+        print("Adding Reaction Proteins")
+
+        records = pd.read_table(path)
+
+        # just read them in first...
+        for idx, record in records.iterrows():
+            vals = record.split("\t")
+            rheaId = vals[0]
+            uniprot = vals[1]
+
+            rxn = self.reactionDict.get(rheaId, None)
+            
+            if rxn is not None:
+                protein = self.geneList.getGeneById(uniprot)
+                if protein is not None:
+                    protein.soureId = uniprot
+                    rxn.proteins.append(protein)
+                    
+        
+        
+    def appendRxnParticipantsFromRHea(self,path):
+        print("Adding Reaction Participants")    
     
-    
-    
-    
+        records = pd.read_table(path)
+
+        for idx, record in records.iterrows():
+            vals = record.split("\t")
+            rheaId = vals[0]
+            chebi = vals[1]
+            rxnSide = vals[2]
+            
+            rxn = self.reactionDict.get(rheaId, None)            
+            met = self.metaboliteList.getMetaboliteBySourceId(chebi)
+            
+            if rxn is not None and met is not None:
+                if(rxnSide == 0):
+                    rxn.left_comps.append(met)
+                    rxn.left_comp_ids.append(chebi)
+                else:
+                    rxn.right_comps.append(met)    
+                    rxn.right_comp_ids.append(chebi)
+            
 #     def fullBuild(self):
 #         """
 #         This high level method performs the entire process of entity construction
@@ -1117,35 +1192,8 @@ class EntityBuilder(object):
                 file.write(s)
             
         file.close()   
-
-    
-    def processRheaReactionData(self):
-        print("processing Rhea reactions")
         
-        #adding the metabolite lists and the genes list will pull in and merge rhea metabolite and gene/protein entities
-        
-        # build a reaction dictionary based on the primary records file (id, labels, formulas, EC, status, isTransport...)
-        # read left and right metabolites file to populate left and right compound ids
-        # query the compound and gene lists to add ramp ids to rhea reaction entities
-                      
-        # collect all Rhea chebi ids.
-        # attach metabolite records - should be complete. 
-        
-        # should ramp have a reaction id, separate from Rhea?
-        
-        # considerations:
-        # 1. Reaction entities have collections of metabolites and collections of proteins/genes
-        #    Can we reconcile all of these to ramp ids based on automated intake of these entities?
-        # 2. Do we store rhea/reaction specific metadata to support reactions, in addition to the source table?
-        #    Perhaps we should for the sake of Rhea specific nomenclature, but keep a cross reference to a rampId.
-        
-        
-        
-        
-        
-        
-    
-                
+            
     def writeMetaboliteClass(self):
         mets = self.metaboliteList.getUniqueMetabolites()
 
@@ -1154,6 +1202,45 @@ class EntityBuilder(object):
             file.write(met.toMetaboliteClassString())
             
         file.close()    
+
+
+    def writeReactionEntities(self):
+        
+        file = open("../misc/sql/reaction.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainRecordString())
+            
+        file.close()
+        
+        
+        file = open("../misc/sql/reaction_to_metabolite.txt", "w+", encoding='utf-8')
+
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainReactionToMetString('rhea'))
+            
+        file.close()
+
+        file = open("../misc/sql/reaction_to_protein.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainReactionToProteinString('rhea'))
+            
+        file.close()
+
+        file = open("../misc/sql/reaction_protein_to_metabolite.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getReactionProteinToMetString('rhea'))
+            
+        file.close()
+        
+
+
 
 
     def remove_whitespace(self, dF):     
