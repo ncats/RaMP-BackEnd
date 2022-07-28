@@ -963,7 +963,7 @@ class EntityBuilder(object):
                     
         
         
-    def appendRxnParticipantsFromRHea(self,path):
+    def appendRxnParticipantsFromRhea(self,path):
         print("Adding Reaction Participants")    
     
         records = pd.read_table(path)
