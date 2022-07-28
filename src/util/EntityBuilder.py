@@ -969,7 +969,6 @@ class EntityBuilder(object):
         records = pd.read_table(path)
 
         for idx, record in records.iterrows():
-            vals = record.split("\t")
             rheaId = record[0]
             chebi = record[1]
             rxnSide = record[2]
