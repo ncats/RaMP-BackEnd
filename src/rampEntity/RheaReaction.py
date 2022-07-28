@@ -16,6 +16,8 @@ class RheaReaction(object):
         Constructor
         '''
         
+        self.rxnRampId = ""
+        
         # Reaction metadata
         self.rhea_id = ""
         
@@ -45,7 +47,7 @@ class RheaReaction(object):
         
         # mapping rhea id to uniprot ids, can be 1:n
         self.proteins = []
-                
+        
         self.isTransport = 0        
                 
         # compounds ids for left side, populate using rhea2ec tsv file.
@@ -82,7 +84,133 @@ class RheaReaction(object):
              self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
        
         return s
+    
+    
+    def getMainRecordString(self):
+        ec = self.ec
+        if ec is None:
+            ec = ""
+            
+        direction = self.direction
         
+        if direction is None:
+            direction = ""
+        
+        humanEnzyme = self.hasHumanEnzyme * 1
+        onlyHumanMets = self.hasOnlyHumanMetabolites * 1
+        
+        s = (self.rxnRampId + "\t" + self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" + direction + "\t" + self.rhea_label + "\t" + 
+             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
+       
+        return s
+    
+    
+    def getMainReactionToMetString(self, source):
+        
+        s = ""
+        
+        for c in self.left_comps:
+            ids = c.idDict.get(source, None)
+            if ids is not None and len(ids) > 0:
+                metId = ids[0]
+            else:
+                metId = ""
+                
+            names = c.commonNameDict.get(source, None)
+            if names is not None and len(names) > 0:
+                name = names[0]
+            else:
+                name = ""
+            
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\n"
+    
+        for c in self.right_comps:
+            ids = c.idDict.get(source, None)
+            if ids is not None and len(ids) > 0:
+                metId = ids[0]
+            else:
+                metId = ""
+                
+            names = c.commonNameDict.get(source, None)
+            if names is not None and len(names) > 0:
+                name = names[0]
+            else:
+                name = ""
+            
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\n"
+
+    
+    def getMainReactionToProteinString(self, source):
+        
+        s = ""
+                
+        for p in self.proteins:
+            uniprot = p.sourceId
+            names = p.commonNameDict.get(source, None)
+            if names is not None:
+                name = names.get(p.sourceId, None)
+                if name is None:
+                    name = ""
+            else:
+                name = ""
+                        
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
+            
+            
+    def getReactionProteinToMetString(self, source):
+        
+        s = ""
+        
+        hitProteins = []
+        for p in self.proteins:
+            if p.rampId not in hitProteins:
+                hitProteins.append(p.rampId)
+                uniprot = p.sourceId
+                
+                hitMets = []
+                for met in self.left_comps:
+                    if met.rampId not in hitMets:
+                        hitMets.append(met.rampId)
+                        
+                        names = met.commonNameDict.get(source, None)
+                        if names is not None and len(names) > 0:
+                            name = names[0]
+                        else:
+                            name = ""
+                
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
+                        
+                for met in self.left_comps:
+                    if met.rampId not in hitMets:
+                        hitMets.append(met.rampId)
+                        
+                        names = met.commonNameDict.get(source, None)
+                        if names is not None and len(names) > 0:
+                            name = names[0]
+                        else:
+                            name = ""
+                
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
+                        
+                        
+                
+                
+            
+    
+    def assignPrimaryFields(self, dataVals):
+        print("")
+        self.rhea_id = dataVals[0]
+        self.status = dataVals[1]
+        self.isTransport = dataVals[2]
+        self.direction = dataVals[3]
+        self.rhea_label = dataVals[4]
+        self.rhea_equation = dataVals[5]
+        self.rhea_html_eq = dataVals[6]
+        self.ec = dataVals[7]
+        self.hasHumanEnzyme = dataVals[8]
+        self.hasOnlyHumanMetabolites = dataVals[9]
+        
+      
     def getRheaIdToCompMappingString(self):
         s = ""
         for cid in self.left_comp_ids:
