@@ -139,6 +139,8 @@ class RheaReaction(object):
                 name = namesDict[cid]
             
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\n"
+            
+        return s    
 
     
     def getMainReactionToProteinString(self, source):
@@ -156,8 +158,9 @@ class RheaReaction(object):
                 name = ""
                         
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
-            
-            
+        
+        return s    
+           
     def getReactionProteinToMetString(self, source):
         
         s = ""
@@ -193,7 +196,7 @@ class RheaReaction(object):
                 
                         s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
                         
-                        
+        return s                
                 
                 
             
