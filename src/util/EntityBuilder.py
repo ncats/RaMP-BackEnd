@@ -565,7 +565,8 @@ class EntityBuilder(object):
             for i,row in df.iterrows():
                 
                 # common names (gene symbols) and secondary ids are ok, but proper names are synonyms
-                if row[1] == 'protein_name':
+                # rhea has gene names which are synonyms, not proper ids
+                if row[1] == 'protein_name' or row[1] == 'gene_name':
                     continue
                 
                 currSourceId = row[0]
