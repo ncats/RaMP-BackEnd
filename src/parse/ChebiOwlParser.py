@@ -222,13 +222,6 @@ class ChebiOwlParser(MetabolomicsData):
             for c in self.chemEntityRelations[r]:
                 termsSet.add(c)
                 relTot = relTot + 1
-        
-#         print(parentTot)
-#         print(relTot)
-        
-#         roleKids = self.chemEntityRelations['16646']
-#         for r in roleKids:
-#             print(r)
 #             
         # export chebi role relations ontology terms
         with open(self.outputDir + '\chebi_chem_entity_ontology_relations.txt', 'w') as f:
