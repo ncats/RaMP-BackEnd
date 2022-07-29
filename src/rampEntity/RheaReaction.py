@@ -156,12 +156,16 @@ class RheaReaction(object):
                 uniprot = 'NA'            
 
             names = p.commonNameDict.get(source, None)
+            
             if names is not None:
                 name = names.get(uniprot, None)
                 if name is None:
                     name = ""
+                    print("export rxn to prot, HAVE NAME DICT, BUT NO NAME for uniprot: "+uniprot + " DICT LEN: " + str(len(list(names.keys()))))
+ 
             else:
                 name = ""
+                print("export rxn to prot, NO NAME DICT")
                         
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
         
