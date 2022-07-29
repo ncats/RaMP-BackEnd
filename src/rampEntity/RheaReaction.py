@@ -176,11 +176,11 @@ class RheaReaction(object):
                     if met.rampId not in hitMets:
                         hitMets.append(met.rampId)
                         
-                        names = met.commonNameDict.get(source, None)
-                        if names is not None and len(names) > 0:
-                            name = names[0]
-                        else:
-                            name = ""
+                        namesDict = met.commonNameDict.get(source, None)
+                        name = ""
+                        if namesDict is not None:
+                            cid = list(namesDict.keys())[0]
+                            name = namesDict[cid]
                 
                         s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
                         
@@ -188,11 +188,11 @@ class RheaReaction(object):
                     if met.rampId not in hitMets:
                         hitMets.append(met.rampId)
                         
-                        names = met.commonNameDict.get(source, None)
-                        if names is not None and len(names) > 0:
-                            name = names[0]
-                        else:
-                            name = ""
+                        namesDict = met.commonNameDict.get(source, None)
+                        name = ""
+                        if namesDict is not None:
+                            cid = list(namesDict.keys())[0]
+                            name = namesDict[cid]
                 
                         s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
                         
