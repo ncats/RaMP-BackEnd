@@ -168,6 +168,9 @@ class RheaReaction(object):
                     if name == "":
                         name = "UNK5"
                         
+                        print("Dumping Names...")
+                        for i in names:
+                            print(str(i) + "---" + str(names[i]))
  
             else:
                 name = "UNK2"
