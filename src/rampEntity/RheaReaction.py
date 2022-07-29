@@ -117,12 +117,12 @@ class RheaReaction(object):
             else:
                 metId = ""
                 
-            names = c.commonNameDict.get(source, None)
-            if names is not None and len(names) > 0:
-                name = names[0]
-            else:
-                name = ""
-            
+            namesDict = c.commonNameDict.get(source, None)
+            name = ""
+            if namesDict is not None:
+                cid = namesDict.keys()[0]
+                name = namesDict[cid]
+                         
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\n"
     
         for c in self.right_comps:
@@ -132,11 +132,11 @@ class RheaReaction(object):
             else:
                 metId = ""
                 
-            names = c.commonNameDict.get(source, None)
-            if names is not None and len(names) > 0:
-                name = names[0]
-            else:
-                name = ""
+            namesDict = c.commonNameDict.get(source, None)
+            name = ""
+            if namesDict is not None:
+                cid = namesDict.keys()[0]
+                name = namesDict[cid]
             
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\n"
 
