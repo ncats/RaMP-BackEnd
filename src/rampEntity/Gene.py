@@ -96,7 +96,7 @@ class Gene(object):
         """
         Adds common names as a <source | id | common_name> triple.
         """
-        if annoType == 'common_name':
+        if annoType == 'common_name' or annoType == 'gene_name' or annoType == 'protein_name':
             if source not in self.commonNameDict:            
                 self.commonNameDict[source] = dict()
             self.commonNameDict[source][id] = commonName
