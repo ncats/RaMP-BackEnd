@@ -163,6 +163,11 @@ class RheaReaction(object):
                 if name is None:
                     name = "UNK"
                     print("export rxn to prot, HAVE NAME DICT, BUT NO NAME for uniprot: "+uniprot + " DICT LEN: " + str(len(list(names.keys()))))
+                else:
+                    print("Have a name in rxt to prot... but it's an empty string **|"+name+"|**")
+                    if name == "":
+                        name = "UNK5"
+                        
  
             else:
                 name = "UNK2"
