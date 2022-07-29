@@ -784,7 +784,7 @@ class EntityBuilder(object):
             df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
-                if row[1] == "common_name" or row[1] == 'protein_name':
+                if row[1] == "common_name" or row[1] == 'protein_name' or row[1] == 'gene_name':
                     gene = self.geneList.getGeneById(row[0])
                     if gene is not None:
                         gene.addCommonNameAndSynonym(row[0], row[2], source, row[1])
