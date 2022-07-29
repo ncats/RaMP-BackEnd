@@ -57,10 +57,10 @@ class RheaReaction(object):
         self.right_comp_ids = []
         
         # compounds ids for left side, populate using rhea2ec tsv file.
-        self.left_comps = dict()
+        self.left_comps = []
         
         # compound ids for right side
-        self.right_comps = dict()
+        self.right_comps = []
         
         self.hasHumanEnzyme = False
         
