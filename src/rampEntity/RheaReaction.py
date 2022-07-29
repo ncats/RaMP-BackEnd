@@ -135,7 +135,7 @@ class RheaReaction(object):
             namesDict = c.commonNameDict.get(source, None)
             name = ""
             if namesDict is not None:
-                cid = namesDict.keys()[0]
+                cid = list(namesDict.keys())[0]
                 name = namesDict[cid]
             
             s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\n"
