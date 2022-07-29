@@ -148,7 +148,13 @@ class RheaReaction(object):
         s = ""
                 
         for p in self.proteins:
-            uniprot = p.sourceId
+
+            ids = p.idDict.get(source, None)
+            if ids is not None and len(ids) > 0:
+                uniprot = ids[0]
+            else:
+                uniprot = 'NA'            
+
             names = p.commonNameDict.get(source, None)
             if names is not None:
                 name = names.get(p.sourceId, None)
@@ -169,8 +175,13 @@ class RheaReaction(object):
         for p in self.proteins:
             if p.rampId not in hitProteins:
                 hitProteins.append(p.rampId)
-                uniprot = p.sourceId
                 
+                ids = p.idDict.get(source, None)
+                if ids is not None and len(ids) > 0:
+                    uniprot = ids[0]
+                else:
+                    uniprot = 'NA'
+                    
                 hitMets = []
                 for met in self.left_comps:
                     if met.rampId not in hitMets:
