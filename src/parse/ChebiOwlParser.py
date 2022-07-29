@@ -143,7 +143,7 @@ class ChebiOwlParser(MetabolomicsData):
         with open(self.localRelationsFile, 'r') as relFile:
             for line in relFile:
 #            line = relFile.readline()
-                print(line)
+                #print(line)
                 if line is not None and line != "":
                     terms = line.split("\t")
                     
@@ -173,12 +173,12 @@ class ChebiOwlParser(MetabolomicsData):
                 termsSet.add(c)
                 relTot = relTot + 1
         
-        print(parentTot)
-        print(relTot)
+#         print(parentTot)
+#         print(relTot)
         
-        roleKids = self.relations['75768']
-        for r in roleKids:
-            print(r)
+#        roleKids = self.relations['75768']
+#         for r in roleKids:
+#             print(r)
             
         # export chebi role relations ontology terms
         with open(self.outputDir + '\chebi_role_and_function_ontology_relations.txt', 'w') as f:
@@ -193,7 +193,7 @@ class ChebiOwlParser(MetabolomicsData):
         with open(self.localRelationsFile, 'r') as relFile:
             for line in relFile:
 #            line = relFile.readline()
-                print(line)
+                #print(line)
                 if line is not None and line != "":
                     terms = line.split("\t")
                     
@@ -223,13 +223,13 @@ class ChebiOwlParser(MetabolomicsData):
                 termsSet.add(c)
                 relTot = relTot + 1
         
-        print(parentTot)
-        print(relTot)
+#         print(parentTot)
+#         print(relTot)
         
-        roleKids = self.chemEntityRelations['16646']
-        for r in roleKids:
-            print(r)
-            
+#         roleKids = self.chemEntityRelations['16646']
+#         for r in roleKids:
+#             print(r)
+#             
         # export chebi role relations ontology terms
         with open(self.outputDir + '\chebi_chem_entity_ontology_relations.txt', 'w') as f:
             for parent in self.chemEntityRelations:
@@ -777,10 +777,10 @@ class ChebiOwlParser(MetabolomicsData):
         rc = 0
         res = self.g.query(q)
         for row in res:
-            print(row)
+            # print(row)
             rc = rc + 1
        
-        print(str(rc))
+        # print(str(rc))
         
         humanMetsOntol_obj = URIRef("http://purl.obolibrary.org/obo/CHEBI_77746")
         humanMetsSerumOntol_obj = URIRef("http://purl.obolibrary.org/obo/CHEBI_85234")
@@ -788,7 +788,7 @@ class ChebiOwlParser(MetabolomicsData):
         humanMetsXenoOntol_obj = URIRef("http://purl.obolibrary.org/obo/CHEBI_76967")
 
         humanMets = self.g.subjects(predicate = someValues_pred, object = humanMetsOntol_obj)
-        print("HMs")
+        # print("HMs")
         #hmc = sum(1 for _ in humanMets)
         #print(hmc)
         #print(type(humanMets))
@@ -894,7 +894,7 @@ class ChebiOwlParser(MetabolomicsData):
                         numNonHuman = numNonHuman + 1                    
                     else:
                         self.chebiStatus[chebiId] = metType
-                        print(chebiId+" "+metType)
+                        #print(chebiId+" "+metType)
                         numHuman = numHuman + 1
                         break
         

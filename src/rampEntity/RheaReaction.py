@@ -157,7 +157,7 @@ class RheaReaction(object):
 
             names = p.commonNameDict.get(source, None)
             if names is not None:
-                name = names.get(p.sourceId, None)
+                name = names.get(uniprot, None)
                 if name is None:
                     name = ""
             else:
