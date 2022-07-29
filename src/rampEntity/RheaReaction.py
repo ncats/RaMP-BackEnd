@@ -99,8 +99,8 @@ class RheaReaction(object):
         humanEnzyme = self.hasHumanEnzyme * 1
         onlyHumanMets = self.hasOnlyHumanMetabolites * 1
         
-        s = (self.rxnRampId + "\t" + self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" + direction + "\t" + self.rhea_label + "\t" + 
-             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
+        s = (str(self.rxnRampId) + "\t" + str(self.rhea_id) + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" + str(direction) + "\t" + str(self.rhea_label) + "\t" + 
+             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + str(ec) + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
        
         return s
     
