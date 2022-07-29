@@ -420,7 +420,7 @@ class EntityBuilder(object):
             return "RAMP_OL_" + (str(self.__rampOntStartId)).zfill(9)
         elif(type == "R"):
             self.__rampRxnStartId = self.__rampRxnStartId + 1
-            return "RAMP_R_" + (str(self.__rampOntStartId)).zfill(9)
+            return "RAMP_R_" + (str(self.__rampRxnStartId)).zfill(9)
 
     def loadPathways(self):
         """
