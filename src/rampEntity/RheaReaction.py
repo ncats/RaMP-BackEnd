@@ -212,7 +212,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\n"
                         
                 for met in self.left_comps:
                     if met.rampId not in hitMets:
@@ -224,7 +224,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + name + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\n"
                         
         return s                
                 
