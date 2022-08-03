@@ -671,7 +671,7 @@ class RheaParser(MetabolomicsData):
                     if p.recName is not None and p.recName != "":
                         recordOut.write(pid + "\tprotein_name\t" + p.recName + "\n")
                     if p.hgncSymbol is not None and p.hgncSymbol != "":
-                        recordOut.write(pid + "\tcommon_name\t" + p.hgncSymbol + "\n")
+                        recordOut.write(pid + "\tgene_name\t" + p.hgncSymbol + "\n")
                     for secondaryAcc in p.secondaryAccs:         
                         recordOut.write(pid + "\tuniprot\t" + secondaryAcc + "\n")
                 else:
