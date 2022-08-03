@@ -24,8 +24,10 @@ class mainDBLoad():
         
     
     
-    def loadDBAfterTruncatingTables(self, incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None):
-
+    def loadDBAfterTruncatingTables(self, incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None, truncateTables = False, tablesToKeep=['db_version', 'version_info']):
+        
+        
+        
     ################# DB Loading Instructions
         
         # Sets logging level
@@ -34,6 +36,11 @@ class mainDBLoad():
  
         # pass the credentials object to the constructed rampDBBulLoader
         loader = rampDBBulkLoader(self.dbPropsFile)
+        
+        # truncate tables
+        if truncateTables:
+            loader.truncateTables(tablesToSkip=tablesToKeep)
+        
         
         # update methods
         # the sql_resource_config.txt is a tab delimited file indicating which resources to load
@@ -64,5 +71,5 @@ class mainDBLoad():
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "First build with rhea reachtions")
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "First build with rhea reachtions", truncateTables=True)
 

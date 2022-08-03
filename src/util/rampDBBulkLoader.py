@@ -173,7 +173,7 @@ class rampDBBulkLoader(object):
         print(sql)
         stmt = "insert into {} ({})".format(table, colNames)
 
-        file_path = "../../misc/sql/"+fileName
+        file_path = "../misc/sql/"+fileName
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
         data = pd.read_table(file_path, sep="\t+", header=None, index_col=None, engine="python", keep_default_na=False)     
 
@@ -474,13 +474,13 @@ class rampDBBulkLoader(object):
             
 
     def collectEntityIntersectsMappingToPathways(self, analyteType='compound', format='json', filterMets=False, dropSMPD=False):
-        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
         #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
         print(sourceInfo.shape)
-        mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
+        mappingToPathways = pd.read_table('../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
         mappingToPathways = pd.DataFrame(mappingToPathways)
         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
         print(mappingToPathways.shape)
@@ -488,7 +488,7 @@ class rampDBBulkLoader(object):
 #         mappingToPathways = pd.DataFrame(mappingToPathways)
 #         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
 #         print(mappingToPathways.shape)
-        pathwayInfo = pd.read_table('../../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
+        pathwayInfo = pd.read_table('../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
         pathwayInfo = pd.DataFrame(pathwayInfo)
         pathwayInfo.columns = ['pathwayRampId','pathwayId','pathwaySource','pathwayCat', 'pathwayName']
         smpdbVersions = ['smpdb2', 'smpdb3']
@@ -662,7 +662,7 @@ class rampDBBulkLoader(object):
        
        
     def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
-        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
@@ -850,6 +850,23 @@ class rampDBBulkLoader(object):
             print(dbDumpURLUpdateSQL)
             conn.execute(dbDumpURLUpdateSQL)
             conn.close()
+            
+    def truncateTables(self, tablesToSkip):
+        self.dbConf.dumpConfig()
+        
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        
+        print("Updating DB Version")
+                
+        with engine.connect() as conn:
+            tables = conn.execute("show tables")
+            
+            for table in tables:
+                if table in tablesToSkip:
+                    continue
+                conn.execute("truncate "+table)
+         
+            conn.close()
                 
             
 class dbConfig(object):
@@ -906,14 +923,14 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-loader = rampDBBulkLoader("../config/ramp_db_props.txt")
-loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
+#loader = rampDBBulkLoader("../config/ramp_db_props.txt")
+#loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')
 #print(jsonRes)
 #loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 
-loader.currDBVersion = "v3.0.0"
+#loader.currDBVersion = "v3.0.0"
 #loader.updateSourcePathwayCount()
 #loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/34990387")
 #ei = loader.collectEntityIntersects("compound", 'json', False)
