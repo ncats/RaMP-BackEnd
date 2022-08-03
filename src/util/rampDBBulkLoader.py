@@ -906,8 +906,8 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-#loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
+loader = rampDBBulkLoader("../config/ramp_db_props.txt")
+loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')
 #print(jsonRes)
