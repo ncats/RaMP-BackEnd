@@ -913,9 +913,9 @@ loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
 #print(jsonRes)
 #loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 
-loader.currDBVersion = "v2.0.7"
+loader.currDBVersion = "v3.0.0"
 #loader.updateSourcePathwayCount()
-loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/34990387")
+#loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/34990387")
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #print(ei)

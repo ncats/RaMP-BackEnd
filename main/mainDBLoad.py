@@ -48,7 +48,7 @@ class mainDBLoad():
         loader.updateSourcePathwayCount()
         
         # sets the new updated version
-        loader.updateDBVersion(incrementLevel = 'increment_patch_release')
+        loader.updateDBVersion(incrementLevel = incrementLevel, optionalVersion = optionalVersionOveride, optionalNote = optionalVersionNote)
         
         # sets the analyte intercept json in the version table.
         # precondition: the updateDBVersion must have been set so that the
@@ -64,5 +64,5 @@ class mainDBLoad():
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None)
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "First build with rhea reachtions")
 
