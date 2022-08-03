@@ -374,7 +374,7 @@ class RheaParser(MetabolomicsData):
                         compound.formula = formula
 
                     self.rheaCompoundDict[compound.chebiId] = compound
-                    reaction.left_comps[compound.chebiId] = compound
+                    reaction.left_comps.append(compound)
 
             for rightRef in rightRefs:
                 
@@ -409,7 +409,7 @@ class RheaParser(MetabolomicsData):
                         compound.formula = formula    
                               
                     self.rheaCompoundDict[compound.chebiId] = compound
-                    reaction.right_comps[compound.chebiId] = compound
+                    reaction.right_comps.append(compound)
         
             
             
