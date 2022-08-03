@@ -35,7 +35,8 @@ class rampDBBulkLoader(object):
                                    'hmdb':'HMDB',
                                    'reactome':'Reactome',
                                    'wiki':'WikiPathways',
-                                   'lipidmaps':'LIPIDMAPS'}
+                                   'lipidmaps':'LIPIDMAPS',
+                                   'rhea':'Rhea'}
         
         self.keggSubSources = ['hmdb_kegg', 'wikipathways_kegg']
         
