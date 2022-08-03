@@ -859,12 +859,13 @@ class rampDBBulkLoader(object):
         print("Updating DB Version")
                 
         with engine.connect() as conn:
-            tables = conn.execute("show tables")
+            result = conn.execute("show tables")
             
-            for table in tables:
-                if table in tablesToSkip:
+            for row in result:
+                tableName = row[0]
+                if tableName in tablesToSkip:
                     continue
-                conn.execute("truncate "+table)
+                conn.execute("truncate "+tableName)
          
             conn.close()
                 
