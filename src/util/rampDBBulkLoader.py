@@ -318,7 +318,7 @@ class rampDBBulkLoader(object):
 
         statusTable = dict()
         
-        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'LIPIDMAPS', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI'}
+        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'LIPIDMAPS', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI','rhea':'Rhea'}
         
         with engine.connect() as conn:
 
