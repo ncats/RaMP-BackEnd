@@ -111,13 +111,13 @@ class EntityBuilder(object):
         self.sourceList.append(self.dataSource4)
         # End DataSource code
         
-        self.dataSource5 = DataSource()        
-        self.dataSource5.sourceName = 'rhea'
-        self.dataSource5.filePrefix = 'rhea'
-        self.dataSource5.haveChemClassInfo = False
-        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
-  
-        self.sourceList.append(self.dataSource5)
+#         self.dataSource5 = DataSource()        
+#         self.dataSource5.sourceName = 'rhea'
+#         self.dataSource5.filePrefix = 'rhea'
+#         self.dataSource5.haveChemClassInfo = False
+#         self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+#   
+#         self.sourceList.append(self.dataSource5)
            
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
@@ -176,7 +176,7 @@ class EntityBuilder(object):
         self.metaboliteClassConnections()
         
         # Rhea reactions
-        self.processRheaReactions()
+#         self.processRheaReactions()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
@@ -199,7 +199,8 @@ class EntityBuilder(object):
         self.writeOntologyAssociations()
         self.writeChemProps()
         self.writeMetaboliteClass()
-        self.writeReactionEntities()
+        
+        # self.writeReactionEntities()
         
         print("Number of problem associations skipped (curationAvoidanceCount): " + str(self.curationAvoidanceCount))
         
@@ -920,7 +921,7 @@ class EntityBuilder(object):
         
         if rheaConfig is None:
             return
-        
+                
         # rhea output 
         rheaPath = rheaConfig.sourceLocPath
         
@@ -946,6 +947,10 @@ class EntityBuilder(object):
     def appendRxnProteinsFromRhea(self, path):
         print("Adding Reaction Proteins")
 
+        # first pull uniprot human accessions
+        # this helps to append rhea specific reaction tables and marking human proteins
+        
+
         records = pd.read_table(path)
 
         # just read them in first...
@@ -961,7 +966,10 @@ class EntityBuilder(object):
                 if protein is not None:
                     protein.soureId = uniprot
                     rxn.proteins.append(protein)
-                    
+            
+            else:
+                print("No gene for uniprot = "+uniprot)
+                   
         
         
     def appendRxnParticipantsFromRhea(self,path):
