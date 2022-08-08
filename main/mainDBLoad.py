@@ -71,5 +71,5 @@ class mainDBLoad():
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "First build with rhea reachtions", truncateTables=True)
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v2.1.0", optionalVersionNote = "Update Aug 2022", truncateTables=True)
 

@@ -925,7 +925,7 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-#loader = rampDBBulkLoader("../config/ramp_db_props.txt")
+
 #loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')
@@ -945,5 +945,7 @@ class intersectNode(object):
 # 
 #loader.updateDBVersion('increment_patch_release', None, "Indexing pathway columns and other table columns. Just indexing.")
 # loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
-# loader.updateDBVersion('specified', "v3.0.0", "Testing explicit version set")
+loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+
+loader.updateDBVersion('specified', "v2.1.0", "August 2022 Update")
 
