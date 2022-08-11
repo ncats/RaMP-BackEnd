@@ -37,9 +37,11 @@ class RheaParser(MetabolomicsData):
         Constructor
         '''
         # relative dir, use '../' for testing, use "" for production calls
-        self.relDir = ""        
+        self.relDir = ""     
         
         self.config = resConfig
+
+        self.graph = None
         
         self.rheaReactionDict = dict()
         
@@ -60,20 +62,29 @@ class RheaParser(MetabolomicsData):
         self.humanUniprotAccSet = set()
         
         self.chebiHumanIdSet = set()
+        
+        self.chebiCofactorId = "23357"
+        
+        self.chebiCofactorSet = set()
                      
     def processRhea(self):
         self.buildSupportingUniprotData()
         self.buildSupportingChebiData()
         
+        print("Length of cofactor set = "+str(len(self.chebiCofactorSet)))
+                
         self.getRheaFiles()
         self.constructRDF()
-        
+                 
+        # builds reactions objects
+        self.processAllReactions()
+         
         self.appendUniprotToReaction()
         self.appendEcToReaction()
-        
+         
         self.setReactionHumanUniprotState()
         self.setReactionHumanChebiState()
-        
+         
         self.exportIntermediateFiles()
     
 
@@ -109,11 +120,15 @@ class RheaParser(MetabolomicsData):
         # use this when testing if a stored graph file exists... for faster graph construction
         # cop.deserializeGraph(None)
         # else.... use buildGraph()
-        cop.buildGraph()
+        
+        cop.buildGraph()                
+        #cop.deserializeGraph(None)        
+        
         cop.extractHumanMetaboliteStatus()
         
         self.chebiHumanIdSet = cop.chebiHumanIdSet
         
+        self.chebiCofactorSet = cop.extractCofactorStatus(self.chebiCofactorId)
     
     def getRheaFiles(self):
 
@@ -187,69 +202,19 @@ class RheaParser(MetabolomicsData):
 
      
     def constructRDF(self):
-        
-        
+                
         g = Graph()
-        rdfConf = self.config.getConfig('rhea_rdf')
-        
-        
+        rdfConf = self.config.getConfig('rhea_rdf')        
         
         path = self.relDir + rdfConf.localDir + rdfConf.extractFileName
         
         g.parse(path, format="application/rdf+xml")        
         
-        #g.parse(path, format="nt")        
+        self.graph = g        
        
         
         
-        reactions = g.objects("Reaction")
-
-        i = 0
-        
-        subs = []
-        preds = []
-        objs = []
-#         for subj, pred, obj in g:            
-#             i = i + 1
-#             subs.append(subj)
-#             print(obj)
-#             preds.append(pred)
-#             objs.append(obj)
-#         
-#         
-#         print(i)
-#         print(len(set(subs)))
-#         print(len(set(preds)))
-#         print(len(set(objs)))
-        
-        #res = g.subject_objects(predicate="rdfs:subClassOf")
-    
-        
-#         q = """
-#     PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-# 
-#     SELECT ?name
-#     WHERE {
-#         ?p rdfs:subClassOf rdf:resource "http://rdf.rhea-db.org/Reaction"/ .
-# 
-#         ?p foaf:name ?name .
-#     }
-# """
-#         q = """
-#         PREFIX rh: <http://rdf.rhea-db.org/>
-#         PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
-#         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-#         
-#         SelectQuery ?rh:accession where { ?rdfs:subClassOf  rdf:resource: "http://rdf.rhea-db.org/Reaction .}
-#         """
-#         res = g.query(q)
-#         
-#         i = 0
-#         for s in res:
-#             i = i + 1
-#             
-#         print("number of reaction subject_object tuples")
-#         print(str(i))
+    def processAllReactions(self):
         
         type_predicate = URIRef('http://www.w3.org/2000/01/rdf-schema#subClassOf')    
 
@@ -257,16 +222,16 @@ class RheaParser(MetabolomicsData):
         dir_reaction_object = URIRef("http://rdf.rhea-db.org/DirectionalReaction")
         bidir_reaction_object = URIRef("http://rdf.rhea-db.org/BidirectionalReaction")
 
-        res = g.subjects(predicate=type_predicate, object=reaction_object)
-        dirRes = g.subjects(predicate=type_predicate, object=dir_reaction_object)
-        biDirRes = g.subjects(predicate=type_predicate, object=bidir_reaction_object)
+        res = self.graph.subjects(predicate=type_predicate, object=reaction_object)
+        dirRes = self.graph.subjects(predicate=type_predicate, object=dir_reaction_object)
+        biDirRes = self.graph.subjects(predicate=type_predicate, object=bidir_reaction_object)
         
         # process reactions that are non-directional 
-        self.processReactions(g, res)
+        self.processReactions(self.graph, res)
         # process reactions that are directional
-        self.processReactions(g, dirRes)
+        self.processReactions(self.graph, dirRes)
         # process reactions that are bi-directional
-        self.processReactions(g, biDirRes)
+        self.processReactions(self.graph, biDirRes)
         # now add directional info to reactions
         self.processReactionDirectionInfo()
         
@@ -363,6 +328,8 @@ class RheaParser(MetabolomicsData):
                             cmp = cmp.replace('generic', 'rhea-comp')
                         reaction.left_comp_ids.append(cmp)
                         compound.chebiId = cmp
+                        if compound.chebiId in self.chebiCofactorSet:
+                            compound.isCofactor = 1
                     
                     for name in compNames:
                         compound.name = name
@@ -398,6 +365,8 @@ class RheaParser(MetabolomicsData):
                             cmp = cmp.replace('generic', 'rhea-comp')
                         reaction.right_comp_ids.append(cmp)
                         compound.chebiId = cmp
+                        if compound.chebiId in self.chebiCofactorSet:
+                            compound.isCofactor = 1
                     
                     for name in compNames:
                         compound.name = name
@@ -739,11 +708,11 @@ class RheaParser(MetabolomicsData):
                 currRxn.ec = ec
 
         
-# rConf = RampConfig()
-# rConf.loadConfig("../../config/external_resource_config.txt")
+rConf = RampConfig()
+rConf.loadConfig("../../config/external_resource_config.txt")
 # # #                         
-# rp = RheaParser(rConf)            
-# rp.processRhea()
+rp = RheaParser(rConf)            
+rp.processRhea()
 # rp.appendUniprotToReaction()
 # rp.appendEcToReaction()
 # rp.exportIntermediateFiles()
