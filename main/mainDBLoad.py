@@ -65,11 +65,11 @@ class mainDBLoad():
         # this optional method tracks database version information supplied in this file.
         # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
         
-        # this method populates a table that reflects teh current status of the database.
+        # this method populates a table that reflects the current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v2.1.0", optionalVersionNote = "Update Aug 2022", truncateTables=True)
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "Rhea Build 2022", truncateTables=True)
 

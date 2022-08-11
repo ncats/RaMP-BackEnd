@@ -229,7 +229,70 @@ class ChebiOwlParser(MetabolomicsData):
                 children = self.chemEntityRelations[parent]
                 for child in children:
                     f.write("chebi:"+parent+"\t"+"chebi:"+child+"\n")
-                                    
+    
+    
+    def extractCofactorStatus(self, chebiRoleId):
+        cofactorData = self.collectMolecularEntitiesUnderRole(chebiRoleId, exportFileName = None, exportFile = False, relationTypes=['is_a', 'has_role'])
+        return cofactorData[0]
+    
+    def collectMolecularEntitiesUnderRole(self, chebiRoleId, exportFileName, exportFile = False, relationTypes = ['is_a', 'has_role', 'has_functional_parent']):
+        chemEntityRelations = dict()
+        members = set()
+        
+        with open(self.localRelationsFile, 'r') as relFile:
+            for line in relFile:
+#            line = relFile.readline()
+                #print(line)
+                if line is not None and line != "":
+                    terms = line.split("\t")
+                    
+#                    if len(terms) == 5 and (terms[1] == 'is_a' or terms[1] == 'has_functional_parent' or terms[1] == 'has_role'):
+                    if len(terms) == 5 and (terms[1] in relationTypes):
+                        
+                        relSet = chemEntityRelations.get(terms[2], None)                                                        
+                        if relSet is None:
+                            relSet = [terms[3]]                        
+                            chemEntityRelations[terms[2]] = relSet
+                        else:
+                            relSet.append(terms[3])
+             
+        # now lets build a dictionary starting with role 50906 on down.
+        newRelations = dict()
+        newRelations[chebiRoleId] = []
+        self.getChildRoles(chebiRoleId, chemEntityRelations, newRelations)
+        
+        termsSet = set()
+        
+        chemEntityRelations = newRelations
+        parentTot = 0
+        relTot = 0
+        for r in chemEntityRelations:
+            termsSet.add(r)
+            parentTot = parentTot + 1
+            for c in chemEntityRelations[r]:
+                termsSet.add(c)
+                relTot = relTot + 1
+#             
+        # export chebi role relations ontology terms
+        if exportFile:
+            with open(self.outputDir + exportFileName, 'w') as f:
+                for parent in chemEntityRelations:
+                    children = chemEntityRelations[parent]
+                    for child in children:
+                        f.write("chebi:"+parent+"\t"+"chebi:"+child+"\n")
+        
+        else:
+            for parent in chemEntityRelations:
+                members.add("chebi:" + str(parent))
+                # print("add member: "+str(parent))
+                children = chemEntityRelations[parent]
+                for child in children:
+                    # print("add member: "+str(child))
+                    members.add('chebi:' + str(child))
+                        
+            return [members, chemEntityRelations]            
+                    
+                                   
     def getChildRoles(self, parent, baseRelations, newRelations):
         children = baseRelations.get(parent, None)
         if children is not None:
