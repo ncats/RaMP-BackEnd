@@ -49,6 +49,8 @@ class Metabolite(object):
         self.ontologyTerms = list()
         
         self.hmdbStatus = None
+        
+        self.isCofactor = 0
                  
     def __eq__(self, other):
         """

@@ -4,7 +4,6 @@ Created on Jun 30, 2022
 @author: braistedjc
 '''
 
-
 class RheaReaction(object):
     '''
     classdocs
@@ -123,7 +122,7 @@ class RheaReaction(object):
                 cid = list(namesDict.keys())[0]
                 name = namesDict[cid]
                          
-            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\n"
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\t" + c.isCofactor + "\n"
     
         for c in self.right_comps:
             ids = c.idDict.get(source, None)
@@ -138,7 +137,7 @@ class RheaReaction(object):
                 cid = list(namesDict.keys())[0]
                 name = namesDict[cid]
             
-            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\n"
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\t" + c.isCofactor + "\n"
             
         return s    
 
@@ -212,7 +211,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + met.isCofactor + "\n"
                         
                 for met in self.right_comps:
                     if met.rampId not in hitMets:
@@ -224,7 +223,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t1\t" + met.rampId + "\t" + cid + "\t" + name + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t1\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + met.isCofactor + "\n"
                         
         return s                
                 
@@ -244,13 +243,35 @@ class RheaReaction(object):
         self.hasHumanEnzyme = dataVals[8]
         self.hasOnlyHumanMetabolites = dataVals[9]
         
-      
+    
+    def getCompById(self, cid, compList):
+        #print("search id" + str(cid))
+        for cmp in compList:
+            #print("search id: " + str(cid))
+            #print("checkCompList have a comp: " + str(cmp.chebiId))
+            if cmp.chebiId == cid:
+                #print("match")
+                return cmp
+        return None
+    
     def getRheaIdToCompMappingString(self):
         s = ""
         for cid in self.left_comp_ids:
-            s = s + self.rhea_id + "\t" + cid + "\t0\n" 
+            cmpd = self.getCompById(cid, self.left_comps)
+            isCofactor = 0
+            if cmpd is not None:
+                isCofactor = cmpd.isCofactor
+                
+            s = s + self.rhea_id + "\t" + cid + "\t0\t" + str(isCofactor) + "\n" 
+       
         for cid in self.right_comp_ids:
-            s = s + self.rhea_id + "\t" + cid + "\t1\n"             
+            cmpd = self.getCompById(cid, self.right_comps)
+            isCofactor = 0
+            if cmpd is not None:
+                isCofactor = cmpd.isCofactor
+                
+            s = s + self.rhea_id + "\t" + cid + "\t1\t" + str(isCofactor) + "\n"            
+
         return s
     
     def getRheaIdToUniprotMappingString(self):    

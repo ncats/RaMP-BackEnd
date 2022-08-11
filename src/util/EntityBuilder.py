@@ -981,11 +981,13 @@ class EntityBuilder(object):
             rheaId = record[0]
             chebi = record[1]
             rxnSide = record[2]
+            chebiCofactor = record[3]
             
             rxn = self.reactionDict.get(rheaId, None)            
             met = self.metaboliteList.getMetaboliteBySourceId(chebi)
             
             if rxn is not None and met is not None:
+                met.isCofactor = chebiCofactor
                 if(rxnSide == 0):
                     rxn.left_comps.append(met)
                     rxn.left_comp_ids.append(chebi)

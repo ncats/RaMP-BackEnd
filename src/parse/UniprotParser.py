@@ -41,7 +41,7 @@ class UniprotParser(MetabolomicsData):
         remoteFile = proteinConfig.sourceFileName
 
         # make the data dir if needed...
-        if not exists(self.relDir + localDir + extractFile):
+        if not exists(self.relDir + localDir):
             os.mkdir(self.relDir + localDir)
 
         if not exists(self.relDir + localDir + extractFile):
