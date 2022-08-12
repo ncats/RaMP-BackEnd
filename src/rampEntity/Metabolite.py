@@ -247,7 +247,10 @@ class Metabolite(object):
         if molecule.source not in self.chemPropsMolecules:
            self.chemPropsMolecules[molecule.source] = dict()
         self.chemPropsMolecules[molecule.source][molecule.id] = molecule
-    
+        
+        # we should pass on molecule names as synonyms
+        for name in molecule.names:
+            self.addSynonym(self, name, molecule.source)
     
     def addMetClass(self, source, sourceId, classLevel, className):
         if className == "Triradylcglycerols":
