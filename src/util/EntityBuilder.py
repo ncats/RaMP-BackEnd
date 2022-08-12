@@ -989,10 +989,10 @@ class EntityBuilder(object):
             
             if met is None:
                 print("hey lack a metabolite for this chebi...: "+chebi)
+            else:
+                met.isCofactor = chebiCofactor
             
             if rxn is not None and met is not None:
-                
-                met.isCofactor = chebiCofactor
                 
                 if met.isCofactor == 1:
                     print("in append rxn members... cofactor = 1 :)")

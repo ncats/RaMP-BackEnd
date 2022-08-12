@@ -251,6 +251,7 @@ class RheaReaction(object):
                 return cmp
         return None
     
+    # exports reaction to chebi id reaction side and is cofactor
     def getRheaIdToCompMappingString(self):
         s = ""
         for cid in self.left_comp_ids:
