@@ -111,13 +111,13 @@ class EntityBuilder(object):
         self.sourceList.append(self.dataSource4)
         # End DataSource code
         
-#         self.dataSource5 = DataSource()        
-#         self.dataSource5.sourceName = 'rhea'
-#         self.dataSource5.filePrefix = 'rhea'
-#         self.dataSource5.haveChemClassInfo = False
-#         self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
-#   
-#         self.sourceList.append(self.dataSource5)
+        self.dataSource5 = DataSource()        
+        self.dataSource5.sourceName = 'rhea'
+        self.dataSource5.filePrefix = 'rhea'
+        self.dataSource5.haveChemClassInfo = False
+        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+   
+        self.sourceList.append(self.dataSource5)
            
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
@@ -176,7 +176,7 @@ class EntityBuilder(object):
         self.metaboliteClassConnections()
         
         # Rhea reactions
-#         self.processRheaReactions()
+        self.processRheaReactions()
         
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
@@ -200,7 +200,7 @@ class EntityBuilder(object):
         self.writeChemProps()
         self.writeMetaboliteClass()
         
-        # self.writeReactionEntities()
+        self.writeReactionEntities()
         
         print("Number of problem associations skipped (curationAvoidanceCount): " + str(self.curationAvoidanceCount))
         
@@ -949,9 +949,8 @@ class EntityBuilder(object):
 
         # first pull uniprot human accessions
         # this helps to append rhea specific reaction tables and marking human proteins
-        
 
-        records = pd.read_table(path)
+        records = pd.read_table(path, header=None)
 
         # just read them in first...
         for idx, record in records.iterrows():
@@ -975,7 +974,7 @@ class EntityBuilder(object):
     def appendRxnParticipantsFromRhea(self,path):
         print("Adding Reaction Participants")    
     
-        records = pd.read_table(path)
+        records = pd.read_table(path, header=None)
 
         for idx, record in records.iterrows():
             rheaId = record[0]
@@ -994,6 +993,8 @@ class EntityBuilder(object):
                 else:
                     rxn.right_comps.append(met)    
                     rxn.right_comp_ids.append(chebi)
+            else:
+                print("in append participants from Rhea... have a None rxn for id: "+rheaId)
             
 #     def fullBuild(self):
 #         """
