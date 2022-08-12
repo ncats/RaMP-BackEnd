@@ -214,6 +214,9 @@ class Metabolite(object):
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
     
+        if metabolite.isCofactor == 1:
+            self.isCofactor = 1
+    
     def resolveCommonNames(self):
         """
         Verifies that all ids are associated with common names for export to the source table.
