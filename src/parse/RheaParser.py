@@ -708,11 +708,11 @@ class RheaParser(MetabolomicsData):
                 currRxn.ec = ec
 
         
-rConf = RampConfig()
-rConf.loadConfig("../../config/external_resource_config.txt")
+#rConf = RampConfig()
+#rConf.loadConfig("../../config/external_resource_config.txt")
 # # #                         
-rp = RheaParser(rConf)            
-rp.processRhea()
+#rp = RheaParser(rConf)            
+#rp.processRhea()
 # rp.appendUniprotToReaction()
 # rp.appendEcToReaction()
 # rp.exportIntermediateFiles()
