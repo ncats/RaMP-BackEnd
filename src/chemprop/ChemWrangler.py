@@ -340,6 +340,7 @@ class ChemWrangler(object):
                 mol.addName(name)
                 mol.nameDict[source] = name
             if line == '> <SYNONYMS>':
+                line = sdfDB.readline().strip()
                 vals = line.split(";")
                 for val in vals:
                     mol.addName(val.strip())
