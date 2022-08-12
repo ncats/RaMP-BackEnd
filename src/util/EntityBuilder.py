@@ -975,7 +975,9 @@ class EntityBuilder(object):
         print("Adding Reaction Participants")    
     
         records = pd.read_table(path, header=None)
-
+        
+        rheaCofactCnt = 0
+        
         for idx, record in records.iterrows():
             rheaId = record[0]
             chebi = record[1]
@@ -985,8 +987,17 @@ class EntityBuilder(object):
             rxn = self.reactionDict.get(rheaId, None)            
             met = self.metaboliteList.getMetaboliteBySourceId(chebi)
             
+            if met is None:
+                print("hey lack a metabolite for this chebi...: "+chebi)
+            
             if rxn is not None and met is not None:
+                
                 met.isCofactor = chebiCofactor
+                
+                if met.isCofactor == 1:
+                    print("in append rxn members... cofactor = 1 :)")
+                    rheaCofactCnt = rheaCofactCnt + 1
+                    
                 if(rxnSide == 0):
                     rxn.left_comps.append(met)
                     rxn.left_comp_ids.append(chebi)
@@ -995,6 +1006,9 @@ class EntityBuilder(object):
                     rxn.right_comp_ids.append(chebi)
             else:
                 print("in append participants from Rhea... have a None rxn for id: "+rheaId)
+        
+        print("Rhea cofact count/est: "+str(rheaCofactCnt))
+        
             
 #     def fullBuild(self):
 #         """
