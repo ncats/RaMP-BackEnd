@@ -32,23 +32,26 @@ class Main():
          
         # works based on your computer, setup working directory
         os.chdir('../main/')
+# 
+#         #kegg.getEverything(False)
+#         #print("KEGG Wonder")
+#         print("Getting hmdb...")
+#         hmdb.getEverything(True)
+#         print("Getting wiki...")
+#         wikipathways.getEverything(True)
+#         print("Getting reactome...")
+#         reactome.getEverything(True)
+#         
+#         # This parses and writes lipid maps
+#         # sql write will be handled by EntityBuilder
+#         print("Getting LipidMaps...")
+#         lipidmaps.getEverything(True)
+#  
+#         print("Getting Rhea info...")
+#         rhea.processRhea()
 
-        #kegg.getEverything(False)
-        #print("KEGG Wonder")
-        print("Getting hmdb...")
-        hmdb.getEverything(True)
-        print("Getting wiki...")
-        wikipathways.getEverything(True)
-        print("Getting reactome...")
-        reactome.getEverything(True)
-        
-        # This parses and writes lipid maps
-        # sql write will be handled by EntityBuilder
-        print("Getting LipidMaps...")
-        lipidmaps.getEverything(True)
- 
-        print("Getting Rhea info...")
-        rhea.processRhea()
+
+
 #
 #         #Here are the identifiers that are present for each gene:
 #         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
