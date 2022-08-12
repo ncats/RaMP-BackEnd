@@ -122,7 +122,7 @@ class RheaReaction(object):
                 cid = list(namesDict.keys())[0]
                 name = namesDict[cid]
                          
-            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\t" + c.isCofactor + "\n"
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t0\t" + metId + "\t" + name + "\t" + str(c.isCofactor) + "\n"
     
         for c in self.right_comps:
             ids = c.idDict.get(source, None)
@@ -137,7 +137,7 @@ class RheaReaction(object):
                 cid = list(namesDict.keys())[0]
                 name = namesDict[cid]
             
-            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\t" + c.isCofactor + "\n"
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + c.rampId + "\t1\t" + metId + "\t" + name + "\t" + str(c.isCofactor) + "\n"
             
         return s    
 
@@ -211,7 +211,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + met.isCofactor + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + str(met.isCofactor) + "\n"
                         
                 for met in self.right_comps:
                     if met.rampId not in hitMets:
@@ -223,15 +223,12 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t1\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + met.isCofactor + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t1\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + str(met.isCofactor) + "\n"
                         
         return s                
                 
-                
-            
     
     def assignPrimaryFields(self, dataVals):
-        print("")
         self.rhea_id = dataVals[0]
         self.status = dataVals[1]
         self.isTransport = dataVals[2]
