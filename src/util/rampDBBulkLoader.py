@@ -938,7 +938,7 @@ class intersectNode(object):
 
 
 #loader.updateSourcePathwayCount()
-#loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/36614610")
+#wloader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/36760461")
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #print(ei)

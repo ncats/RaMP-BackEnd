@@ -63,7 +63,7 @@ class mainDBLoad():
         loader.updateEntityIntersects()
         
         # this optional method tracks database version information supplied in this file.
-        # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
+        loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
         
         # this method populates a table that reflects the current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
@@ -71,5 +71,11 @@ class mainDBLoad():
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', optionalVersionOveride = "v3.0.0", optionalVersionNote = "Rhea Build 2022", truncateTables=True)
+
+# increment level 'increment_patch_release', 'increment_minor_release', 
+# or 'specified' (new version, perhaps major release)
+loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', 
+                                   optionalVersionOveride = "", 
+                                   optionalVersionNote = "20220822 patch release, update chem_props inchi values.", 
+                                   truncateTables=True)
 
