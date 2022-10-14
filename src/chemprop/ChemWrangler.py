@@ -330,9 +330,21 @@ class ChemWrangler(object):
             if line == '> <NAME>':
                 name = sdfDB.readline().strip()
                 mol.addName(name)
-                mol.nameDict[source] = name                
+                mol.nameDict[source] = name
+            if line == '> <COMMON_NAME>':
+                name = sdfDB.readline().strip()
+                mol.addName(name)
+                mol.nameDict[source] = name               
             if line == '> <SYSTEMATIC_NAME>':
-                mol.addName(sdfDB.readline().strip())
+                name = sdfDB.readline().strip()
+                mol.addName(name)
+                mol.nameDict[source] = name
+            if line == '> <SYNONYMS>':
+                line = sdfDB.readline().strip()
+                vals = line.split(";")
+                for val in vals:
+                    mol.addName(val.strip())
+                    mol.nameDict[source] = val.strip()
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
             if line in idDict:

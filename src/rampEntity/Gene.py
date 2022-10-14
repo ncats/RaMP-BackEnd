@@ -28,7 +28,7 @@ class Gene(object):
         # source: id dictionary
         self.idDict = dict()
         
-        # keys are source, values are dictiontaries of source id to commonName
+        # keys are source, values are dictionaries of source id to commonName
         self.commonNameDict = dict()
         
         # synonym dictionary, organized by source, id, synonym
@@ -92,13 +92,14 @@ class Gene(object):
             self.sources.append(sourceName)
         
             
-    def addCommonNameAndSynonym(self, id, commonName, source):
+    def addCommonNameAndSynonym(self, id, commonName, source, annoType):
         """
         Adds common names as a <source | id | common_name> triple.
         """
-        if source not in self.commonNameDict:            
-            self.commonNameDict[source] = dict()
-        self.commonNameDict[source][id] = commonName
+        if annoType == 'common_name' or annoType == 'gene_name' or annoType == 'protein_name':
+            if source not in self.commonNameDict:            
+                self.commonNameDict[source] = dict()
+            self.commonNameDict[source][id] = commonName
         self.addSynonym(commonName, source)
         
             

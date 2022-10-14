@@ -5,6 +5,7 @@ Created on Nov 16, 2020
 '''
 import os
 from os import path
+from os.path import exists
 from rampEntity.Gene import Gene
 from rampEntity.GeneList import GeneList
 from rampEntity.Metabolite import Metabolite
@@ -15,6 +16,10 @@ from rampEntity.Ontology import Ontology
 from rampEntity.OntologyList import OntologyList
 from chemprop.ChemWrangler import ChemWrangler
 from rampEntity.Molecule import Molecule
+from rampEntity.RheaReaction import RheaReaction
+from rampEntity.Protein import Protein
+from rampEntity.RheaCompound import RheaCompound
+
 
 from pathlib import Path
 
@@ -48,6 +53,8 @@ class EntityBuilder(object):
     __rampGeneStartId = 0
     __rampPathStartId = 0
     __rampOntStartId = 0
+    __rampRxnStartId = 0
+    
 
     def __init__(self, resourceConfig):
         '''
@@ -67,6 +74,9 @@ class EntityBuilder(object):
         
         # ontology list
         self.ontologyList = OntologyList()
+        
+        # reaction dictionary
+        self.reactionDict = dict()
         
         # List of DataSource objects. These hold data source configuration.
         self.sourceList = []
@@ -100,7 +110,15 @@ class EntityBuilder(object):
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
-                
+        
+        self.dataSource5 = DataSource()        
+        self.dataSource5.sourceName = 'rhea'
+        self.dataSource5.filePrefix = 'rhea'
+        self.dataSource5.haveChemClassInfo = False
+        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+   
+        self.sourceList.append(self.dataSource5)
+           
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
         self.metToPathAssocSourceTallies = dict()
@@ -157,12 +175,20 @@ class EntityBuilder(object):
         self.loadMetaboliteToGene()        
         self.metaboliteClassConnections()
         
+        # Rhea reactions
+        self.processRheaReactions()
+        
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
         # loader file writes
+        
+        # make sql directory if it doesn't exist
+        if not exists("../misc/sql"):
+            os.mkdir("../misc/sql")
+        
         self.writePathways()
         self.writeAnalyteSource()
         self.writeAnalyteSynonyms()
@@ -173,6 +199,8 @@ class EntityBuilder(object):
         self.writeOntologyAssociations()
         self.writeChemProps()
         self.writeMetaboliteClass()
+        
+        self.writeReactionEntities()
         
         print("Number of problem associations skipped (curationAvoidanceCount): " + str(self.curationAvoidanceCount))
         
@@ -391,7 +419,9 @@ class EntityBuilder(object):
         elif(type == "OL"):
             self.__rampOntStartId = self.__rampOntStartId + 1
             return "RAMP_OL_" + (str(self.__rampOntStartId)).zfill(9)
-
+        elif(type == "R"):
+            self.__rampRxnStartId = self.__rampRxnStartId + 1
+            return "RAMP_R_" + (str(self.__rampRxnStartId)).zfill(9)
 
     def loadPathways(self):
         """
@@ -467,7 +497,7 @@ class EntityBuilder(object):
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
-            print("Number of pathway associations = " + str(data.shape[0]))
+            # print("Number of pathway associations = " + str(data.shape[0]))
         
             map = dict()
             
@@ -506,9 +536,9 @@ class EntityBuilder(object):
 #                if(i % 1000 == 0):
 #                    print("metabolites processed = " + str(i), flush=True)
 
-        print("Finished met to path mapping stranded counts (mets and paths)")
-        print(str(len(strandedMetSourceIds)))
-        print(str(len(strandedPathSourceIds)))
+        # print("Finished met to path mapping stranded counts (mets and paths)")
+        # print(str(len(strandedMetSourceIds)))
+        # print(str(len(strandedPathSourceIds)))
         
 
 
@@ -526,13 +556,20 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                print("in add gene list... geneInfoDictionary not found for :" + file)
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
+                
+                # common names (gene symbols) and secondary ids are ok, but proper names are synonyms
+                # rhea has gene names which are synonyms, not proper ids
+                if row[1] == 'protein_name' or row[1] == 'gene_name':
+                    continue
+                
                 currSourceId = row[0]
                 altId = row[2]
                 gene = self.geneList.getGeneById(currSourceId)
@@ -741,17 +778,17 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "geneInfoDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
             for i,row in df.iterrows():
-                if row[1] == "common_name":
+                if row[1] == "common_name" or row[1] == 'protein_name' or row[1] == 'gene_name':
                     gene = self.geneList.getGeneById(row[0])
                     if gene is not None:
-                        gene.addCommonNameAndSynonym(row[0], row[2], source)
+                        gene.addCommonNameAndSynonym(row[0], row[2], source, row[1])
 
         # resolve common name for ids without corresponding common names
         genes = self.geneList.getUniqueGenes()
@@ -874,12 +911,105 @@ class EntityBuilder(object):
                     
                     
                     
+    def processRheaReactions(self):
+        
+        rheaConfig = None
+        
+        for source in self.sourceList:
+            if source.sourceName == 'rhea':
+                rheaConfig = source
+        
+        if rheaConfig is None:
+            return
+                
+        # rhea output 
+        rheaPath = rheaConfig.sourceLocPath
+        
+        self.buildRxnsFromRhea(rheaPath + "/rhea_primary_records.txt")
+        self.appendRxnProteinsFromRhea(rheaPath + "/rhea_uniprot_mapping.txt")
+        self.appendRxnParticipantsFromRhea(rheaPath + "/rhea_rxn_to_chebi_and_dir.txt")
             
                 
+    def buildRxnsFromRhea(self, path):
+        print("Building Rhea Reactions")
+        
+        records = pd.read_table(path, header = None)
+        
+        for idx, record in records.iterrows():
+            rxn = RheaReaction()
+            rxn.rxnRampId = self.generateRampId("R")
+            
+            rxn.assignPrimaryFields(record)
+
+            self.reactionDict[rxn.rhea_id] = rxn            
+        
+        
+    def appendRxnProteinsFromRhea(self, path):
+        print("Adding Reaction Proteins")
+
+        # first pull uniprot human accessions
+        # this helps to append rhea specific reaction tables and marking human proteins
+
+        records = pd.read_table(path, header=None)
+
+        # just read them in first...
+        for idx, record in records.iterrows():
+            
+            rheaId = record[0]
+            uniprot = record[1]
+
+            rxn = self.reactionDict.get(rheaId, None)
+            
+            if rxn is not None:
+                protein = self.geneList.getGeneById(uniprot)
+                if protein is not None:
+                    protein.soureId = uniprot
+                    rxn.proteins.append(protein)
+            
+            else:
+                print("No gene for uniprot = "+uniprot)
+                   
+        
+        
+    def appendRxnParticipantsFromRhea(self,path):
+        print("Adding Reaction Participants")    
     
-    
-    
-    
+        records = pd.read_table(path, header=None)
+        
+        rheaCofactCnt = 0
+        
+        for idx, record in records.iterrows():
+            rheaId = record[0]
+            chebi = record[1]
+            rxnSide = record[2]
+            chebiCofactor = record[3]
+            
+            rxn = self.reactionDict.get(rheaId, None)            
+            met = self.metaboliteList.getMetaboliteBySourceId(chebi)
+            
+            if met is None:
+                print("hey lack a metabolite for this chebi...: "+chebi)
+            else:
+                met.isCofactor = chebiCofactor
+            
+            if rxn is not None and met is not None:
+                
+                if met.isCofactor == 1:
+                    print("in append rxn members... cofactor = 1 :)")
+                    rheaCofactCnt = rheaCofactCnt + 1
+                    
+                if(rxnSide == 0):
+                    rxn.left_comps.append(met)
+                    rxn.left_comp_ids.append(chebi)
+                else:
+                    rxn.right_comps.append(met)    
+                    rxn.right_comp_ids.append(chebi)
+            else:
+                print("in append participants from Rhea... have a None rxn for id: "+rheaId)
+        
+        print("Rhea cofact count/est: "+str(rheaCofactCnt))
+        
+            
 #     def fullBuild(self):
 #         """
 #         This high level method performs the entire process of entity construction
@@ -1087,8 +1217,8 @@ class EntityBuilder(object):
                 file.write(s)
             
         file.close()   
-
-                
+        
+            
     def writeMetaboliteClass(self):
         mets = self.metaboliteList.getUniqueMetabolites()
 
@@ -1099,11 +1229,53 @@ class EntityBuilder(object):
         file.close()    
 
 
+    def writeReactionEntities(self):
+        
+        file = open("../misc/sql/reaction.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainRecordString())
+            
+        file.close()
+        
+        
+        file = open("../misc/sql/reaction_to_metabolite.txt", "w+", encoding='utf-8')
+
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainReactionToMetString('rhea'))
+            
+        file.close()
+
+        file = open("../misc/sql/reaction_to_protein.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getMainReactionToProteinString('rhea'))
+            
+        file.close()
+
+        file = open("../misc/sql/reaction_protein_to_metabolite.txt", "w+", encoding='utf-8')
+        
+        for rxnId in self.reactionDict:
+            rxn = self.reactionDict[rxnId]
+            file.write(rxn.getReactionProteinToMetString('rhea'))
+            
+        file.close()
+        
+
+
+
+
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
             if is_string_dtype(dF[colName]):
                 dF[colName] = dF[colName].str.strip()
         return dF
+    
+    
+    
     
     
     def loadChemstry(self, sources):
@@ -1130,6 +1302,11 @@ class EntityBuilder(object):
         
         self.metaboliteList.printChemPropSummaryStats()
      
+    
+    
+    
+    
+    
     
     
     def crosscheckChemPropsMW(self, mwTolerance = 0.1, pctOrAbs = 'pct'):
@@ -1596,11 +1773,11 @@ class MappingExclusionList(object):
     def isMappingProblem(self, sourceId, extId):    
 
         if sourceId in self.sourceIdToExtIdDict and extId in self.sourceIdToExtIdDict[sourceId]:
-            print("excluded pair (1)"+sourceId+" "+extId)
+            # print("excluded pair (1)"+sourceId+" "+extId)
             return True
 
         if extId in self.sourceIdToExtIdDict and sourceId in self.sourceIdToExtIdDict[extId]:
-            print("excluded pair (2)"+sourceId+" "+extId)
+            # print("excluded pair (2)"+sourceId+" "+extId)
             return True
 
         return False
@@ -1611,8 +1788,8 @@ class MappingExclusionList(object):
         df = pd.DataFrame(data)
             
         for i,row in df.iterrows():
-            sourceId = row[1]
-            extId = row[3]
+            sourceId = row[0]
+            extId = row[1]
  
             if sourceId not in self.sourceIdToExtIdDict:
                 self.sourceIdToExtIdDict[sourceId] = list()

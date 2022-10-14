@@ -6,6 +6,7 @@ from parse.hmdbData import hmdbData
 from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
 from parse.KeggData import KeggData
+from parse.RheaParser import RheaParser
 from util.EntityBuilder import EntityBuilder
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
@@ -20,51 +21,58 @@ class Main():
         # build the ramp resource config
         resourceConf = RampConfig()
         resourceConf.loadConfig(resourceConfigFile)
-        
-        stat = getStatistics()
+  
+        #stat = getStatistics()
         hmdb = hmdbData(resourceConf)
         wikipathways = WikipathwaysRDF(resourceConf)
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData(resourceConf)
-        
+        rhea = RheaParser(resourceConf)
+         
         # works based on your computer, setup working directory
         os.chdir('../main/')
+# 
+#         #kegg.getEverything(False)
+#         #print("KEGG Wonder")
+#         print("Getting hmdb...")
+#         hmdb.getEverything(True)
+#         print("Getting wiki...")
+#         wikipathways.getEverything(True)
+#         print("Getting reactome...")
+#         reactome.getEverything(True)
+#         
+#         # This parses and writes lipid maps
+#         # sql write will be handled by EntityBuilder
+#         print("Getting LipidMaps...")
+#         lipidmaps.getEverything(True)
+#  
+#         print("Getting Rhea info...")
+#         rhea.processRhea()
 
-        #kegg.getEverything(False)
-        #print("KEGG Wonder")
-        print("Getting hmdb...")
-        hmdb.getEverything(True)
-        print("Getting wiki...")
-        wikipathways.getEverything(True)
-        print("Getting reactome...")
-        reactome.getEverything(True)
-        
-        # This parses and writes lipid maps
-        # sql write will be handled by EntityBuilder
-        print("Getting LipidMaps...")
-        lipidmaps.getEverything(True)
 
-        #Here are the identifiers that are present for each gene:
-        #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
-        #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)
-        #hmdb: HMDB-protien-accession (mainID), 'Uniprot'
-        #reactome:Uniprot (mainID)
-        
-        print('Generate compound id')
-        hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
-        print("hmdbcompoundnum:   ", hmdbcompoundnum)
-        keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", hmdbcompoundnum)
-        wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", keggcompoundnum)
-        print("wikicompoundnum:   ", wikicompoundnum)
-        reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", wikicompoundnum)
-        
-        print('Generate gene id ...')
-        hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
-        kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", hmdbgenenum)
-        wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", kegggenenum)
-        reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", wikigenenum)
-        print(" hmdbgenenum ", hmdbgenenum, " kegggenenum ", kegggenenum, " wikigenenum ", wikigenenum, " reactomegenenum ", reactomegenenum)
+
+#
+#         #Here are the identifiers that are present for each gene:
+#         #kegg: keggid (mainID), 'Ensembl', 'HGNC', 'HPRD', 'NCBI-GeneID', 'NCBI-ProteinID', 'OMIM', 'UniProt', 'Vega', 'miRBase'
+#         #wikipathways: (no mainID), 'Entrez', 'Enzyme Nomenclature', 'Uniprot (Uniprot-TrEMBL)
+#         #hmdb: HMDB-protien-accession (mainID), 'Uniprot'
+#         #reactome:Uniprot (mainID)
+#         
+#         print('Generate compound id')
+#         hmdbcompoundnum = sql.createRampCompoundID(hmdb.metaboliteIDDictionary, "hmdb", 0)
+#         print("hmdbcompoundnum:   ", hmdbcompoundnum)
+#         keggcompoundnum = sql.createRampCompoundID(kegg.metaboliteIDDictionary, "kegg", hmdbcompoundnum)
+#         wikicompoundnum = sql.createRampCompoundID(wikipathways.metaboliteIDDictionary, "wiki", keggcompoundnum)
+#         print("wikicompoundnum:   ", wikicompoundnum)
+#         reactomecompoundnum = sql.createRampCompoundID(reactome.metaboliteIDDictionary, "reactome", wikicompoundnum)
+#         
+#         print('Generate gene id ...')
+#         hmdbgenenum = sql.createRampGeneID(hmdb.geneInfoDictionary, "hmdb", 0)
+#         kegggenenum = sql.createRampGeneID(kegg.geneInfoDictionary, "kegg", hmdbgenenum)
+#         wikigenenum = sql.createRampGeneID(wikipathways.geneInfoDictionary, "wiki", kegggenenum)
+#         reactomegenenum = sql.createRampGeneID(reactome.geneInfoDictionary, "reactome", wikigenenum)
+#         print(" hmdbgenenum ", hmdbgenenum, " kegggenenum ", kegggenenum, " wikigenenum ", wikigenenum, " reactomegenenum ", reactomegenenum)
         """        print('Write to sql file...')
         hmdbnumbers = sql.write(
                  hmdb.metaboliteCommonName,
