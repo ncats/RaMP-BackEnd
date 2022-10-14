@@ -24,8 +24,10 @@ class mainDBLoad():
         
     
     
-    def loadDBAfterTruncatingTables(self, incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None):
-
+    def loadDBAfterTruncatingTables(self, incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None, truncateTables = False, tablesToKeep=['db_version', 'version_info']):
+        
+        
+        
     ################# DB Loading Instructions
         
         # Sets logging level
@@ -34,6 +36,11 @@ class mainDBLoad():
  
         # pass the credentials object to the constructed rampDBBulLoader
         loader = rampDBBulkLoader(self.dbPropsFile)
+        
+        # truncate tables
+        if truncateTables:
+            loader.truncateTables(tablesToSkip=tablesToKeep)
+        
         
         # update methods
         # the sql_resource_config.txt is a tab delimited file indicating which resources to load
@@ -48,7 +55,7 @@ class mainDBLoad():
         loader.updateSourcePathwayCount()
         
         # sets the new updated version
-        loader.updateDBVersion(incrementLevel = 'increment_patch_release')
+        loader.updateDBVersion(incrementLevel = incrementLevel, optionalVersion = optionalVersionOveride, optionalNote = optionalVersionNote)
         
         # sets the analyte intercept json in the version table.
         # precondition: the updateDBVersion must have been set so that the
@@ -56,13 +63,19 @@ class mainDBLoad():
         loader.updateEntityIntersects()
         
         # this optional method tracks database version information supplied in this file.
-        # loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
+        loader.updateVersionInfo("../config/ramp_resource_version_update.txt")
         
-        # this method populates a table that reflects teh current status of the database.
+        # this method populates a table that reflects the current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
 
 
 loader = mainDBLoad()
-loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None)
+
+# increment level 'increment_patch_release', 'increment_minor_release', 
+# or 'specified' (new version, perhaps major release)
+loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', 
+                                   optionalVersionOveride = "", 
+                                   optionalVersionNote = "20220822 patch release, update chem_props inchi values.", 
+                                   truncateTables=True)
 
