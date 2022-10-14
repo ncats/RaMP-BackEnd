@@ -49,6 +49,8 @@ class Metabolite(object):
         self.ontologyTerms = list()
         
         self.hmdbStatus = None
+        
+        self.isCofactor = 0
                  
     def __eq__(self, other):
         """
@@ -212,6 +214,9 @@ class Metabolite(object):
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
     
+        if metabolite.isCofactor == 1:
+            self.isCofactor = 1
+    
     def resolveCommonNames(self):
         """
         Verifies that all ids are associated with common names for export to the source table.
@@ -245,7 +250,10 @@ class Metabolite(object):
         if molecule.source not in self.chemPropsMolecules:
            self.chemPropsMolecules[molecule.source] = dict()
         self.chemPropsMolecules[molecule.source][molecule.id] = molecule
-    
+        
+        # we should pass on molecule names as synonyms
+        for name in molecule.names:
+            self.addSynonym(name, molecule.source)
     
     def addMetClass(self, source, sourceId, classLevel, className):
         if className == "Triradylcglycerols":

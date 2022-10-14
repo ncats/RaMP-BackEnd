@@ -246,7 +246,8 @@ class WikipathwaysRDF(MetabolomicsData):
             'wikidata':'WikiData',
             'ncbiprotein':'NCBI-ProteinID',
 	        'chebi':'ChEBI',
-            'hgnc.symbol':'gene_symbol'
+            'hgnc.symbol':'gene_symbol',
+            'brenda':'brenda'
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
@@ -611,6 +612,8 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'gene_symbol:' + id
         elif prefix == 'kegg.glycan' or prefix == 'kegg_glycan':
             id = 'kegg_glycan:' +id
+        elif prefix == 'brenda':
+            id = 'brenda:' +id    
         else:
             id = 'UNKNOWN_ID_TYPE_HEYYYYYY:' + id
 
