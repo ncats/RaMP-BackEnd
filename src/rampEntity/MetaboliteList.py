@@ -102,5 +102,7 @@ class MetaboliteList(object):
         
         
                     
-        
+    # if a metabolite has chemical properties, and the chem props include the inchi prefix of interest
+    # return the list of metabolites                
+    def getMetabolitesByInchiPrefix(self):
     
