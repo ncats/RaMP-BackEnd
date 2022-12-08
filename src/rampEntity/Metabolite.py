@@ -3,6 +3,7 @@ Created on Nov 6, 2020
 
 @author: braistedjc
 '''
+from networkx.classes.function import neighbors
 
 class Metabolite(object):
     '''
@@ -49,6 +50,8 @@ class Metabolite(object):
         self.ontologyTerms = list()
         
         self.hmdbStatus = None
+                 
+        self.inchiPrefixNeigbors = list()         
                  
     def __eq__(self, other):
         """
@@ -447,5 +450,44 @@ class Metabolite(object):
     
             
     #def setStatus(self):            
+    def getInchiPrefixes(self):
+        inchiPrefixes = []
+        for mol in self.chemPropsMolecules:
+            if mol.inchiKeyPrefix is not "":
+                inchiPrefixes.append(mol.inchiKeyPrefix)
+        return inchiPrefixes        
+    
+    def addInchiNeighbor(self, otherMet):
+        if self is not otherMet:
+            if otherMet not in self.inchiPrefixNeigbors:
+                # if the other met hasn't already been added as a neighbor
+                for neighbor in self.inchiPrefixNeigbors:
+                    # add neighbors to the other met - introductions...
+                    neighbor.addInchiNeighbor(otherMet)
+                    # introduce other neighbor to existing neighbors
+                    otherMet.addInchiNeighbor(neighbor)
+                
+                # finally add the new neighbor to the neighbor list    
+                self.inchiPrefixNeigbors.append(otherMet)
+            
+    
+    def getInchiNeighborhood(self):
+        
+        neighbors = self.inchiPrefixNeigbors
+        
+        for neighbor in self.inchiPrefixNeigbors:
+            neighbor.getNeighbors(neighbors)
+
+        return neighbors
+
+    # recursive get neighbors
+    def getNeighbors(self, neighbors):
+               
+        for neighbor in self.inchiPrefixNeigbors:
+            # just work on new neighbors, add the neighbor and get their neighbors
+            if(neighbor not in neighbors):
+                neighbors.append(neighbor)
+                neighbor.getNeighbors(neighbors)
+     
     
     
