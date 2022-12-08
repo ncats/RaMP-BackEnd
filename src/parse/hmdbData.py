@@ -276,10 +276,12 @@ class hmdbData(MetabolomicsData):
                         mapping['hmdb_id'] = metabohmdbid
                         
                     # capture secondary ids    
-                    elif childtag == "secondary_accession":
-                        children = child.find('{http://www.hmdb.ca}accession')
+                    elif childtag == "secondary_accessions":
+                        children = child.findall('{http://www.hmdb.ca}accession')
                         if children is not None:
-                            for kid in children:                                
+                            for kid in children:
+                                if type(mapping['hmdb_secondary_id']) is not list:
+                                    mapping['hmdb_secondary_id'] = list()                               
                                 mapping['hmdb_secondary_id'].append('hmdb:' + kid.text.strip())
                             
                     # if this tag is in the id we are looking for
