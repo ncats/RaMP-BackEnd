@@ -162,6 +162,16 @@ class EntityBuilder(object):
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
+        # we have some inchikey prefix values, for those mets build an inchikey prefix to met mapping
+        self.metaboliteList.buildInchiKeyPrefixToMetaboliteMapping()
+        
+        # now build neighbor relationships recursively so that each met knows it's neighborhood (phew)
+        # then visit each neighborhood to set common rampIds
+        # there can be some very big neighborhoods. Each met should be in exactly one nieghborhood
+        # but because of id mapping and multiple inchikeys per ramp id, we cross inchi boundaries supported by ids.
+        # my brain is going to explode :) 
+        self.metaboliteList.collapseMetaboliteListOnInchiPrefix()
+        
         # loader file writes
         self.writePathways()
         self.writeAnalyteSource()

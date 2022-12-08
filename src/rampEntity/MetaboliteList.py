@@ -18,6 +18,8 @@ class MetaboliteList(object):
         '''
         self.metaboliteSourceIdList = dict()
         
+        self.inchikeyPrefixToMetab = dict()
+        
         self.sourceSummary = dict()
         
                 
@@ -101,8 +103,72 @@ class MetaboliteList(object):
         print("Tot Molecules records: " + str(molRecords))
         
         
-                    
+    
+    def buildInchiKeyPrefixToMetaboliteMapping(self):
+        
+        self.inchikeyPrefixToMetab
+        
+        inchiPrefMap = dict()
+        noInchiMet = list()
+        
+        mets = self.getUniqueMetabolites()
+        
+        # build a mapping from inchi prefix to metabolites
+        for met in mets:
+            haveInchiPrefix = False
+            if len(met.chemPropsMolecules) > 0:
+                for mol in met.chemPropsMolecules:
+                    if len(mol.inchiKeyPrefix) > 0:
+                        haveInchiPrefix = True
+                        metList = self.inchikeyPrefixToMetab.get(mol.inchiKeyPrefix, None)
+                        if metList is None:
+                            metList = list()
+                            metList.append(met)
+                            self.inchikeyPrefixToMetab[mol.inchiKeyPrefix] = metList
+                        else:
+                            metList.append(met)
+            if not haveInchiPrefix:
+                noInchiMet.append(met)
+                
     # if a metabolite has chemical properties, and the chem props include the inchi prefix of interest
     # return the list of metabolites                
-    def getMetabolitesByInchiPrefix(self):
+    def collapseMetaboliteListOnInchiPrefix(self):
+                
+        # now we collapse, we need to reach out to others
+        inchiPrefixesHit = []
+        inchiPrefixesToRemove = []
+        
+        rampIdSets = dict()
+        
+        for inchiPrefix in self.inchikeyPrefixToMetab:
+            currMets = []
+            inchiPrefixesHit = []
+            metList = self.inchikeyPrefixToMetab[inchiPrefix]
+            rampId = ""
+            
+            # Just keep the same metabolite objects, but set the ramp id to be the same :)
+            if len(metList) > 1:
+                for met in metList:
+                    for met2 in metList:
+                        if met != met2:
+                            met.addInchiNeighbor(met2)
+            
+        # now each metabolite linked by an inchi has a list of it's neighbors
+        # neighbors propagate through neighbors in each addition so that neighbors meet neighbors
+        # neighbors are connected by shared inchi prefixes
+        # now a smart traversal should set common ramp ids across all neighbors
+        mets = self.getUniqueMetabolites()
+        
+        touchedMets = list()
+        for met in mets:
+            inchiNeigbors = met.getInchiNeighborhood()    
+            
+            rampId = met.rampId
+            for neighbor in inchiNeigbors:
+                # if we've not examined a neighborhood, then set the common ramp id
+                if neighbor not in touchedMets:
+                    touchedMets.append(neighbor)
+                    neighbor.rampId = rampId                    
+                    
+            
     
