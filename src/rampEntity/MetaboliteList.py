@@ -116,17 +116,31 @@ class MetaboliteList(object):
         # build a mapping from inchi prefix to metabolites
         for met in mets:
             haveInchiPrefix = False
-            if len(met.chemPropsMolecules) > 0:
-                for mol in met.chemPropsMolecules:
-                    if len(mol.inchiKeyPrefix) > 0:
-                        haveInchiPrefix = True
-                        metList = self.inchikeyPrefixToMetab.get(mol.inchiKeyPrefix, None)
-                        if metList is None:
-                            metList = list()
-                            metList.append(met)
-                            self.inchikeyPrefixToMetab[mol.inchiKeyPrefix] = metList
-                        else:
-                            metList.append(met)
+            inchiKeyPrefixes = met.getInchiPrefixes()
+            for prefix in inchiKeyPrefixes:
+                haveInchiPrefix = True
+                metList = self.inchikeyPrefixToMetab.get(prefix, None)
+                if metList is None:
+                    metList = list()
+                    metList.append(met)
+                    self.inchikeyPrefixToMetab[prefix] = metList
+                else:
+                    metList.append(met)
+#             if len(met.chemPropsMolecules) > 0:
+#                 for source in met.chemPropsMolecules:
+#                     
+#                     molDict = met.chemPropsMolecules[molname]
+#                     for sourceId in molDict:
+#                         mol = molDict[sourceId]
+#                         if len(mol.inchiKeyPrefix) > 0:
+#                             haveInchiPrefix = True
+#                             metList = self.inchikeyPrefixToMetab.get(mol.inchiKeyPrefix, None)
+#                             if metList is None:
+#                                 metList = list()
+#                                 metList.append(met)
+#                                 self.inchikeyPrefixToMetab[mol.inchiKeyPrefix] = metList
+#                             else:
+#                                 metList.append(met)
             if not haveInchiPrefix:
                 noInchiMet.append(met)
                 
