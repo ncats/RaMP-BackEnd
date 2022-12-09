@@ -451,10 +451,13 @@ class Metabolite(object):
     #def setStatus(self):            
     def getInchiPrefixes(self):
         inchiPrefixes = []
-        for mol in self.chemPropsMolecules:
-            if mol.inchiKeyPrefix is not "":
-                inchiPrefixes.append(mol.inchiKeyPrefix)
-        return inchiPrefixes        
+        for source in self.chemPropsMolecules:
+            molDict = self.chemPropsMolecules[source]
+            for sourceId in molDict:
+                mol = molDict[sourceId]
+                if mol.inchiKeyPrefix is not "" and mol.inchiKeyPrefix not in inchiPrefixes:
+                    inchiPrefixes.append(mol.inchiKeyPrefix)
+        return inchiPrefixes
     
     def addInchiNeighbor(self, otherMet):
         if self is not otherMet:
