@@ -246,7 +246,8 @@ class WikipathwaysRDF(MetabolomicsData):
             'wikidata':'WikiData',
             'ncbiprotein':'NCBI-ProteinID',
 	        'chebi':'ChEBI',
-            'hgnc.symbol':'gene_symbol'
+            'hgnc.symbol':'gene_symbol',
+            'brenda':'brenda'
             }
         # These source are not retrieved at this moment
         not_retrieved = ['wikipedia.en','mirbase','hgnc.symbol','ena.embl','mirbase.mature','kegg.genes','go',
@@ -445,7 +446,8 @@ class WikipathwaysRDF(MetabolomicsData):
             
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
-            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey']:
+            # sikp uniprot ids on metabolites... for small peptides            
+            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
                 
                 metabolite_list.add(metabolites_id)
@@ -611,6 +613,8 @@ class WikipathwaysRDF(MetabolomicsData):
             id = 'gene_symbol:' + id
         elif prefix == 'kegg.glycan' or prefix == 'kegg_glycan':
             id = 'kegg_glycan:' +id
+        elif prefix == 'brenda':
+            id = 'brenda:' +id  
         else:
             id = 'UNKNOWN_ID_TYPE_HEYYYYYY:' + id
 
