@@ -3,7 +3,6 @@ Created on Nov 6, 2020
 
 @author: braistedjc
 '''
-from networkx.classes.function import neighbors
 
 class Metabolite(object):
     '''
