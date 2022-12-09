@@ -1621,8 +1621,8 @@ class MappingExclusionList(object):
         df = pd.DataFrame(data)
             
         for i,row in df.iterrows():
-            sourceId = row[1]
-            extId = row[3]
+            sourceId = row[0]
+            extId = row[1]
  
             if sourceId not in self.sourceIdToExtIdDict:
                 self.sourceIdToExtIdDict[sourceId] = list()
