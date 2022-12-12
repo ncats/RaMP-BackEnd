@@ -87,7 +87,9 @@ class rampDBBulkLoader(object):
         # final catch of a situation that can be avoided   
         if(uniqueCol):
             df = df.drop_duplicates(subset=[uniqueCol], inplace=False)
-    
+        else:
+            df = df.drop_duplicates(ignore_index=False, inplace=False, keep='first')
+            
         # this loads the data frame into the table.
         try:
             df.to_sql(table, engine, if_exists = 'append', index=False)
@@ -173,7 +175,7 @@ class rampDBBulkLoader(object):
         print(sql)
         stmt = "insert into {} ({})".format(table, colNames)
 
-        file_path = "../../misc/sql/"+fileName
+        file_path = "../misc/sql/"+fileName
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
         data = pd.read_table(file_path, sep="\t+", header=None, index_col=None, engine="python", keep_default_na=False)     
 
@@ -474,13 +476,13 @@ class rampDBBulkLoader(object):
             
 
     def collectEntityIntersectsMappingToPathways(self, analyteType='compound', format='json', filterMets=False, dropSMPD=False):
-        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
         #sourceInfo.replace('wikipathways_kegg', value='kegg', inplace=True)
         print(sourceInfo.shape)
-        mappingToPathways = pd.read_table('../../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
+        mappingToPathways = pd.read_table('../misc/sql/analytetopathway.txt', sep = '\t', header=None, dtype=str)
         mappingToPathways = pd.DataFrame(mappingToPathways)
         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
         print(mappingToPathways.shape)
@@ -488,7 +490,7 @@ class rampDBBulkLoader(object):
 #         mappingToPathways = pd.DataFrame(mappingToPathways)
 #         mappingToPathways.columns = ['rampId', 'pathwayRampId', "dataSource"]
 #         print(mappingToPathways.shape)
-        pathwayInfo = pd.read_table('../../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
+        pathwayInfo = pd.read_table('../misc/sql/pathway.txt', sep = '\t', header=None, dtype=str)
         pathwayInfo = pd.DataFrame(pathwayInfo)
         pathwayInfo.columns = ['pathwayRampId','pathwayId','pathwaySource','pathwayCat', 'pathwayName']
         smpdbVersions = ['smpdb2', 'smpdb3']
@@ -662,7 +664,7 @@ class rampDBBulkLoader(object):
        
        
     def collectEntityIntersects(self, analyteType='compound', format='json', filterMets=False):
-        sourceInfo = pd.read_table('../../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
+        sourceInfo = pd.read_table('../misc/sql/analytesource.txt', sep = '\t', header=None, dtype=str)
         sourceInfo = pd.DataFrame(sourceInfo)
         sourceInfo.columns = ['sourceId','rampId', 'idType', 'analyteType', 'commonName', 'status', 'dataSource']
         #sourceInfo.replace('hmdb_kegg', value='kegg', inplace=True)
@@ -906,7 +908,7 @@ class intersectNode(object):
         self.id = ""              
         
 # start = time.time()
-loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+loader = rampDBBulkLoader("../config/ramp_db_props.txt")
 #loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')

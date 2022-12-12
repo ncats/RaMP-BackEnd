@@ -324,7 +324,7 @@ class EntityBuilder(object):
                     met.addCommonName(row[0], row[1], source)
     
         # resolve common name for ids without corresponding common names
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         for met in mets:
             met.resolveCommonNames()
     
@@ -343,7 +343,7 @@ class EntityBuilder(object):
                 hmdbStatus[row[0]] = row[1]
             
             # traverse metabolite list
-            mets = self.metaboliteList.getUniqueMetabolites()
+            mets = self.metaboliteList.getAllMetabolites()
             for met in mets:
                 idlist = met.idDict.get("hmdb", None)
                 if idlist is not None:
@@ -939,7 +939,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         print("Starting Write of metabolites: size = " + str(len(mets)))
         
@@ -981,7 +981,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             sourcefile.write(met.toPathwayMapString())
@@ -1012,7 +1012,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
-        for met in self.metaboliteList.getUniqueMetabolites():
+        for met in self.metaboliteList.getAllMetabolites():
             sourcefile.write(met.rampId + "\tcompound\n")
             
         for gene in self.geneList.getUniqueGenes():
@@ -1026,7 +1026,7 @@ class EntityBuilder(object):
         Writes chemcial properties file for all data sources.
         """
         chemPropsFile  = open("../misc/sql/chemProps.txt", "w+", encoding='utf-8')
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         for met in mets:
             if len(met.chemPropsMolecules) > 0:
                 chemPropsFile.write(met.toChemPropsString())
@@ -1040,7 +1040,7 @@ class EntityBuilder(object):
         """
         synonymfile  = open("../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             s = met.toSynonymsString()        
@@ -1061,7 +1061,7 @@ class EntityBuilder(object):
         """
         file = open("../misc/sql/catalyzes.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             s = met.toMetToGeneAssociationString()
@@ -1088,7 +1088,7 @@ class EntityBuilder(object):
     
     
     def writeOntologyAssociations(self):
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
 
         file = open("../misc/sql/analyteToOntology.txt", "w+", encoding='utf-8')
         for met in mets:
@@ -1100,7 +1100,7 @@ class EntityBuilder(object):
 
                 
     def writeMetaboliteClass(self):
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
 
         file = open("../misc/sql/metaboliteClass.txt", "w+", encoding='utf-8')
         for met in mets:
@@ -1151,7 +1151,7 @@ class EntityBuilder(object):
         """
         problemMets = list()
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             dev = met.checkMWParity(mwTolerance, pctOrAbs)
@@ -1169,7 +1169,7 @@ class EntityBuilder(object):
         """
         problemMets = list()
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             uniqueInchiBaseCnt = met.checkInchiBaseParity()
