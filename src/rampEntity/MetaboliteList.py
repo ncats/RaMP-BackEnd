@@ -6,6 +6,7 @@ Created on Nov 6, 2020
 from rampEntity.Metabolite import Metabolite
 from itertools import permutations 
 
+
 class MetaboliteList(object):
     '''
     Container list class holding metabolites. The list class supports access and set methods as well as
@@ -143,7 +144,21 @@ class MetaboliteList(object):
 #                                 metList.append(met)
             if not haveInchiPrefix:
                 noInchiMet.append(met)
-                
+    
+    
+    def collapseMetsOnInchiKeyPrefix(self):
+        for inchiPrefix in self.inchikeyPrefixToMetab:
+            metList = self.inchikeyPrefixToMetab[inchiPrefix]
+            if len(metList > 1):
+                firstPass = True
+                rampId = ""
+                for met in metList:
+                    if firstPass:
+                        firstPass = False
+                        rampId = met.rampId
+                    else:
+                        met.rampId  = rampId    
+                    
     # if a metabolite has chemical properties, and the chem props include the inchi prefix of interest
     # return the list of metabolites                
     def collapseMetaboliteListOnInchiPrefix(self):
