@@ -170,7 +170,7 @@ class EntityBuilder(object):
         # there can be some very big neighborhoods. Each met should be in exactly one nieghborhood
         # but because of id mapping and multiple inchikeys per ramp id, we cross inchi boundaries supported by ids.
         # my brain is going to explode :) 
-        self.metaboliteList.collapseMetaboliteListOnInchiPrefix()
+        self.metaboliteList.collapseMetsOnInchiKeyPrefix()
         
         # loader file writes
         self.writePathways()
