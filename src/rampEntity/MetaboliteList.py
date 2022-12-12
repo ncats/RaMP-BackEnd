@@ -65,6 +65,8 @@ class MetaboliteList(object):
         """
         return list(set(self.metaboliteSourceIdList.values()))
     
+    def getAllMetabolites(self):
+        return list(self.metaboliteSourceIdList.values())                    
             
     def generateMetaboliteSourceStats(self, sourceList):
         """
@@ -149,7 +151,7 @@ class MetaboliteList(object):
     def collapseMetsOnInchiKeyPrefix(self):
         for inchiPrefix in self.inchikeyPrefixToMetab:
             metList = self.inchikeyPrefixToMetab[inchiPrefix]
-            if len(metList > 1):
+            if len(metList) > 1:
                 firstPass = True
                 rampId = ""
                 for met in metList:
