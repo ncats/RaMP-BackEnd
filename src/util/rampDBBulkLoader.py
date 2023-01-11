@@ -920,11 +920,13 @@ loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
 
 loader.currDBVersion = "v2.2.0"
 #loader.updateSourcePathwayCount()
-#loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/34990387")
+loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/38534654")
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #print(ei)
-loader.updateEntityIntersects(filterComps=False)
+#loader.updateEntityIntersects(filterComps=False)
+
+
 
 #loader.updateDataStatusSummary()
 # print(str(time.time()-start))
