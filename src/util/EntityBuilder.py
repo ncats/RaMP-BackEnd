@@ -53,6 +53,9 @@ class EntityBuilder(object):
         '''
         Constructor
         '''
+        
+        self.localPathPrefix = '../'
+        
         # config for data sources
         self.resConfig = resourceConfig
         
@@ -80,7 +83,7 @@ class EntityBuilder(object):
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
-        self.dataSource2.sourceLocPath = '../misc/output/reactome/';
+        self.dataSource2.sourceLocPath = self.localPathPrefix + '../misc/output/reactome/';
          
         self.sourceList.append(self.dataSource2)
          
@@ -88,7 +91,7 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
-        self.dataSource3.sourceLocPath = '../misc/output/wikipathwayRDF/';        
+        self.dataSource3.sourceLocPath = self.localPathPrefix + '../misc/output/wikipathwayRDF/';        
          
         self.sourceList.append(self.dataSource3)
          
@@ -96,7 +99,7 @@ class EntityBuilder(object):
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
         self.dataSource4.haveChemClassInfo = True
-        self.dataSource4.sourceLocPath = '../misc/output/lipidmaps/';        
+        self.dataSource4.sourceLocPath = self.localPathPrefix + '../misc/output/lipidmaps/';        
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
@@ -108,7 +111,7 @@ class EntityBuilder(object):
         # mapping exclusion list and population of the list
         # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
-        self.mappingExclustionList.populateExclusionList("../config/curation_mapping_issues_list.txt")
+        self.mappingExclustionList.populateExclusionList(self.localPathPrefix + "../config/curation_mapping_issues_list.txt")
     
         # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()
@@ -1247,7 +1250,7 @@ class EntityBuilder(object):
             
             totalMismatches.extend(mismatchList)
                   
-        with open("../misc/resourceConfig/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
+        with open("../misc/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
     
@@ -1387,26 +1390,31 @@ class EntityBuilder(object):
         
 #        12/2021 - temporary code used to evaluate pubchem cids that were associated with
 #        The code uses pubchempy and their api to pull in compound attributes used to validate pubchem mapping
-#        
+#       
+#         pubchemCidMW = [] 
 #         for id in met.idList:
 #              #this will accumulate pubchem monoisotopic masses
 #             if id.startswith("pubchem"):
-#                  
-#                            
+#                                               
 #                 if id not in pubchemMW:
 #                     try:
 #                         c = pcp.Compound.from_cid(id.split(":")[1])
 #                     except:
 #                         continue
 #                         print("Cid lacks a record at pubchem: " + id)
-#                      
+#                       
 #                     # give pubchem a rest
 #                     time.sleep(0.75)
 #                     if c is not None and c.inchikey is not None:
 #                         pubchemMW[id] = c.monoisotopic_mass
+#                         pubchemCidMW.append([id,c.monoisotopic_mass])
 #                         if c.inchikey is not None:
 #                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey + "\t" + c.molecular_formula)
-
+#         
+#         
+#             
+#         pubchemCidMW = pd.DataFrame(pubchemCidMW)
+#         pubchemCidMW.to_csv("pubchem_cid_to_mi.txt", sep='\t')
                    
         # now reconcile the differences, hmdb to pubchem and chebi to pubchem, also hmdb and chebi to kegg
         misMatchList = list()
@@ -1635,8 +1643,8 @@ class MappingExclusionList(object):
         print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
         
 
-# builder = EntityBuilder()
-#builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
+builder = EntityBuilder()
+builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
 # builder.fullBuild()
 # print("starting to load metabolites")
 # builder.loadMetaboList()
