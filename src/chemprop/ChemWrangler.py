@@ -355,6 +355,8 @@ class ChemWrangler(object):
         mol = Molecule()
         mol.source = source
         
+        i = 0
+        
         while True:
             line = sdfDB.readline()
 
@@ -371,6 +373,10 @@ class ChemWrangler(object):
             # mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
         
             molDict[mol.id] = mol
+            
+            i = i + 1
+            if i % 100000000 == 0:
+                print("pubchem load progres = "+str(i))
             
         sdfDB.close()
         
