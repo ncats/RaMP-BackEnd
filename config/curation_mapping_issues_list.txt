@@ -1,639 +1,959 @@
-ID1	ID2	issue_type
-hmdb:HMDB0029225	kegg:C01327	improper_match
-pubchem:449034	kegg:C01327	improper_match
-hmdb:HMDB0039641	pubchem:14730796	improper_match
-hmdb:HMDB0060636	pubchem:75607486	improper_match
-hmdb:HMDB0041677	pubchem:131753182	improper_match
-hmdb:HMDB0035498	pubchem:131751783	improper_match
-hmdb:HMDB0031974	pubchem:14730796	improper_match
-hmdb:HMDB0033773	pubchem:14357350	improper_match
-hmdb:HMDB0038199	pubchem:520468	improper_match
-hmdb:HMDB0039035	pubchem:131752071	improper_match
-hmdb:HMDB0010338	pubchem:53478031	improper_match
-hmdb:HMDB0010338	chemspider:24765936	improper_match
-hmdb:HMDB0036216	kegg:C13798	improper_match
-hmdb:HMDB0000254	pubchem:1738118	improper_match
-kegg:C00042	pubchem:1738118	improper_match
-hmdb:HMDB0000353	pubchem:160471	improper_match
-hmdb:HMDB0000353	chebi:37051	improper_match
-chebi:15741	pubchem:1738118	
-hmdb:HMDB0000353	chemspider:141015	improper_match
-hmdb:HMDB0000367	pubchem:53481262	improper_match
-hmdb:HMDB0000399	pubchem:10400369	improper_match
-hmdb:HMDB0000399	chebi:139419	improper_match
-hmdb:HMDB0000399	kegg:C01094	improper_match
-hmdb:HMDB0000399	chemspider:8575807	improper_match
-hmdb:HMDB0000513	pubchem:2969	improper_match
-hmdb:HMDB0000513	chebi:30813	improper_match
-chebi:30813	hmdb:HMDB0000513	improper_match
-hmdb:HMDB0000513	kegg:C01571	improper_match
-hmdb:HMDB0000513	chemspider:2863	improper_match
-hmdb:HMDB0000779	kegg:C01479	improper_match
-hmdb:HMDB0000949	pubchem:387316	improper_match
-hmdb:HMDB0000949	chebi:16525	improper_match
-hmdb:HMDB0000949	kegg:C05465	improper_match
-hmdb:HMDB0000949	chemspider:343282	improper_match
-hmdb:HMDB0001013	pubchem:439179	improper_match
-hmdb:HMDB0001013	chebi:16082	improper_match
-hmdb:HMDB0001013	kegg:C00190	improper_match
-hmdb:HMDB0001013	chemspider:388324	improper_match
-hmdb:HMDB0001241	chebi:15745	improper_match
-hmdb:HMDB0001924	kegg:C13235	improper_match
-hmdb:HMDB0002039	kegg:C11118	improper_match
-hmdb:HMDB0002039	chebi:741468	improper_match
-hmdb:HMDB0002039	pubchem:12301	improper_match
-hmdb:HMDB0002039	chemspider:11798	improper_match
-hmdb:HMDB0002159	pubchem:53479251	improper_match
-hmdb:HMDB0002451	pubchem:53480011	improper_match
-hmdb:HMDB0002472	pubchem:6419427	improper_match
-hmdb:HMDB0002472	chemspider:4925178	improper_match
-hmdb:HMDB0002504	chebi:67045	improper_match
-hmdb:HMDB0002504	chemspider:8431308	improper_match
-hmdb:HMDB0002504	pubchem:10255824	improper_match
-hmdb:HMDB0003156	kegg:C00265	improper_match
-hmdb:HMDB0003990	pubchem:5326793	improper_match
-hmdb:HMDB0003990	chebi:73006	improper_match
-hmdb:HMDB0004628	pubchem:122121	improper_match
-hmdb:HMDB0004628	chebi:46961	improper_match
-hmdb:HMDB0004628	kegg:C12144	improper_match
-hmdb:HMDB0004628	chemspider:108921	improper_match
-hmdb:HMDB0005000	kegg:C06818	improper_match
-hmdb:HMDB0005008	kegg:C01594	improper_match
-hmdb:HMDB0005189	pubchem:104810	improper_match
-hmdb:HMDB0005189	chebi:37136	improper_match
-hmdb:HMDB0005189	kegg:C13881	improper_match
-hmdb:HMDB0005189	chemspider:94609	improper_match
-hmdb:HMDB0006280	chemspider:4941652	improper_match
-hmdb:HMDB0006280	pubchem:6437063	improper_match
-hmdb:HMDB0006280	chebi:80656	improper_match
-hmdb:HMDB0006280	kegg:C16678	improper_match
-hmdb:HMDB0006591	kegg:C00203	improper_match
-hmdb:HMDB0006734	pubchem:53477895	improper_match
-hmdb:HMDB0006734	chebi:84758	improper_match
-hmdb:HMDB0006734	kegg:C01290	improper_match
-hmdb:HMDB0006734	chemspider:24765743	improper_match
-hmdb:HMDB0006773	pubchem:4762	improper_match
-hmdb:HMDB0006773	chebi:8067	improper_match
-hmdb:HMDB0006773	kegg:C07432	improper_match
-hmdb:HMDB0006773	chemspider:4598	improper_match
-hmdb:HMDB0006840	pubchem:45479706	improper_match
-hmdb:HMDB0006840	chebi:27650	improper_match
-hmdb:HMDB0006840	kegg:C03541	improper_match
-hmdb:HMDB0006840	chemspider:21231977	improper_match
-hmdb:HMDB0006897	kegg:C15670	improper_match
-hmdb:HMDB0010315	chebi:17813	improper_match
-hmdb:HMDB0010315	kegg:C11455	improper_match
-hmdb:HMDB0010315	pubchem:443212	improper_match
-hmdb:HMDB0010315	chemspider:391478	improper_match
-hmdb:HMDB0010337	pubchem:1135	improper_match
-hmdb:HMDB0010337	chebi:17821	improper_match
-hmdb:HMDB0010337	kegg:C00178	improper_match
-hmdb:HMDB0010338	chemspider:1103	improper_match
-hmdb:HMDB0010351	chebi:2198	improper_match
-hmdb:HMDB0010351	kegg:C05643	improper_match
-hmdb:HMDB0010351	pubchem:1864	improper_match
-hmdb:HMDB0010351	kegg:C05643	improper_match
-hmdb:HMDB0010351	chemspider:1794	improper_match
-hmdb:HMDB0010351	chebi:2198	improper_match
-hmdb:HMDB0010351	pubchem:1864	improper_match
-hmdb:HMDB0010351	chemspider:1794	improper_match
-hmdb:HMDB0010351	kegg:C05643	improper_match
-hmdb:HMDB0010375	pubchem:24779458	improper_match
-hmdb:HMDB0010375	chebi:131924	improper_match
-hmdb:HMDB0010375	kegg:C04230	improper_match
-hmdb:HMDB0011182	pubchem:68759	improper_match
-hmdb:HMDB0011182	chebi:27694	improper_match
-hmdb:HMDB0011182	kegg:C05844	improper_match
-hmdb:HMDB0011182	chemspider:62003	improper_match
-hmdb:HMDB0011629	pubchem:53481125	improper_match
-hmdb:HMDB0011643	pubchem:11507134	improper_match
-hmdb:HMDB0011643	chebi:55458	improper_match
-hmdb:HMDB0011643	kegg:C15497	improper_match
-hmdb:HMDB0011643	chemspider:9681931	improper_match
-hmdb:HMDB0011680	pubchem:440776	improper_match
-hmdb:HMDB0011680	chebi:28607	improper_match
-hmdb:HMDB0011680	kegg:C05768	improper_match
-hmdb:HMDB0011680	chemspider:389645	improper_match
-hmdb:HMDB0012456	pubchem:6506224	improper_match
-hmdb:HMDB0012456	chebi:80657	improper_match
-hmdb:HMDB0012456	kegg:C16679	improper_match
-hmdb:HMDB0012456	chemspider:5005673	improper_match
-hmdb:HMDB0012457	pubchem:53478919	improper_match
-hmdb:HMDB0012457	chebi:89082	improper_match
-hmdb:HMDB0012654	pubchem:53481791	improper_match
-hmdb:HMDB0012654	chebi:90006	improper_match
-hmdb:HMDB0012654	kegg:C00550	improper_match
-hmdb:HMDB0012654	pubchem:53481791	improper_match
-hmdb:HMDB0012779	pubchem:12337017	improper_match
-hmdb:HMDB0013031	pubchem:53481451	improper_match
-hmdb:HMDB0013124	pubchem:53481699	improper_match
-hmdb:HMDB0013130	pubchem:53481699	improper_match
-hmdb:HMDB0013156	pubchem:53481631	improper_match
-hmdb:HMDB0013156	kegg:C14519	improper_match
-hmdb:HMDB0013158	pubchem:53481888	improper_match
-hmdb:HMDB0013159	pubchem:53481699	improper_match
-hmdb:HMDB0013221	pubchem:52923742	improper_match
-hmdb:HMDB0013221	chebi:89906	improper_match
-hmdb:HMDB0013238	pubchem:53481699	improper_match
-hmdb:HMDB0013288	pubchem:53481699	improper_match
-hmdb:HMDB0013328	pubchem:53481699	improper_match
-hmdb:HMDB0013628	kegg:C13828	improper_match
-hmdb:HMDB0015589	chebi:138764	improper_match
-hmdb:HMDB0029250	pubchem:131750824	improper_match
-hmdb:HMDB0029313	pubchem:494308	improper_match
-hmdb:HMDB0029313	chemspider:432655	improper_match
-hmdb:HMDB0029337	pubchem:131750854	improper_match
-hmdb:HMDB0029345	pubchem:131750928	improper_match
-hmdb:HMDB0029382	chebi:62426	improper_match
-hmdb:HMDB0029382	chemspider:4524740	improper_match
-hmdb:HMDB0029382	pubchem:5375200	improper_match
-hmdb:HMDB0029408	pubchem:5363741	improper_match
-hmdb:HMDB0029408	chebi:49250	improper_match
-hmdb:HMDB0029408	chemspider:4516050	improper_match
-hmdb:HMDB0029417	pubchem:3549960	improper_match
-hmdb:HMDB0029417	chemspider:2788007	improper_match
-hmdb:HMDB0029420	pubchem:151730	improper_match
-hmdb:HMDB0029420	chebi:74048	improper_match
-hmdb:HMDB0029420	chemspider:133730	improper_match
-hmdb:HMDB0029471	pubchem:131750874	improper_match
-hmdb:HMDB0029471	chemspider:30776778	improper_match
-hmdb:HMDB0029595	kegg:C02445	improper_match
-hmdb:HMDB0029623	pubchem:15609884	improper_match
-hmdb:HMDB0029655	pubchem:78195599	improper_match
-hmdb:HMDB0029713	kegg:C02740	improper_match
-hmdb:HMDB0029718	kegg:C02595	improper_match
-hmdb:HMDB0029767	pubchem:10462651	improper_match
-hmdb:HMDB0029767	chemspider:8638063	improper_match
-hmdb:HMDB0029785	pubchem:9882599	improper_match
-hmdb:HMDB0029785	chemspider:8058274	improper_match
-hmdb:HMDB0029845	chebi:278533	improper_match
-hmdb:HMDB0029851	pubchem:131751609	improper_match
-hmdb:HMDB0029909	kegg:C17058	improper_match
-hmdb:HMDB0029923	chebi:10057	improper_match
-hmdb:HMDB0029923	kegg:C01464	improper_match
-hmdb:HMDB0029952	kegg:C06397	improper_match
-hmdb:HMDB0029977	pubchem:10507050	improper_match
-hmdb:HMDB0029977	chemspider:8682451	improper_match
-hmdb:HMDB0030004	pubchem:10899299	improper_match
-hmdb:HMDB0030011	pubchem:5317377	improper_match
-hmdb:HMDB0030011	chemspider:4476250	improper_match
-hmdb:HMDB0030018	kegg:C09506	improper_match
-hmdb:HMDB0030035	pubchem:87947	improper_match
-hmdb:HMDB0030035	chemspider:79344	improper_match
-hmdb:HMDB0030043	pubchem:5374699	improper_match
-hmdb:HMDB0030043	chemspider:4524423	improper_match
-hmdb:HMDB0030045	pubchem:131752106	improper_match
-hmdb:HMDB0030046	pubchem:15929155	improper_match
-hmdb:HMDB0030047	pubchem:9874426	improper_match
-hmdb:HMDB0030047	chemspider:8050115	improper_match
-hmdb:HMDB0030066	pubchem:131750953	improper_match
-hmdb:HMDB0030078	pubchem:5830135	improper_match
-hmdb:HMDB0030078	chemspider:4715544	improper_match
-hmdb:HMDB0030118	chebi:28762	improper_match
-hmdb:HMDB0030118	kegg:C06353	improper_match
-hmdb:HMDB0030118	chemspider:21864849	improper_match
-hmdb:HMDB0030127	pubchem:12304831	improper_match
-hmdb:HMDB0030144	pubchem:131752046	improper_match
-hmdb:HMDB0030171	pubchem:122376203	improper_match
-hmdb:HMDB0030182	pubchem:181561	improper_match
-hmdb:HMDB0030182	chemspider:157937	improper_match
-hmdb:HMDB0030183	pubchem:826073	improper_match
-hmdb:HMDB0030201	pubchem:5318090	improper_match
-hmdb:HMDB0030201	chemspider:4476718	improper_match
-hmdb:HMDB0030203	pubchem:5318825	improper_match
-hmdb:HMDB0030203	chemspider:4477289	improper_match
-hmdb:HMDB0030217	pubchem:24898872	improper_match
-hmdb:HMDB0030217	chemspider:28285416	improper_match
-hmdb:HMDB0030233	pubchem:129011027	improper_match
-hmdb:HMDB0030233	chebi:134013	improper_match
-hmdb:HMDB0030264	pubchem:13186539	improper_match
-hmdb:HMDB0030264	chemspider:19991118	improper_match
-hmdb:HMDB0030273	pubchem:5318023	improper_match
-hmdb:HMDB0030273	chemspider:4476670	improper_match
-hmdb:HMDB0030337	pubchem:4290702	improper_match
-hmdb:HMDB0030337	chemspider:3496974	improper_match
-hmdb:HMDB0030349	pubchem:12301	improper_match
-hmdb:HMDB0030349	chebi:741468	improper_match
-hmdb:HMDB0030349	chemspider:11798	improper_match
-hmdb:HMDB0030360	pubchem:11237396	improper_match
-hmdb:HMDB0030360	chebi:544590	improper_match
-hmdb:HMDB0030360	chemspider:9412441	improper_match
-hmdb:HMDB0030436	pubchem:78172839	improper_match
-hmdb:HMDB0030488	pubchem:131751030	improper_match
-hmdb:HMDB0030494	pubchem:131751033	improper_match
-hmdb:HMDB0030510	pubchem:16130064	improper_match
-hmdb:HMDB0030510	kegg:C12030	improper_match
-hmdb:HMDB0030510	chemspider:17286842	improper_match
-hmdb:HMDB0030531	pubchem:172928	improper_match
-hmdb:HMDB0030531	chemspider:151019	improper_match
-hmdb:HMDB0030556	pubchem:67764516	improper_match
-hmdb:HMDB0030568	kegg:C10187	improper_match
-hmdb:HMDB0030568	pubchem:3556303	improper_match
-hmdb:HMDB0030568	chemspider:2794080	improper_match
-hmdb:HMDB0030581	pubchem:14409074	improper_match
-hmdb:HMDB0030585	pubchem:13001421	improper_match
-hmdb:HMDB0030585	chemspider:22902400	improper_match
-hmdb:HMDB0030635	pubchem:10255010	improper_match
-hmdb:HMDB0030635	chemspider:8430495	improper_match
-hmdb:HMDB0030723	chemspider:411468	improper_match
-hmdb:HMDB0030723	kegg:C13798	improper_match
-hmdb:HMDB0030794	pubchem:6164465	improper_match
-hmdb:HMDB0030794	chemspider:4828837	improper_match
-hmdb:HMDB0030798	pubchem:71438979	improper_match
-hmdb:HMDB0030886	chebi:28300	improper_match
-hmdb:HMDB0030886	kegg:C00303	improper_match
-hmdb:HMDB0030902	pubchem:15225103	improper_match
-hmdb:HMDB0030902	chemspider:13630303	improper_match
-hmdb:HMDB0030913	pubchem:4039117	improper_match
-hmdb:HMDB0030913	chemspider:3255526	improper_match
-hmdb:HMDB0030915	pubchem:85272666	improper_match
-hmdb:HMDB0031019	kegg:C14996	improper_match
-hmdb:HMDB0031138	pubchem:85174872	improper_match
-hmdb:HMDB0031243	kegg:C03219	improper_match
-hmdb:HMDB0031270	kegg:C08452	improper_match
-hmdb:HMDB0031398	chebi:29063	improper_match
-hmdb:HMDB0031398	kegg:C04771	improper_match
-hmdb:HMDB0031398	pubchem:75052023	improper_match
-hmdb:HMDB0031443	pubchem:8182	improper_match
-hmdb:HMDB0031443	chebi:28817	improper_match
-hmdb:HMDB0031443	kegg:C08374	improper_match
-hmdb:HMDB0031443	chemspider:7890	improper_match
-hmdb:HMDB0031535	pubchem:7710	improper_match
-hmdb:HMDB0031535	chemspider:7424	improper_match
-hmdb:HMDB0031727	kegg:C05654	improper_match
-hmdb:HMDB0031757	pubchem:131752523	improper_match
-hmdb:HMDB0031819	pubchem:73530	improper_match
-hmdb:HMDB0031819	chemspider:66213	improper_match
-hmdb:HMDB0031831	pubchem:14409176	improper_match
-hmdb:HMDB0031839	pubchem:467299	improper_match
-hmdb:HMDB0031839	chemspider:410663	improper_match
-hmdb:HMDB0031846	kegg:C13297	improper_match
-hmdb:HMDB0031876	kegg:C09808	improper_match
-hmdb:HMDB0031878	pubchem:11193907	improper_match
-hmdb:HMDB0031878	chemspider:9368976	improper_match
-hmdb:HMDB0031921	pubchem:23590061	improper_match
-hmdb:HMDB0031921	chemspider:19706660	improper_match
-hmdb:HMDB0032096	pubchem:102277789	improper_match
-hmdb:HMDB0032101	pubchem:14284451	improper_match
-hmdb:HMDB0032104	kegg:C09752	improper_match
-hmdb:HMDB0032123	pubchem:131751936	improper_match
-hmdb:HMDB0032273	kegg:C06551	improper_match
-hmdb:HMDB0032326	pubchem:6165108	improper_match
-hmdb:HMDB0032326	chemspider:4829022	improper_match
-hmdb:HMDB0032462	chebi:9642	improper_match
-hmdb:HMDB0032462	kegg:C02088	improper_match
-hmdb:HMDB0032488	kegg:C03885	improper_match
-hmdb:HMDB0032665	pubchem:15625635	improper_match
-hmdb:HMDB0032666	pubchem:101417891	improper_match
-hmdb:HMDB0032764	chebi:28901	improper_match
-hmdb:HMDB0032829	pubchem:10313247	improper_match
-hmdb:HMDB0032829	chemspider:8488712	improper_match
-hmdb:HMDB0032859	pubchem:7119	improper_match
-hmdb:HMDB0032859	chemspider:6852	improper_match
-hmdb:HMDB0033022	pubchem:5282768	improper_match
-hmdb:HMDB0033022	chebi:32425	improper_match
-hmdb:HMDB0033022	kegg:C16526	improper_match
-hmdb:HMDB0033022	chemspider:4445895	improper_match
-hmdb:HMDB0033142	pubchem:834	improper_match
-hmdb:HMDB0033142	chebi:17755	improper_match
-hmdb:HMDB0033142	kegg:C00542	improper_match
-hmdb:HMDB0033213	pubchem:5317587	improper_match
-hmdb:HMDB0033213	chemspider:4476431	improper_match
-hmdb:HMDB0033338	pubchem:119490	improper_match
-hmdb:HMDB0033338	chemspider:106713	improper_match
-hmdb:HMDB0033339	pubchem:13491357	improper_match
-hmdb:HMDB0033399	pubchem:131751014	improper_match
-hmdb:HMDB0033588	pubchem:16800	improper_match
-hmdb:HMDB0033588	chemspider:15924	improper_match
-hmdb:HMDB0033690	pubchem:346286	improper_match
-hmdb:HMDB0033690	chemspider:307171	improper_match
-hmdb:HMDB0033737	hmdb:HMDB0033399	improper_match
-hmdb:HMDB0033737	chemspider:4476900	improper_match
-hmdb:HMDB0033737	pubchem:5318294	improper_match
-hmdb:HMDB0033807	pubchem:325518	improper_match
-hmdb:HMDB0033807	chemspider:288223	improper_match
-hmdb:HMDB0033817	pubchem:23036629	improper_match
-hmdb:HMDB0033817	chemspider:14602054	improper_match
-hmdb:HMDB0033869	pubchem:46856263	improper_match
-hmdb:HMDB0033885	kegg:C14285	improper_match
-hmdb:HMDB0033901	pubchem:10925	improper_match
-hmdb:HMDB0033901	chemspider:10462	improper_match
-hmdb:HMDB0033907	pubchem:15340661	improper_match
-hmdb:HMDB0033907	chemspider:24844322	improper_match
-hmdb:HMDB0033918	pubchem:11745625	improper_match
-hmdb:HMDB0033918	chemspider:9920329	improper_match
-hmdb:HMDB0033934	pubchem:222	improper_match
-hmdb:HMDB0033934	chebi:16134	improper_match
-hmdb:HMDB0033934	kegg:C00014	improper_match
-hmdb:HMDB0033934	chemspider:217	improper_match
-hmdb:HMDB0033967	chebi:32807	improper_match
-hmdb:HMDB0033967	kegg:C01839	improper_match
-hmdb:HMDB0034016	pubchem:85083560	improper_match
-hmdb:HMDB0034021	pubchem:12570	improper_match
-hmdb:HMDB0034021	chemspider:12050	improper_match
-hmdb:HMDB0034025	pubchem:536987	improper_match
-hmdb:HMDB0034025	chemspider:467713	improper_match
-hmdb:HMDB0034094	kegg:C09994	improper_match
-hmdb:HMDB0034094	pubchem:5316543	improper_match
-hmdb:HMDB0034094	chemspider:4475576	improper_match
-hmdb:HMDB0034176	kegg:C02018	improper_match
-hmdb:HMDB0034189	pubchem:627910	improper_match
-hmdb:HMDB0034189	chemspider:545372	improper_match
-hmdb:HMDB0034202	pubchem:50200	improper_match
-hmdb:HMDB0034202	chebi:68802	improper_match
-hmdb:HMDB0034202	kegg:C20046	improper_match
-hmdb:HMDB0034202	chemspider:45522	improper_match
-hmdb:HMDB0034248	pubchem:7501	improper_match
-hmdb:HMDB0034248	chebi:27452	improper_match
-hmdb:HMDB0034248	kegg:C19506	improper_match
-hmdb:HMDB0034248	chemspider:7220	improper_match
-hmdb:HMDB0034262	pubchem:68229	improper_match
-hmdb:HMDB0034262	kegg:C09312	improper_match
-hmdb:HMDB0034262	chemspider:61531	improper_match
-hmdb:HMDB0034335	chebi:4659	improper_match
-hmdb:HMDB0034335	kegg:C01692	improper_match
-hmdb:HMDB0034472	chebi:17099	improper_match
-hmdb:HMDB0034472	kegg:C02008	improper_match
-hmdb:HMDB0034489	pubchem:13192441	improper_match
-hmdb:HMDB0034565	pubchem:5282714	improper_match
-hmdb:HMDB0034565	chebi:86544	improper_match
-hmdb:HMDB0034565	chemspider:4445841	improper_match
-hmdb:HMDB0034595	pubchem:89421	improper_match
-hmdb:HMDB0034595	chemspider:80700	improper_match
-hmdb:HMDB0034602	pubchem:185438	improper_match
-hmdb:HMDB0034707	pubchem:520398	improper_match
-hmdb:HMDB0034707	chemspider:453932	improper_match
-hmdb:HMDB0034709	pubchem:628742	improper_match
-hmdb:HMDB0034709	chemspider:546062	improper_match
-hmdb:HMDB0034876	pubchem:3018539	improper_match
-hmdb:HMDB0034876	chemspider:2286047	improper_match
-hmdb:HMDB0034963	pubchem:3083613	improper_match
-hmdb:HMDB0034963	kegg:C16927	improper_match
-hmdb:HMDB0034963	chemspider:2340790	improper_match
-hmdb:HMDB0034986	pubchem:131752760	improper_match
-hmdb:HMDB0035011	pubchem:71587096	improper_match
-hmdb:HMDB0035055	pubchem:102684	improper_match
-hmdb:HMDB0035055	chemspider:92751	improper_match
-hmdb:HMDB0035060	pubchem:85207142	improper_match
-hmdb:HMDB0035128	pubchem:15885837	improper_match
-hmdb:HMDB0035166	pubchem:14841537	improper_match
-hmdb:HMDB0035197	pubchem:11520	improper_match
-hmdb:HMDB0035197	chemspider:11036	improper_match
-hmdb:HMDB0035221	pubchem:131751686	improper_match
-hmdb:HMDB0035285	pubchem:5250	improper_match
-hmdb:HMDB0035285	kegg:C10822	improper_match
-hmdb:HMDB0035285	chebi:565242	improper_match
-hmdb:HMDB0035285	chemspider:5060	improper_match
-hmdb:HMDB0035299	pubchem:3589471	improper_match
-hmdb:HMDB0035299	chemspider:2825757	improper_match
-hmdb:HMDB0035312	pubchem:440995	improper_match
-hmdb:HMDB0035312	chebi:17716	improper_match
-hmdb:HMDB0035312	kegg:C00243	improper_match
-hmdb:HMDB0035313	pubchem:131751702	improper_match
-hmdb:HMDB0035315	pubchem:131751704	improper_match
-hmdb:HMDB0035374	pubchem:131751729	improper_match
-hmdb:HMDB0035386	pubchem:13996077	improper_match
-hmdb:HMDB0035438	pubchem:131751753	improper_match
-hmdb:HMDB0035485	pubchem:446834	improper_match
-hmdb:HMDB0035485	chebi:2069	improper_match
-hmdb:HMDB0035485	kegg:C05619	improper_match
-hmdb:HMDB0035485	chemspider:394087	improper_match
-hmdb:HMDB0035491	pubchem:131751782	improper_match
-hmdb:HMDB0035494	pubchem:131751628	improper_match
-hmdb:HMDB0035522	pubchem:10595178	improper_match
-hmdb:HMDB0035522	chemspider:8770552	improper_match
-hmdb:HMDB0035602	pubchem:442495	improper_match
-hmdb:HMDB0035602	chebi:35596	improper_match
-hmdb:HMDB0035602	kegg:C09893	improper_match
-hmdb:HMDB0035713	pubchem:85114699	improper_match
-hmdb:HMDB0035727	pubchem:14034827	improper_match
-hmdb:HMDB0035821	pubchem:131751869	improper_match
-hmdb:HMDB0035863	pubchem:14890283	improper_match
-hmdb:HMDB0035885	pubchem:44257262	improper_match
-hmdb:HMDB0035885	chemspider:23339505	improper_match
-hmdb:HMDB0035891	pubchem:13922652	improper_match
-hmdb:HMDB0035891	kegg:C17489	improper_match
-hmdb:HMDB0035908	pubchem:22310	improper_match
-hmdb:HMDB0035908	chemspider:20938	improper_match
-hmdb:HMDB0035914	pubchem:5316074	improper_match
-hmdb:HMDB0035914	chemspider:4475215	improper_match
-hmdb:HMDB0035945	pubchem:14583336	improper_match
-hmdb:HMDB0035971	pubchem:72796165	improper_match
-hmdb:HMDB0035973	pubchem:88881	improper_match
-hmdb:HMDB0035973	chebi:3684	improper_match
-hmdb:HMDB0035973	kegg:C10029	improper_match
-hmdb:HMDB0035973	chemspider:80200	improper_match
-hmdb:HMDB0035979	pubchem:6424827	improper_match
-hmdb:HMDB0035979	chemspider:4930317	improper_match
-hmdb:HMDB0036036	pubchem:106766	improper_match
-hmdb:HMDB0036036	chemspider:96095	improper_match
-hmdb:HMDB0036038	pubchem:131751453	improper_match
-hmdb:HMDB0036038	chemspider:30777019	improper_match
-hmdb:HMDB0036043	pubchem:131752139	improper_match
-hmdb:HMDB0036064	pubchem:5283544	improper_match
-hmdb:HMDB0036064	chebi:52971	improper_match
-hmdb:HMDB0036064	kegg:C17568	improper_match
-hmdb:HMDB0036064	chemspider:4446657	improper_match
-hmdb:HMDB0036157	chebi:2082	improper_match
-hmdb:HMDB0036157	kegg:C02951	improper_match
-hmdb:HMDB0036158	pubchem:5352437	improper_match
-hmdb:HMDB0036158	chebi:49239	improper_match
-hmdb:HMDB0036158	kegg:C19748	improper_match
-hmdb:HMDB0036158	chemspider:4509327	improper_match
-hmdb:HMDB0036286	pubchem:73829943	improper_match
-hmdb:HMDB0036291	pubchem:13851701	improper_match
-hmdb:HMDB0036339	pubchem:45269778	improper_match
-hmdb:HMDB0036339	chemspider:24618221	improper_match
-hmdb:HMDB0036349	pubchem:525329	improper_match
-hmdb:HMDB0036349	chemspider:457991	improper_match
-hmdb:HMDB0036484	pubchem:15624187	improper_match
-hmdb:HMDB0036525	pubchem:97747	improper_match
-hmdb:HMDB0036525	chemspider:88223	improper_match
-hmdb:HMDB0036665	pubchem:85116077	improper_match
-hmdb:HMDB0036692	pubchem:92337821	improper_match
-hmdb:HMDB0036692	chemspider:30776937	improper_match
-hmdb:HMDB0036699	kegg:C05720	improper_match
-hmdb:HMDB0036705	pubchem:54275943	improper_match
-hmdb:HMDB0036732	pubchem:12069327	improper_match
-hmdb:HMDB0036737	pubchem:78172989	improper_match
-hmdb:HMDB0036748	pubchem:353479	improper_match
-hmdb:HMDB0036825	pubchem:85584195	improper_match
-hmdb:HMDB0036851	pubchem:101750	improper_match
-hmdb:HMDB0036851	chemspider:91936	improper_match
-hmdb:HMDB0036889	pubchem:131751219	improper_match
-hmdb:HMDB0037070	chemspider:28715639	improper_match
-hmdb:HMDB0037126	pubchem:20831779	improper_match
-hmdb:HMDB0037126	chemspider:20127044	improper_match
-hmdb:HMDB0037209	pubchem:6036	improper_match
-hmdb:HMDB0037209	chebi:4139	improper_match
-hmdb:HMDB0037209	kegg:C00124	improper_match
-hmdb:HMDB0037371	pubchem:12315274	improper_match
-hmdb:HMDB0037371	chemspider:24224328	improper_match
-hmdb:HMDB0037383	pubchem:92649	improper_match
-hmdb:HMDB0037383	chemspider:83635	improper_match
-hmdb:HMDB0037467	kegg:C17441	improper_match
-hmdb:HMDB0037611	pubchem:85288059	improper_match
-hmdb:HMDB0037657	pubchem:131751663	improper_match
-hmdb:HMDB0037671	pubchem:61159	improper_match
-hmdb:HMDB0037750	pubchem:101755293	improper_match
-hmdb:HMDB0037776	pubchem:536987	improper_match
-hmdb:HMDB0037826	pubchem:62876	improper_match
-hmdb:HMDB0037826	chemspider:56606	improper_match
-hmdb:HMDB0037893	pubchem:131750880	improper_match
-hmdb:HMDB0038020	pubchem:62007	improper_match
-hmdb:HMDB0038020	chemspider:55854	improper_match
-hmdb:HMDB0038095	pubchem:443651	improper_match
-hmdb:HMDB0038095	chebi:31985	improper_match
-hmdb:HMDB0038095	kegg:C12139	improper_match
-hmdb:HMDB0038095	chemspider:391784	improper_match
-hmdb:HMDB0038098	pubchem:12312707	improper_match
-hmdb:HMDB0038284	pubchem:102684	improper_match
-hmdb:HMDB0038284	chemspider:92751	improper_match
-hmdb:HMDB0038331	chebi:17069	improper_match
-hmdb:HMDB0038331	kegg:C03351	improper_match
-hmdb:HMDB0038343	pubchem:85363137	improper_match
-hmdb:HMDB0038560	pubchem:61184	improper_match
-hmdb:HMDB0038560	chemspider:55130	improper_match
-hmdb:HMDB0038562	pubchem:167736	improper_match
-hmdb:HMDB0038562	chemspider:146730	improper_match
-hmdb:HMDB0038595	pubchem:4486820	improper_match
-hmdb:HMDB0038595	chemspider:3684607	improper_match
-hmdb:HMDB0038672	pubchem:131751594	improper_match
-hmdb:HMDB0038707	pubchem:10364	improper_match
-hmdb:HMDB0038707	chebi:3440	improper_match
-hmdb:HMDB0038707	kegg:C09840	improper_match
-hmdb:HMDB0038707	chemspider:21105867	improper_match
-hmdb:HMDB0038854	kegg:C07560	improper_match
-hmdb:HMDB0038883	pubchem:131752485	improper_match
-hmdb:HMDB0039035	pubchem:131752071	improper_match
-hmdb:HMDB0039035	kegg:C08594	improper_match
-hmdb:HMDB0039122	chebi:17371	improper_match
-hmdb:HMDB0039122	kegg:C00744	improper_match
-hmdb:HMDB0039208	pubchem:11425230	improper_match
-hmdb:HMDB0039208	chemspider:9600106	improper_match
-hmdb:HMDB0039269	pubchem:14057209	improper_match
-hmdb:HMDB0039288	pubchem:21629801	improper_match
-hmdb:HMDB0039288	chemspider:10258687	improper_match
-hmdb:HMDB0039392	pubchem:23132198	improper_match
-hmdb:HMDB0039392	chemspider:16161158	improper_match
-hmdb:HMDB0039445	pubchem:119396	improper_match
-hmdb:HMDB0039445	chemspider:106641	improper_match
-hmdb:HMDB0039482	pubchem:15109870	improper_match
-hmdb:HMDB0039483	pubchem:131752659	improper_match
-hmdb:HMDB0039485	pubchem:131751091	improper_match
-hmdb:HMDB0039525	pubchem:21582559	improper_match
-hmdb:HMDB0039531	kegg:C07475	improper_match
-hmdb:HMDB0039602	pubchem:5312861	improper_match
-hmdb:HMDB0039602	chebi:37099	improper_match
-hmdb:HMDB0039602	chemspider:4472286	improper_match
-hmdb:HMDB0039627	pubchem:131752692	improper_match
-hmdb:HMDB0039641	pubchem:42949	improper_match
-hmdb:HMDB0039752	pubchem:87253536	improper_match
-hmdb:HMDB0039753	pubchem:11267348	improper_match
-hmdb:HMDB0039753	chemspider:9442359	improper_match
-hmdb:HMDB0039757	pubchem:4472903	improper_match
-hmdb:HMDB0039757	chemspider:3671252	improper_match
-hmdb:HMDB0039773	pubchem:85112371	improper_match
-hmdb:HMDB0039777	pubchem:131752725	improper_match
-hmdb:HMDB0039857	pubchem:14310763	improper_match
-hmdb:HMDB0039863	pubchem:131752735	improper_match
-hmdb:HMDB0040119	pubchem:85411973	improper_match
-hmdb:HMDB0040130	pubchem:131752782	improper_match
-hmdb:HMDB0040379	pubchem:300085	improper_match
-hmdb:HMDB0040379	chemspider:265131	improper_match
-hmdb:HMDB0040391	pubchem:14375140	improper_match
-hmdb:HMDB0040398	pubchem:131752934	improper_match
-hmdb:HMDB0040406	pubchem:131752558	improper_match
-hmdb:HMDB0040454	pubchem:27641	improper_match
-hmdb:HMDB0040454	chemspider:25717	improper_match
-hmdb:HMDB0040468	pubchem:11788398	improper_match
-hmdb:HMDB0040469	pubchem:74407576	improper_match
-hmdb:HMDB0040469	chemspider:9963072	improper_match
-hmdb:HMDB0040535	pubchem:102571616	improper_match
-hmdb:HMDB0040671	pubchem:44258662	improper_match
-hmdb:HMDB0040671	chemspider:24844321	improper_match
-hmdb:HMDB0040707	pubchem:10326164	improper_match
-hmdb:HMDB0040707	chemspider:8501626	improper_match
-hmdb:HMDB0040718	pubchem:21883405	improper_match
-hmdb:HMDB0040718	chemspider:65032	improper_match
-hmdb:HMDB0040782	pubchem:155462	improper_match
-hmdb:HMDB0040782	chemspider:136953	improper_match
-hmdb:HMDB0040798	pubchem:5354280	improper_match
-hmdb:HMDB0040798	chemspider:4510500	improper_match
-hmdb:HMDB0040840	pubchem:129820665	improper_match
-hmdb:HMDB0040874	pubchem:131752223	improper_match
-hmdb:HMDB0040948	pubchem:71307305	improper_match
-hmdb:HMDB0040991	kegg:C16302	improper_match
-hmdb:HMDB0041003	pubchem:78101312	improper_match
-hmdb:HMDB0041167	pubchem:46779070	improper_match
-hmdb:HMDB0041167	chemspider:21105942	improper_match
-hmdb:HMDB0041184	pubchem:194638	improper_match
-hmdb:HMDB0041184	chemspider:168868	improper_match
-hmdb:HMDB0041417	pubchem:131753136	improper_match
-hmdb:HMDB0041471	pubchem:110968	improper_match
-hmdb:HMDB0041471	chemspider:99613	improper_match
-hmdb:HMDB0041472	kegg:C07213	improper_match
-hmdb:HMDB0041473	kegg:C07216	improper_match
-hmdb:HMDB0041528	pubchem:131753161	improper_match
-hmdb:HMDB0041750	pubchem:71749556	improper_match
-hmdb:HMDB0041755	pubchem:131750835	improper_match
-hmdb:HMDB0041755	chemspider:30776753	improper_match
-hmdb:HMDB0041766	chemspider:24845008	improper_match
-hmdb:HMDB0041766	pubchem:21676162	improper_match
-hmdb:HMDB0041878	kegg:C14422	improper_match
-hmdb:HMDB0059641	pubchem:439450	improper_match
-hmdb:HMDB0059641	chebi:17633	improper_match
-hmdb:HMDB0059641	kegg:C01228	improper_match
-hmdb:HMDB0059641	chemspider:388557	improper_match
-hmdb:HMDB0059863	pubchem:549664	improper_match
-hmdb:HMDB0060147	pubchem:131769845	improper_match
-hmdb:HMDB0060404	pubchem:10037499	improper_match
-hmdb:HMDB0060404	kegg:C16635	improper_match
-hmdb:HMDB0060631	pubchem:9547058	improper_match
-hmdb:HMDB0060631	kegg:C00350	improper_match
-hmdb:HMDB0060631	chebi:78342	improper_match
-hmdb:HMDB0060631	kegg:C00350	improper_match
-hmdb:HMDB0060631	chebi:78342	improper_match
-hmdb:HMDB0060631	chemspider:7826008	improper_match
-hmdb:HMDB0060661	pubchem:880	improper_match
-hmdb:HMDB0060661	chebi:17158	improper_match
-hmdb:HMDB0060661	kegg:C00546	improper_match
-hmdb:HMDB0060661	chemspider:857	improper_match
-hmdb:HMDB0060706	pubchem:3385	improper_match
-hmdb:HMDB0060706	chebi:46345	improper_match
-hmdb:HMDB0060706	kegg:C07649	improper_match
-hmdb:HMDB0060706	chemspider:3268	improper_match
-hmdb:HMDB0060729	pubchem:21563790	improper_match
-hmdb:HMDB0060746	pubchem:4616	improper_match
-hmdb:HMDB0060746	chebi:7823	improper_match
-hmdb:HMDB0060746	kegg:C07359	improper_match
-hmdb:HMDB0060746	chemspider:4455	improper_match
-hmdb:HMDB0060759	pubchem:105108	improper_match
-hmdb:HMDB0060764	pubchem:3651	improper_match
-hmdb:HMDB0060780	pubchem:131769948	improper_match
-hmdb:HMDB0060798	pubchem:131769952	improper_match
-hmdb:HMDB0060828	pubchem:131769970	improper_match
-hmdb:HMDB0060854	pubchem:131769952	improper_match
-hmdb:HMDB0060901	pubchem:171187	improper_match
-hmdb:HMDB0060958	pubchem:93285	improper_match
-hmdb:HMDB0060987	pubchem:71549171	improper_match
-hmdb:HMDB0060993	pubchem:2734	improper_match
-hmdb:HMDB0060995	pubchem:107927	improper_match
-hmdb:HMDB0061043	pubchem:133577	improper_match
-hmdb:HMDB0061078	pubchem:10024249	improper_match
-hmdb:HMDB0061088	pubchem:71316864	improper_match
-hmdb:HMDB0032489	chebi:31676	improper_match
-hmdb:HMDB0032489	kegg:C13422	improper_match
-hmdb:HMDB0035299	chebi:975367	improper_match
-hmdb:HMDB0010337	chemspider:1103	improper_match
-hmdb:HMDB0010375	chemspider:24694854	improper_match
-hmdb:HMDB0030004	chemspider:9074559	improper_match
-hmdb:HMDB0036748	chemspider:313814	improper_match
-hmdb:HMDB0037671	chemspider:55106	improper_match
-hmdb:HMDB0037776	chemspider:467713	improper_match
-hmdb:HMDB0039525	chemspider:10197108	improper_match
-hmdb:HMDB0039641	chemspider:39146	improper_match
-hmdb:HMDB0040468	chemspider:9963072	improper_match
-hmdb:HMDB0060437	kegg:C07645	improper_match
-hmdb:HMDB0060437	chebi:2560	improper_match
-hmdb:HMDB0060437	pubchem:107744	improper_match
+ID1	ID2
+hmdb:HMDB0000788	kegg:C01103
+chebi:25722	kegg:C01103
+hmdb:HMDB0000344	pubchem:6079438
+hmdb:HMDB0000344	chebi:89192
+hmdb:HMDB0000344	chemspider:4800646
+hmdb:HMDB0000380	pubchem:515
+hmdb:HMDB0000380	chebi:30835
+hmdb:HMDB0000380	chemspider:500
+hmdb:HMDB0000432	pubchem:129
+hmdb:HMDB0000432	chebi:17998
+hmdb:HMDB0000432	kegg:C02373
+hmdb:HMDB0000432	chemspider:126
+hmdb:HMDB0000494	pubchem:72340
+hmdb:HMDB0000494	chebi:9479
+hmdb:HMDB0000494	kegg:C11682
+hmdb:HMDB0000592	kegg:C04132
+hmdb:HMDB0011691	pubchem:65359
+hmdb:HMDB0000656	chebi:17858
+hmdb:HMDB0000656	kegg:C00127
+hmdb:HMDB0011691	chebi:17858
+hmdb:HMDB0011691	kegg:C00127
+hmdb:HMDB0000866	kegg:C01657
+hmdb:HMDB0001217	pubchem:5280360
+chebi:1949	pubchem:5280360
+chebi:15745	pubchem:5280499
+hmdb:HMDB0001241	chebi:15745
+chebi:15745	kegg:C02220
+hmdb:HMDB0003208	kegg:C02198
+hmdb:HMDB0001968	pubchem:5283033
+hmdb:HMDB0001968	chebi:72595
+hmdb:HMDB0001978	kegg:C01956
+hmdb:HMDB0001978	chemspider:4446160
+hmdb:HMDB0034401	pubchem:969516
+hmdb:HMDB0034401	chebi:3962
+hmdb:HMDB0034401	kegg:C10443
+hmdb:HMDB0034401	chemspider:839564
+hmdb:HMDB0002409	pubchem:3034666
+hmdb:HMDB0002409	chebi:205734
+hmdb:HMDB0002409	chemspider:2299095
+hmdb:HMDB0002429	pubchem:5283812
+hmdb:HMDB0002429	chemspider:4446900
+hmdb:HMDB0002496	pubchem:259
+hmdb:HMDB0002496	chebi:15858
+hmdb:HMDB0002496	kegg:C01324
+hmdb:HMDB0002497	chemspider:254
+hmdb:HMDB0015021	chebi:17632
+hmdb:HMDB0003950	pubchem:5280769
+hmdb:HMDB0003950	chebi:27537
+hmdb:HMDB0003950	kegg:C05276
+hmdb:HMDB0003950	chemspider:4444335
+hmdb:HMDB0011616	pubchem:441483
+hmdb:HMDB0011616	chebi:27520
+hmdb:HMDB0011616	kegg:C08355
+hmdb:HMDB0011616	chemspider:390207
+hmdb:HMDB0003458	chebi:15852
+hmdb:HMDB0003458	kegg:C00992
+hmdb:HMDB0004818	pubchem:21252323
+hmdb:HMDB0006259	pubchem:18603089
+hmdb:HMDB0006259	chemspider:18558308
+hmdb:HMDB0006292	pubchem:53478855
+hmdb:HMDB0006292	chebi:89422
+hmdb:HMDB0006769	pubchem:440728
+hmdb:HMDB0006769	chebi:27406
+hmdb:HMDB0006769	kegg:C05579
+hmdb:HMDB0006769	chemspider:389600
+hmdb:HMDB0006927	pubchem:440898
+hmdb:HMDB0006927	chebi:28038
+hmdb:HMDB0006927	kegg:C06050
+hmdb:HMDB0006927	chemspider:389728
+hmdb:HMDB0011672	pubchem:5318321
+hmdb:HMDB0011672	chemspider:4476924
+hmdb:HMDB0013821	pubchem:7958
+hmdb:HMDB0034341	pubchem:101405
+hmdb:HMDB0034335	chebi:4659
+hmdb:HMDB0034335	kegg:C01692
+hmdb:HMDB0034341	chebi:4659
+hmdb:HMDB0034341	kegg:C01692
+hmdb:HMDB0034341	chemspider:91630
+hmdb:HMDB0015656	chebi:142468
+hmdb:HMDB0029275	pubchem:44460483
+hmdb:HMDB0029316	pubchem:131751156
+hmdb:HMDB0029320	pubchem:12960452
+hmdb:HMDB0029335	kegg:C10009
+hmdb:HMDB0029336	kegg:C10011
+hmdb:HMDB0036622	pubchem:12302037
+hmdb:HMDB0033572	pubchem:5318228
+hmdb:HMDB0033572	chebi:1030794
+hmdb:HMDB0033572	chemspider:4476840
+hmdb:HMDB0036772	pubchem:10108584
+hmdb:HMDB0033358	pubchem:6440260
+hmdb:HMDB0033358	chemspider:4944547
+hmdb:HMDB0029820	chebi:138017
+hmdb:HMDB0029845	chebi:278533
+hmdb:HMDB0030166	pubchem:5488120
+hmdb:HMDB0030166	chemspider:4589673
+hmdb:HMDB0030228	kegg:C16996
+hmdb:HMDB0030723	kegg:C10054
+hmdb:HMDB0030723	chebi:411468
+hmdb:HMDB0030734	pubchem:12294
+hmdb:HMDB0030734	chemspider:11791
+hmdb:HMDB0034940	pubchem:50908588
+hmdb:HMDB0034940	chebi:1156173
+hmdb:HMDB0034940	chemspider:26375720
+hmdb:HMDB0038234	pubchem:101648402
+hmdb:HMDB0036756	pubchem:131751098
+hmdb:HMDB0033703	pubchem:5830982
+hmdb:HMDB0033703	chemspider:4715823
+hmdb:HMDB0038122	pubchem:228604
+hmdb:HMDB0038122	chemspider:198976
+hmdb:HMDB0031570	chebi:37001
+hmdb:HMDB0031583	chebi:35547
+hmdb:HMDB0031611	pubchem:5364919
+hmdb:HMDB0031611	chebi:89943
+hmdb:HMDB0031611	chemspider:4517028
+hmdb:HMDB0035031	pubchem:25429
+hmdb:HMDB0035031	chebi:3392
+hmdb:HMDB0035031	kegg:C10897
+hmdb:HMDB0035031	chemspider:23741
+hmdb:HMDB0031835	pubchem:131751195
+hmdb:HMDB0038092	pubchem:131751202
+hmdb:HMDB0031911	pubchem:131751208
+hmdb:HMDB0035909	pubchem:85192078
+hmdb:HMDB0031962	pubchem:5352436
+hmdb:HMDB0031962	chemspider:4509326
+hmdb:HMDB0031974	pubchem:14730796
+hmdb:HMDB0031974	CAS:175616-41-8
+pubchem:14730796	hmdb:HMDB0031974
+hmdb:HMDB0031991	chebi:2979
+hmdb:HMDB0031991	kegg:C10023
+hmdb:HMDB0032082	pubchem:9012
+hmdb:HMDB0032082	chebi:72752
+hmdb:HMDB0032082	chemspider:8662
+hmdb:HMDB0032273	kegg:C06551
+hmdb:HMDB0032331	chebi:16165
+hmdb:HMDB0032331	kegg:C03107
+hmdb:HMDB0032347	chebi:46643
+hmdb:HMDB0034980	pubchem:131751279
+hmdb:HMDB0032837	pubchem:73745597
+hmdb:HMDB0035483	pubchem:73815120
+hmdb:HMDB0033274	pubchem:85528914
+hmdb:HMDB0033315	pubchem:118726652
+hmdb:HMDB0033319	kegg:C10650
+hmdb:HMDB0033422	pubchem:73109691
+hmdb:HMDB0033573	pubchem:131751457
+hmdb:HMDB0040962	pubchem:73809747
+hmdb:HMDB0033622	pubchem:13944248
+hmdb:HMDB0033622	chemspider:10424698
+hmdb:HMDB0033635	pubchem:155465
+hmdb:HMDB0033635	chemspider:136956
+hmdb:HMDB0033674	pubchem:5319664
+hmdb:HMDB0033674	chemspider:4477912
+hmdb:HMDB0033796	pubchem:5312595
+hmdb:HMDB0033796	chemspider:4472020
+hmdb:HMDB0033815	pubchem:119900
+hmdb:HMDB0033815	chemspider:107053
+hmdb:HMDB0034093	pubchem:7654
+hmdb:HMDB0034093	chebi:31988
+hmdb:HMDB0034093	kegg:C12303
+hmdb:HMDB0034093	chemspider:21105987
+hmdb:HMDB0033947	kegg:C17512
+hmdb:HMDB0033949	pubchem:14135678
+hmdb:HMDB0034001	pubchem:5283280
+hmdb:HMDB0034001	pubchem:4446401
+hmdb:HMDB0034115	pubchem:131751528
+hmdb:HMDB0034193	pubchem:3438253
+hmdb:HMDB0034193	chemspider:2681133
+hmdb:HMDB0039463	pubchem:2117
+hmdb:HMDB0039463	chemspider:2033
+hmdb:HMDB0035664	pubchem:25240035
+hmdb:HMDB0035664	chebi:7611
+hmdb:HMDB0035664	chemspider:10752065
+hmdb:HMDB0034318	kegg:C16797
+hmdb:HMDB0034333	pubchem:593
+hmdb:HMDB0034398	pubchem:74761
+hmdb:HMDB0034398	chebi:91021
+hmdb:HMDB0034398	chemspider:67333
+hmdb:HMDB0034400	pubchem:101688
+hmdb:HMDB0034400	chemspider:91878
+hmdb:HMDB0034418	pubchem:61926
+hmdb:HMDB0034418	chemspider:55787
+hmdb:HMDB0036799	pubchem:6758
+hmdb:HMDB0036799	chebi:28201
+hmdb:HMDB0036799	kegg:C07593
+hmdb:HMDB0036799	chemspider:6500
+hmdb:HMDB0034446	kegg:C07733
+hmdb:HMDB0034462	chebi:17879
+hmdb:HMDB0034493	kegg:C09801
+hmdb:HMDB0034561	kegg:C16947
+hmdb:HMDB0034575	pubchem:14213508
+hmdb:HMDB0034576	pubchem:5352461
+hmdb:HMDB0034576	chemspider:4509341
+hmdb:HMDB0034596	pubchem:74977561
+hmdb:HMDB0035856	pubchem:3086646
+hmdb:HMDB0035856	chemspider:2343219
+hmdb:HMDB0034785	pubchem:85170188
+hmdb:HMDB0035023	chebi:15335
+hmdb:HMDB0035023	kegg:C01470
+hmdb:HMDB0035033	pubchem:71437252
+hmdb:HMDB0035253	pubchem:11742190
+hmdb:HMDB0035253	chemspider:9916894
+hmdb:HMDB0035263	pubchem:73817651
+hmdb:HMDB0035305	pubchem:76662
+hmdb:HMDB0035305	chemspider:69124
+hmdb:HMDB0035331	pubchem:131751709
+hmdb:HMDB0035387	pubchem:86172616
+hmdb:HMDB0035419	pubchem:16913
+hmdb:HMDB0035419	chemspider:16024
+hmdb:HMDB0035456	pubchem:131751771
+hmdb:HMDB0035506	pubchem:73829990
+hmdb:HMDB0037799	pubchem:131751823
+hmdb:HMDB0035646	chebi:47870
+hmdb:HMDB0035646	kegg:C03173
+hmdb:HMDB0035683	pubchem:131751842
+hmdb:HMDB0035758	pubchem:110677
+hmdb:HMDB0035758	chemspider:99340
+hmdb:HMDB0035771	pubchem:131752960
+hmdb:HMDB0035834	pubchem:131751870
+hmdb:HMDB0035835	kegg:C09685
+hmdb:HMDB0035848	pubchem:98255
+hmdb:HMDB0035853	pubchem:131751875
+hmdb:HMDB0041159	pubchem:15463585
+hmdb:HMDB0036006	kegg:C10370
+hmdb:HMDB0038143	pubchem:36225
+hmdb:HMDB0038143	chemspider:33311
+hmdb:HMDB0038476	pubchem:10608036
+hmdb:HMDB0038476	chemspider:8783403
+hmdb:HMDB0036244	pubchem:131751923
+hmdb:HMDB0036253	pubchem:85221256
+hmdb:HMDB0036288	pubchem:131751939
+hmdb:HMDB0036338	pubchem:13877687
+hmdb:HMDB0036338	chemspider:22913647
+hmdb:HMDB0036365	pubchem:131751975
+hmdb:HMDB0036403	pubchem:131751984
+hmdb:HMDB0036435	pubchem:14258974
+hmdb:HMDB0036446	pubchem:15560254
+hmdb:HMDB0036446	chemspider:10471161
+hmdb:HMDB0036760	pubchem:73819207
+hmdb:HMDB0040665	pubchem:131752898
+hmdb:HMDB0036764	pubchem:6439596
+hmdb:HMDB0036764	kegg:C17488
+hmdb:HMDB0036764	chebi:81126
+hmdb:HMDB0036764	chemspider:8529338
+hmdb:HMDB0036779	pubchem:61204
+hmdb:HMDB0036779	chemspider:55148
+hmdb:HMDB0036930	pubchem:131752096
+hmdb:HMDB0038349	pubchem:131752113
+hmdb:HMDB0037028	kegg:C11647
+hmdb:HMDB0037070	kegg:C09678
+hmdb:HMDB0037506	kegg:C09826
+hmdb:HMDB0037556	pubchem:1153
+hmdb:HMDB0037556	chebi:18186
+hmdb:HMDB0037556	kegg:C01536
+hmdb:HMDB0037668	pubchem:6442730
+hmdb:HMDB0303458	pubchem:124355621
+hmdb:HMDB0038089	pubchem:131752292
+hmdb:HMDB0038199	pubchem:520468
+hmdb:HMDB0038199	chemspider:453998
+hmdb:HMDB0038226	pubchem:75092867
+hmdb:HMDB0038226	chemspider:453998
+hmdb:HMDB0040770	pubchem:75092867
+hmdb:HMDB0038383	pubchem:5320622
+hmdb:HMDB0038383	chemspider:4478661
+hmdb:HMDB0038352	pubchem:155493
+hmdb:HMDB0038352	chemspider:136978
+hmdb:HMDB0038391	pubchem:5317481
+hmdb:HMDB0038391	chemspider:4476336
+hmdb:HMDB0039202	pubchem:131752573
+hmdb:HMDB0039254	pubchem:131752589
+hmdb:HMDB0039254	CAS:135308-98-4
+hmdb:HMDB0039391	pubchem:131752626
+hmdb:HMDB0039551	pubchem:85166230
+hmdb:HMDB0039425	pubchem:4369318
+hmdb:HMDB0039425	chemspider:3571924
+hmdb:HMDB0039567	pubchem:131752677
+hmdb:HMDB0039899	pubchem:55296251
+hmdb:HMDB0040389	pubchem:102277789
+hmdb:HMDB0040400	pubchem:6448
+hmdb:HMDB0040457	pubchem:3777347
+hmdb:HMDB0040491	pubchem:131752836
+hmdb:HMDB0040661	pubchem:131752891
+hmdb:HMDB0040763	pubchem:102149716
+hmdb:HMDB0041146	pubchem:54551687
+hmdb:HMDB0041047	pubchem:101696941
+hmdb:HMDB0041064	pubchem:3083960
+hmdb:HMDB0041134	pubchem:5281790
+hmdb:HMDB0041134	chemspider:4445103
+hmdb:HMDB0041134	kegg:C10487
+hmdb:HMDB0041153	pubchem:53462673
+hmdb:HMDB0041153	chemspider:26503423
+hmdb:HMDB0041157	pubchem:131753052
+hmdb:HMDB0041170	pubchem:131753053
+hmdb:HMDB0041762	pubchem:91312540
+hmdb:HMDB0041763	pubchem:9889961
+hmdb:HMDB0041954	pubchem:29230
+hmdb:HMDB0060088	pubchem:638678
+hmdb:HMDB0060088	chebi:35940
+hmdb:HMDB0060088	kegg:C03958
+hmdb:HMDB0060088	chemspider:554166
+hmdb:HMDB0060139	pubchem:12895035
+hmdb:HMDB0060236	pubchem:151438
+hmdb:HMDB0060236	chebi:31997
+hmdb:HMDB0060236	kegg:C13482
+hmdb:HMDB0060531	pubchem:162558
+hmdb:HMDB0060635	pubchem:130659
+hmdb:HMDB0060651	pubchem:9925873
+hmdb:HMDB0060651	chebi:80579
+hmdb:HMDB0060651	kegg:C16576
+hmdb:HMDB0060816	pubchem:131769960
+hmdb:HMDB0060848	pubchem:3034827
+hmdb:HMDB0060948	pubchem:2758337
+hmdb:HMDB0061028	pubchem:131770007
+hmdb:HMDB0061059	pubchem:46233635
+hmdb:HMDB0061130	pubchem:131770039
+hmdb:HMDB0040947	pubchem:131752993
+hmdb:HMDB0029225	kegg:C01327
+pubchem:449034	kegg:C01327
+hmdb:HMDB0039641	pubchem:14730796
+hmdb:HMDB0060636	pubchem:75607486
+hmdb:HMDB0041677	pubchem:131753182
+hmdb:HMDB0035498	pubchem:131751783
+hmdb:HMDB0033773	pubchem:14357350
+hmdb:HMDB0039035	pubchem:131752071
+hmdb:HMDB0010338	pubchem:53478031
+hmdb:HMDB0010338	chemspider:24765936
+hmdb:HMDB0036216	kegg:C13798
+hmdb:HMDB0000254	pubchem:1738118
+kegg:C00042	pubchem:1738118
+hmdb:HMDB0000353	pubchem:160471
+hmdb:HMDB0000353	chebi:37051
+chebi:15741	pubchem:1738118
+hmdb:HMDB0000353	chemspider:141015
+hmdb:HMDB0000367	pubchem:53481262
+hmdb:HMDB0000399	pubchem:10400369
+hmdb:HMDB0000399	chebi:139419
+hmdb:HMDB0000399	kegg:C01094
+hmdb:HMDB0000399	chemspider:8575807
+hmdb:HMDB0000513	pubchem:2969
+hmdb:HMDB0000513	chebi:30813
+chebi:30813	hmdb:HMDB0000513
+hmdb:HMDB0000513	kegg:C01571
+hmdb:HMDB0000513	chemspider:2863
+hmdb:HMDB0000779	kegg:C01479
+hmdb:HMDB0000949	pubchem:387316
+hmdb:HMDB0000949	chebi:16525
+hmdb:HMDB0000949	kegg:C05465
+hmdb:HMDB0000949	chemspider:343282
+hmdb:HMDB0001013	pubchem:439179
+hmdb:HMDB0001013	chebi:16082
+hmdb:HMDB0001013	kegg:C00190
+hmdb:HMDB0001013	chemspider:388324
+hmdb:HMDB0001924	kegg:C13235
+hmdb:HMDB0002039	kegg:C11118
+hmdb:HMDB0002039	chebi:741468
+hmdb:HMDB0002039	pubchem:12301
+hmdb:HMDB0002039	chemspider:11798
+hmdb:HMDB0002159	pubchem:53479251
+hmdb:HMDB0002451	pubchem:53480011
+hmdb:HMDB0002472	pubchem:6419427
+hmdb:HMDB0002472	chemspider:4925178
+hmdb:HMDB0002504	chebi:67045
+hmdb:HMDB0002504	chemspider:8431308
+hmdb:HMDB0002504	pubchem:10255824
+hmdb:HMDB0003156	kegg:C00265
+hmdb:HMDB0003990	pubchem:5326793
+hmdb:HMDB0003990	chebi:73006
+hmdb:HMDB0004628	pubchem:122121
+hmdb:HMDB0004628	chebi:46961
+hmdb:HMDB0004628	kegg:C12144
+hmdb:HMDB0004628	chemspider:108921
+hmdb:HMDB0005000	kegg:C06818
+hmdb:HMDB0005008	kegg:C01594
+hmdb:HMDB0005189	pubchem:104810
+hmdb:HMDB0005189	chebi:37136
+hmdb:HMDB0005189	kegg:C13881
+hmdb:HMDB0005189	chemspider:94609
+hmdb:HMDB0006280	chemspider:4941652
+hmdb:HMDB0006280	pubchem:6437063
+hmdb:HMDB0006280	chebi:80656
+hmdb:HMDB0006280	kegg:C16678
+hmdb:HMDB0006591	kegg:C00203
+hmdb:HMDB0006734	pubchem:53477895
+hmdb:HMDB0006734	chebi:84758
+hmdb:HMDB0006734	kegg:C01290
+hmdb:HMDB0006734	chemspider:24765743
+hmdb:HMDB0006773	pubchem:4762
+hmdb:HMDB0006773	chebi:8067
+hmdb:HMDB0006773	kegg:C07432
+hmdb:HMDB0006773	chemspider:4598
+hmdb:HMDB0006840	pubchem:45479706
+hmdb:HMDB0006840	chebi:27650
+hmdb:HMDB0006840	kegg:C03541
+hmdb:HMDB0006840	chemspider:21231977
+hmdb:HMDB0006897	kegg:C15670
+hmdb:HMDB0010315	chebi:17813
+hmdb:HMDB0010315	kegg:C11455
+hmdb:HMDB0010315	pubchem:443212
+hmdb:HMDB0010315	chemspider:391478
+hmdb:HMDB0010337	pubchem:1135
+hmdb:HMDB0010337	chebi:17821
+hmdb:HMDB0010337	kegg:C00178
+hmdb:HMDB0010338	chemspider:1103
+hmdb:HMDB0010351	chebi:2198
+hmdb:HMDB0010351	kegg:C05643
+hmdb:HMDB0010351	pubchem:1864
+hmdb:HMDB0010351	chemspider:1794
+hmdb:HMDB0010375	pubchem:24779458
+hmdb:HMDB0010375	chebi:131924
+hmdb:HMDB0010375	kegg:C04230
+hmdb:HMDB0011182	pubchem:68759
+hmdb:HMDB0011182	chebi:27694
+hmdb:HMDB0011182	kegg:C05844
+hmdb:HMDB0011182	chemspider:62003
+hmdb:HMDB0011629	pubchem:53481125
+hmdb:HMDB0011643	pubchem:11507134
+hmdb:HMDB0011643	chebi:55458
+hmdb:HMDB0011643	kegg:C15497
+hmdb:HMDB0011643	chemspider:9681931
+hmdb:HMDB0011680	pubchem:440776
+hmdb:HMDB0011680	chebi:28607
+hmdb:HMDB0011680	kegg:C05768
+hmdb:HMDB0011680	chemspider:389645
+hmdb:HMDB0012456	pubchem:6506224
+hmdb:HMDB0012456	chebi:80657
+hmdb:HMDB0012456	kegg:C16679
+hmdb:HMDB0012456	chemspider:5005673
+hmdb:HMDB0012457	pubchem:53478919
+hmdb:HMDB0012457	chebi:89082
+hmdb:HMDB0012654	pubchem:53481791
+hmdb:HMDB0012654	chebi:90006
+hmdb:HMDB0012654	kegg:C00550
+hmdb:HMDB0012779	pubchem:12337017
+hmdb:HMDB0013031	pubchem:53481451
+hmdb:HMDB0013124	pubchem:53481699
+hmdb:HMDB0013130	pubchem:53481699
+hmdb:HMDB0013156	pubchem:53481631
+hmdb:HMDB0013156	kegg:C14519
+hmdb:HMDB0013158	pubchem:53481888
+hmdb:HMDB0013159	pubchem:53481699
+hmdb:HMDB0013221	pubchem:52923742
+hmdb:HMDB0013221	chebi:89906
+hmdb:HMDB0013238	pubchem:53481699
+hmdb:HMDB0013288	pubchem:53481699
+hmdb:HMDB0013328	pubchem:53481699
+hmdb:HMDB0013628	kegg:C13828
+hmdb:HMDB0015589	chebi:138764
+hmdb:HMDB0029250	pubchem:131750824
+hmdb:HMDB0029313	pubchem:494308
+hmdb:HMDB0029313	chemspider:432655
+hmdb:HMDB0029337	pubchem:131750854
+hmdb:HMDB0029345	pubchem:131750928
+hmdb:HMDB0029382	chebi:62426
+hmdb:HMDB0029382	chemspider:4524740
+hmdb:HMDB0029382	pubchem:5375200
+hmdb:HMDB0029408	pubchem:5363741
+hmdb:HMDB0029408	chebi:49250
+hmdb:HMDB0029408	chemspider:4516050
+hmdb:HMDB0029417	pubchem:3549960
+hmdb:HMDB0029417	chemspider:2788007
+hmdb:HMDB0029420	pubchem:151730
+hmdb:HMDB0029420	chebi:74048
+hmdb:HMDB0029420	chemspider:133730
+hmdb:HMDB0029471	pubchem:131750874
+hmdb:HMDB0029471	chemspider:30776778
+hmdb:HMDB0029595	kegg:C02445
+hmdb:HMDB0029623	pubchem:15609884
+hmdb:HMDB0029655	pubchem:78195599
+hmdb:HMDB0029713	kegg:C02740
+hmdb:HMDB0029718	kegg:C02595
+hmdb:HMDB0029767	pubchem:10462651
+hmdb:HMDB0029767	chemspider:8638063
+hmdb:HMDB0029785	pubchem:9882599
+hmdb:HMDB0029785	chemspider:8058274
+hmdb:HMDB0029851	pubchem:131751609
+hmdb:HMDB0029909	kegg:C17058
+hmdb:HMDB0029923	chebi:10057
+hmdb:HMDB0029923	kegg:C01464
+hmdb:HMDB0029952	kegg:C06397
+hmdb:HMDB0029977	pubchem:10507050
+hmdb:HMDB0029977	chemspider:8682451
+hmdb:HMDB0030004	pubchem:10899299
+hmdb:HMDB0030011	pubchem:5317377
+hmdb:HMDB0030011	chemspider:4476250
+hmdb:HMDB0030018	kegg:C09506
+hmdb:HMDB0030035	pubchem:87947
+hmdb:HMDB0030035	chemspider:79344
+hmdb:HMDB0030043	pubchem:5374699
+hmdb:HMDB0030043	chemspider:4524423
+hmdb:HMDB0030045	pubchem:131752106
+hmdb:HMDB0030046	pubchem:15929155
+hmdb:HMDB0030047	pubchem:9874426
+hmdb:HMDB0030047	chemspider:8050115
+hmdb:HMDB0030066	pubchem:131750953
+hmdb:HMDB0030078	pubchem:5830135
+hmdb:HMDB0030078	chemspider:4715544
+hmdb:HMDB0030118	chebi:28762
+hmdb:HMDB0030118	kegg:C06353
+hmdb:HMDB0030118	chemspider:21864849
+hmdb:HMDB0030127	pubchem:12304831
+hmdb:HMDB0030144	pubchem:131752046
+hmdb:HMDB0030171	pubchem:122376203
+hmdb:HMDB0030182	pubchem:181561
+hmdb:HMDB0030182	chemspider:157937
+hmdb:HMDB0030183	pubchem:826073
+hmdb:HMDB0030201	pubchem:5318090
+hmdb:HMDB0030201	chemspider:4476718
+hmdb:HMDB0030203	pubchem:5318825
+hmdb:HMDB0030203	chemspider:4477289
+hmdb:HMDB0030217	pubchem:24898872
+hmdb:HMDB0030217	chemspider:28285416
+hmdb:HMDB0030233	pubchem:129011027
+hmdb:HMDB0030233	chebi:134013
+hmdb:HMDB0030264	pubchem:13186539
+hmdb:HMDB0030264	chemspider:19991118
+hmdb:HMDB0030273	pubchem:5318023
+hmdb:HMDB0030273	chemspider:4476670
+hmdb:HMDB0030337	pubchem:4290702
+hmdb:HMDB0030337	chemspider:3496974
+hmdb:HMDB0030349	pubchem:12301
+hmdb:HMDB0030349	chebi:741468
+hmdb:HMDB0030349	chemspider:11798
+hmdb:HMDB0030360	pubchem:11237396
+hmdb:HMDB0030360	chebi:544590
+hmdb:HMDB0030360	chemspider:9412441
+hmdb:HMDB0030436	pubchem:78172839
+hmdb:HMDB0030488	pubchem:131751030
+hmdb:HMDB0030494	pubchem:131751033
+hmdb:HMDB0030510	pubchem:16130064
+hmdb:HMDB0030510	kegg:C12030
+hmdb:HMDB0030510	chemspider:17286842
+hmdb:HMDB0030531	pubchem:172928
+hmdb:HMDB0030531	chemspider:151019
+hmdb:HMDB0030556	pubchem:67764516
+hmdb:HMDB0030568	kegg:C10187
+hmdb:HMDB0030568	pubchem:3556303
+hmdb:HMDB0030568	chemspider:2794080
+hmdb:HMDB0030581	pubchem:14409074
+hmdb:HMDB0030585	pubchem:13001421
+hmdb:HMDB0030585	chemspider:22902400
+hmdb:HMDB0030635	pubchem:10255010
+hmdb:HMDB0030635	chemspider:8430495
+hmdb:HMDB0030723	chemspider:411468
+hmdb:HMDB0030723	kegg:C13798
+hmdb:HMDB0030794	pubchem:6164465
+hmdb:HMDB0030794	chemspider:4828837
+hmdb:HMDB0030798	pubchem:71438979
+hmdb:HMDB0030886	chebi:28300
+hmdb:HMDB0030886	kegg:C00303
+hmdb:HMDB0030902	pubchem:15225103
+hmdb:HMDB0030902	chemspider:13630303
+hmdb:HMDB0030913	pubchem:4039117
+hmdb:HMDB0030913	chemspider:3255526
+hmdb:HMDB0030915	pubchem:85272666
+hmdb:HMDB0031019	kegg:C14996
+hmdb:HMDB0031138	pubchem:85174872
+hmdb:HMDB0031243	kegg:C03219
+hmdb:HMDB0031270	kegg:C08452
+hmdb:HMDB0031398	chebi:29063
+hmdb:HMDB0031398	kegg:C04771
+hmdb:HMDB0031398	pubchem:75052023
+hmdb:HMDB0031443	pubchem:8182
+hmdb:HMDB0031443	chebi:28817
+hmdb:HMDB0031443	kegg:C08374
+hmdb:HMDB0031443	chemspider:7890
+hmdb:HMDB0031535	pubchem:7710
+hmdb:HMDB0031535	chemspider:7424
+hmdb:HMDB0031727	kegg:C05654
+hmdb:HMDB0031757	pubchem:131752523
+hmdb:HMDB0031819	pubchem:73530
+hmdb:HMDB0031819	chemspider:66213
+hmdb:HMDB0031831	pubchem:14409176
+hmdb:HMDB0031839	pubchem:467299
+hmdb:HMDB0031839	chemspider:410663
+hmdb:HMDB0031846	kegg:C13297
+hmdb:HMDB0031876	kegg:C09808
+hmdb:HMDB0031878	pubchem:11193907
+hmdb:HMDB0031878	chemspider:9368976
+hmdb:HMDB0031921	pubchem:23590061
+hmdb:HMDB0031921	chemspider:19706660
+hmdb:HMDB0032096	pubchem:102277789
+hmdb:HMDB0032101	pubchem:14284451
+hmdb:HMDB0032104	kegg:C09752
+hmdb:HMDB0032123	pubchem:131751936
+hmdb:HMDB0032326	pubchem:6165108
+hmdb:HMDB0032326	chemspider:4829022
+hmdb:HMDB0032462	chebi:9642
+hmdb:HMDB0032462	kegg:C02088
+hmdb:HMDB0032488	kegg:C03885
+hmdb:HMDB0032665	pubchem:15625635
+hmdb:HMDB0032666	pubchem:101417891
+hmdb:HMDB0032764	chebi:28901
+hmdb:HMDB0032829	pubchem:10313247
+hmdb:HMDB0032829	chemspider:8488712
+hmdb:HMDB0032859	pubchem:7119
+hmdb:HMDB0032859	chemspider:6852
+hmdb:HMDB0033022	pubchem:5282768
+hmdb:HMDB0033022	chebi:32425
+hmdb:HMDB0033022	kegg:C16526
+hmdb:HMDB0033022	chemspider:4445895
+hmdb:HMDB0033142	pubchem:834
+hmdb:HMDB0033142	chebi:17755
+hmdb:HMDB0033142	kegg:C00542
+hmdb:HMDB0033213	pubchem:5317587
+hmdb:HMDB0033213	chemspider:4476431
+hmdb:HMDB0033338	pubchem:119490
+hmdb:HMDB0033338	chemspider:106713
+hmdb:HMDB0033339	pubchem:13491357
+hmdb:HMDB0033399	pubchem:131751014
+hmdb:HMDB0033588	pubchem:16800
+hmdb:HMDB0033588	chemspider:15924
+hmdb:HMDB0033690	pubchem:346286
+hmdb:HMDB0033690	chemspider:307171
+hmdb:HMDB0033737	hmdb:HMDB0033399
+hmdb:HMDB0033737	chemspider:4476900
+hmdb:HMDB0033737	pubchem:5318294
+hmdb:HMDB0033807	pubchem:325518
+hmdb:HMDB0033807	chemspider:288223
+hmdb:HMDB0033817	pubchem:23036629
+hmdb:HMDB0033817	chemspider:14602054
+hmdb:HMDB0033869	pubchem:46856263
+hmdb:HMDB0033885	kegg:C14285
+hmdb:HMDB0033901	pubchem:10925
+hmdb:HMDB0033901	chemspider:10462
+hmdb:HMDB0033907	pubchem:15340661
+hmdb:HMDB0033907	chemspider:24844322
+hmdb:HMDB0033918	pubchem:11745625
+hmdb:HMDB0033918	chemspider:9920329
+hmdb:HMDB0033934	pubchem:222
+hmdb:HMDB0033934	chebi:16134
+hmdb:HMDB0033934	kegg:C00014
+hmdb:HMDB0033934	chemspider:217
+hmdb:HMDB0033967	chebi:32807
+hmdb:HMDB0033967	kegg:C01839
+hmdb:HMDB0034016	pubchem:85083560
+hmdb:HMDB0034021	pubchem:12570
+hmdb:HMDB0034021	chemspider:12050
+hmdb:HMDB0034025	pubchem:536987
+hmdb:HMDB0034025	chemspider:467713
+hmdb:HMDB0034094	kegg:C09994
+hmdb:HMDB0034094	pubchem:5316543
+hmdb:HMDB0034094	chemspider:4475576
+hmdb:HMDB0034176	kegg:C02018
+hmdb:HMDB0034189	pubchem:627910
+hmdb:HMDB0034189	chemspider:545372
+hmdb:HMDB0034202	pubchem:50200
+hmdb:HMDB0034202	chebi:68802
+hmdb:HMDB0034202	kegg:C20046
+hmdb:HMDB0034202	chemspider:45522
+hmdb:HMDB0034248	pubchem:7501
+hmdb:HMDB0034248	chebi:27452
+hmdb:HMDB0034248	kegg:C19506
+hmdb:HMDB0034248	chemspider:7220
+hmdb:HMDB0034262	pubchem:68229
+hmdb:HMDB0034262	kegg:C09312
+hmdb:HMDB0034262	chemspider:61531
+hmdb:HMDB0034472	chebi:17099
+hmdb:HMDB0034472	kegg:C02008
+hmdb:HMDB0034489	pubchem:13192441
+hmdb:HMDB0034565	pubchem:5282714
+hmdb:HMDB0034565	chebi:86544
+hmdb:HMDB0034565	chemspider:4445841
+hmdb:HMDB0034595	pubchem:89421
+hmdb:HMDB0034595	chemspider:80700
+hmdb:HMDB0034602	pubchem:185438
+hmdb:HMDB0034707	pubchem:520398
+hmdb:HMDB0034707	chemspider:453932
+hmdb:HMDB0034709	pubchem:628742
+hmdb:HMDB0034709	chemspider:546062
+hmdb:HMDB0034876	pubchem:3018539
+hmdb:HMDB0034876	chemspider:2286047
+hmdb:HMDB0034963	pubchem:3083613
+hmdb:HMDB0034963	kegg:C16927
+hmdb:HMDB0034963	chemspider:2340790
+hmdb:HMDB0034986	pubchem:131752760
+hmdb:HMDB0035011	pubchem:71587096
+hmdb:HMDB0035055	pubchem:102684
+hmdb:HMDB0035055	chemspider:92751
+hmdb:HMDB0035060	pubchem:85207142
+hmdb:HMDB0035128	pubchem:15885837
+hmdb:HMDB0035166	pubchem:14841537
+hmdb:HMDB0035197	pubchem:11520
+hmdb:HMDB0035197	chemspider:11036
+hmdb:HMDB0035221	pubchem:131751686
+hmdb:HMDB0035285	pubchem:5250
+hmdb:HMDB0035285	kegg:C10822
+hmdb:HMDB0035285	chebi:565242
+hmdb:HMDB0035285	chemspider:5060
+hmdb:HMDB0035299	pubchem:3589471
+hmdb:HMDB0035299	chemspider:2825757
+hmdb:HMDB0035312	pubchem:440995
+hmdb:HMDB0035312	chebi:17716
+hmdb:HMDB0035312	kegg:C00243
+hmdb:HMDB0035313	pubchem:131751702
+hmdb:HMDB0035315	pubchem:131751704
+hmdb:HMDB0035374	pubchem:131751729
+hmdb:HMDB0035386	pubchem:13996077
+hmdb:HMDB0035438	pubchem:131751753
+hmdb:HMDB0035485	pubchem:446834
+hmdb:HMDB0035485	chebi:2069
+hmdb:HMDB0035485	kegg:C05619
+hmdb:HMDB0035485	chemspider:394087
+hmdb:HMDB0035491	pubchem:131751782
+hmdb:HMDB0035494	pubchem:131751628
+hmdb:HMDB0035522	pubchem:10595178
+hmdb:HMDB0035522	chemspider:8770552
+hmdb:HMDB0035602	pubchem:442495
+hmdb:HMDB0035602	chebi:35596
+hmdb:HMDB0035602	kegg:C09893
+hmdb:HMDB0035713	pubchem:85114699
+hmdb:HMDB0035727	pubchem:14034827
+hmdb:HMDB0035821	pubchem:131751869
+hmdb:HMDB0035863	pubchem:14890283
+hmdb:HMDB0035885	pubchem:44257262
+hmdb:HMDB0035885	chemspider:23339505
+hmdb:HMDB0035891	pubchem:13922652
+hmdb:HMDB0035891	kegg:C17489
+hmdb:HMDB0035908	pubchem:22310
+hmdb:HMDB0035908	chemspider:20938
+hmdb:HMDB0035914	pubchem:5316074
+hmdb:HMDB0035914	chemspider:4475215
+hmdb:HMDB0035945	pubchem:14583336
+hmdb:HMDB0035971	pubchem:72796165
+hmdb:HMDB0035973	pubchem:88881
+hmdb:HMDB0035973	chebi:3684
+hmdb:HMDB0035973	kegg:C10029
+hmdb:HMDB0035973	chemspider:80200
+hmdb:HMDB0035979	pubchem:6424827
+hmdb:HMDB0035979	chemspider:4930317
+hmdb:HMDB0036036	pubchem:106766
+hmdb:HMDB0036036	chemspider:96095
+hmdb:HMDB0036038	pubchem:131751453
+hmdb:HMDB0036038	chemspider:30777019
+hmdb:HMDB0036043	pubchem:131752139
+hmdb:HMDB0036064	pubchem:5283544
+hmdb:HMDB0036064	chebi:52971
+hmdb:HMDB0036064	kegg:C17568
+hmdb:HMDB0036064	chemspider:4446657
+hmdb:HMDB0036157	chebi:2082
+hmdb:HMDB0036157	kegg:C02951
+hmdb:HMDB0036158	pubchem:5352437
+hmdb:HMDB0036158	chebi:49239
+hmdb:HMDB0036158	kegg:C19748
+hmdb:HMDB0036158	chemspider:4509327
+hmdb:HMDB0036286	pubchem:73829943
+hmdb:HMDB0036291	pubchem:13851701
+hmdb:HMDB0036339	pubchem:45269778
+hmdb:HMDB0036339	chemspider:24618221
+hmdb:HMDB0036349	pubchem:525329
+hmdb:HMDB0036349	chemspider:457991
+hmdb:HMDB0036484	pubchem:15624187
+hmdb:HMDB0036525	pubchem:97747
+hmdb:HMDB0036525	chemspider:88223
+hmdb:HMDB0036665	pubchem:85116077
+hmdb:HMDB0036692	pubchem:92337821
+hmdb:HMDB0036692	chemspider:30776937
+hmdb:HMDB0036699	kegg:C05720
+hmdb:HMDB0036705	pubchem:54275943
+hmdb:HMDB0036732	pubchem:12069327
+hmdb:HMDB0036737	pubchem:78172989
+hmdb:HMDB0036748	pubchem:353479
+hmdb:HMDB0036825	pubchem:85584195
+hmdb:HMDB0036851	pubchem:101750
+hmdb:HMDB0036851	chemspider:91936
+hmdb:HMDB0036889	pubchem:131751219
+hmdb:HMDB0037070	chemspider:28715639
+hmdb:HMDB0037126	pubchem:20831779
+hmdb:HMDB0037126	chemspider:20127044
+hmdb:HMDB0037209	pubchem:6036
+hmdb:HMDB0037209	chebi:4139
+hmdb:HMDB0037209	kegg:C00124
+hmdb:HMDB0037371	pubchem:12315274
+hmdb:HMDB0037371	chemspider:24224328
+hmdb:HMDB0037383	pubchem:92649
+hmdb:HMDB0037383	chemspider:83635
+hmdb:HMDB0037467	kegg:C17441
+hmdb:HMDB0037611	pubchem:85288059
+hmdb:HMDB0037657	pubchem:131751663
+hmdb:HMDB0037671	pubchem:61159
+hmdb:HMDB0037750	pubchem:101755293
+hmdb:HMDB0037776	pubchem:536987
+hmdb:HMDB0037826	pubchem:62876
+hmdb:HMDB0037826	chemspider:56606
+hmdb:HMDB0037893	pubchem:131750880
+hmdb:HMDB0038020	pubchem:62007
+hmdb:HMDB0038020	chemspider:55854
+hmdb:HMDB0038095	pubchem:443651
+hmdb:HMDB0038095	chebi:31985
+hmdb:HMDB0038095	kegg:C12139
+hmdb:HMDB0038095	chemspider:391784
+hmdb:HMDB0038098	pubchem:12312707
+hmdb:HMDB0038284	pubchem:102684
+hmdb:HMDB0038284	chemspider:92751
+hmdb:HMDB0038331	chebi:17069
+hmdb:HMDB0038331	kegg:C03351
+hmdb:HMDB0038343	pubchem:85363137
+hmdb:HMDB0038560	pubchem:61184
+hmdb:HMDB0038560	chemspider:55130
+hmdb:HMDB0038562	pubchem:167736
+hmdb:HMDB0038562	chemspider:146730
+hmdb:HMDB0038595	pubchem:4486820
+hmdb:HMDB0038595	chemspider:3684607
+hmdb:HMDB0038672	pubchem:131751594
+hmdb:HMDB0038707	pubchem:10364
+hmdb:HMDB0038707	chebi:3440
+hmdb:HMDB0038707	kegg:C09840
+hmdb:HMDB0038707	chemspider:21105867
+hmdb:HMDB0038854	kegg:C07560
+hmdb:HMDB0038883	pubchem:131752485
+hmdb:HMDB0039035	kegg:C08594
+hmdb:HMDB0039122	chebi:17371
+hmdb:HMDB0039122	kegg:C00744
+hmdb:HMDB0039208	pubchem:11425230
+hmdb:HMDB0039208	chemspider:9600106
+hmdb:HMDB0039269	pubchem:14057209
+hmdb:HMDB0039288	pubchem:21629801
+hmdb:HMDB0039288	chemspider:10258687
+hmdb:HMDB0039392	pubchem:23132198
+hmdb:HMDB0039392	chemspider:16161158
+hmdb:HMDB0039445	pubchem:119396
+hmdb:HMDB0039445	chemspider:106641
+hmdb:HMDB0039482	pubchem:15109870
+hmdb:HMDB0039483	pubchem:131752659
+hmdb:HMDB0039485	pubchem:131751091
+hmdb:HMDB0039525	pubchem:21582559
+hmdb:HMDB0039531	kegg:C07475
+hmdb:HMDB0039602	pubchem:5312861
+hmdb:HMDB0039602	chebi:37099
+hmdb:HMDB0039602	chemspider:4472286
+hmdb:HMDB0039627	pubchem:131752692
+hmdb:HMDB0039641	pubchem:42949
+hmdb:HMDB0039752	pubchem:87253536
+hmdb:HMDB0039753	pubchem:11267348
+hmdb:HMDB0039753	chemspider:9442359
+hmdb:HMDB0039757	pubchem:4472903
+hmdb:HMDB0039757	chemspider:3671252
+hmdb:HMDB0039773	pubchem:85112371
+hmdb:HMDB0039777	pubchem:131752725
+hmdb:HMDB0039857	pubchem:14310763
+hmdb:HMDB0039863	pubchem:131752735
+hmdb:HMDB0040119	pubchem:85411973
+hmdb:HMDB0040130	pubchem:131752782
+hmdb:HMDB0040379	pubchem:300085
+hmdb:HMDB0040379	chemspider:265131
+hmdb:HMDB0040391	pubchem:14375140
+hmdb:HMDB0040398	pubchem:131752934
+hmdb:HMDB0040406	pubchem:131752558
+hmdb:HMDB0040454	pubchem:27641
+hmdb:HMDB0040454	chemspider:25717
+hmdb:HMDB0040468	pubchem:11788398
+hmdb:HMDB0040469	pubchem:74407576
+hmdb:HMDB0040469	chemspider:9963072
+hmdb:HMDB0040535	pubchem:102571616
+hmdb:HMDB0040671	pubchem:44258662
+hmdb:HMDB0040671	chemspider:24844321
+hmdb:HMDB0040707	pubchem:10326164
+hmdb:HMDB0040707	chemspider:8501626
+hmdb:HMDB0040718	pubchem:21883405
+hmdb:HMDB0040718	chemspider:65032
+hmdb:HMDB0040782	pubchem:155462
+hmdb:HMDB0040782	chemspider:136953
+hmdb:HMDB0040798	pubchem:5354280
+hmdb:HMDB0040798	chemspider:4510500
+hmdb:HMDB0040840	pubchem:129820665
+hmdb:HMDB0040874	pubchem:131752223
+hmdb:HMDB0040948	pubchem:71307305
+hmdb:HMDB0040991	kegg:C16302
+hmdb:HMDB0041003	pubchem:78101312
+hmdb:HMDB0041167	pubchem:46779070
+hmdb:HMDB0041167	chemspider:21105942
+hmdb:HMDB0041184	pubchem:194638
+hmdb:HMDB0041184	chemspider:168868
+hmdb:HMDB0041417	pubchem:131753136
+hmdb:HMDB0041471	pubchem:110968
+hmdb:HMDB0041471	chemspider:99613
+hmdb:HMDB0041472	kegg:C07213
+hmdb:HMDB0041473	kegg:C07216
+hmdb:HMDB0041528	pubchem:131753161
+hmdb:HMDB0041750	pubchem:71749556
+hmdb:HMDB0041755	pubchem:131750835
+hmdb:HMDB0041755	chemspider:30776753
+hmdb:HMDB0041766	chemspider:24845008
+hmdb:HMDB0041766	pubchem:21676162
+hmdb:HMDB0041878	kegg:C14422
+hmdb:HMDB0059641	pubchem:439450
+hmdb:HMDB0059641	chebi:17633
+hmdb:HMDB0059641	kegg:C01228
+hmdb:HMDB0059641	chemspider:388557
+hmdb:HMDB0059863	pubchem:549664
+hmdb:HMDB0060147	pubchem:131769845
+hmdb:HMDB0060404	pubchem:10037499
+hmdb:HMDB0060404	kegg:C16635
+hmdb:HMDB0060631	pubchem:9547058
+hmdb:HMDB0060631	kegg:C00350
+hmdb:HMDB0060631	chebi:78342
+hmdb:HMDB0060631	chemspider:7826008
+hmdb:HMDB0060661	pubchem:880
+hmdb:HMDB0060661	chebi:17158
+hmdb:HMDB0060661	kegg:C00546
+hmdb:HMDB0060661	chemspider:857
+hmdb:HMDB0060706	pubchem:3385
+hmdb:HMDB0060706	chebi:46345
+hmdb:HMDB0060706	kegg:C07649
+hmdb:HMDB0060706	chemspider:3268
+hmdb:HMDB0060729	pubchem:21563790
+hmdb:HMDB0060746	pubchem:4616
+hmdb:HMDB0060746	chebi:7823
+hmdb:HMDB0060746	kegg:C07359
+hmdb:HMDB0060746	chemspider:4455
+hmdb:HMDB0060759	pubchem:105108
+hmdb:HMDB0060764	pubchem:3651
+hmdb:HMDB0060780	pubchem:131769948
+hmdb:HMDB0060798	pubchem:131769952
+hmdb:HMDB0060828	pubchem:131769970
+hmdb:HMDB0060854	pubchem:131769952
+hmdb:HMDB0060901	pubchem:171187
+hmdb:HMDB0060958	pubchem:93285
+hmdb:HMDB0060987	pubchem:71549171
+hmdb:HMDB0060993	pubchem:2734
+hmdb:HMDB0060995	pubchem:107927
+hmdb:HMDB0061043	pubchem:133577
+hmdb:HMDB0061078	pubchem:10024249
+hmdb:HMDB0061088	pubchem:71316864
+hmdb:HMDB0032489	chebi:31676
+hmdb:HMDB0032489	kegg:C13422
+hmdb:HMDB0035299	chebi:975367
+hmdb:HMDB0010337	chemspider:1103
+hmdb:HMDB0010375	chemspider:24694854
+hmdb:HMDB0030004	chemspider:9074559
+hmdb:HMDB0036748	chemspider:313814
+hmdb:HMDB0037671	chemspider:55106
+hmdb:HMDB0037776	chemspider:467713
+hmdb:HMDB0039525	chemspider:10197108
+hmdb:HMDB0039641	chemspider:39146
+hmdb:HMDB0040468	chemspider:9963072
+hmdb:HMDB0060437	kegg:C07645
+hmdb:HMDB0060437	chebi:2560
+hmdb:HMDB0060437	pubchem:107744
+hmdb:HMDB0000656	wikidata:Q3324838
+LIPIDMAPS:LMFA01170082	kegg:C02220
+LIPIDMAPS:LMFA03030015	kegg:C02198
+pubchem:92751	kegg:C01103
+HMDB:HMDB0000788	kegg:C01103
+chemspider:83729	kegg:C01103
+chebi:25722	kegg:C01103
+hmdb:HMDB0006764	chemspider:167253
+hmdb:HMDB0004818	chemspider:13628421
+hmdb:HMDB0004818	chebi:89480
+LIPIDMAPS:LMFA01060232	chebi:70850
+hmdb:HMDB0032378	chebi:37902
+LIPIDMAPS:LMFA01030951	chebi:37316
+LIPIDMAPS:LMFA07010910	chebi:32361
+hmdb:HMDB0006826	chebi:27650
+LIPIDMAPS:LMFA01060191	chebi:15745
+LIPIDMAPS:LMFA07010992	chebi:15720
+hmdb:HMDB0012290	CAS:88903-89-3
+hmdb:HMDB0014291	CAS:8002-43-5
+hmdb:HMDB0301662	CAS:75-07-0
+hmdb:HMDB0062577	CAS:298-02-2
+hmdb:HMDB0033759	CAS:175616-41-8

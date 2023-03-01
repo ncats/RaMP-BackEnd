@@ -54,7 +54,7 @@ class EntityBuilder(object):
         Constructor
         '''
         
-        self.localPathPrefix = '../'
+        self.localPathPrefix = './'
         
         # config for data sources
         self.resConfig = resourceConfig
@@ -222,14 +222,16 @@ class EntityBuilder(object):
                 
                 # add the sourceId and altId to the support dictionary
                 if currSourceId not in self.sourceIdToIDDict:
-                    self.sourceIdToIDDict[currSourceId] = list()
-                
-                self.sourceIdToIDDict[currSourceId].append(altId)
+                    self.sourceIdToIDDict[currSourceId] = list()                
                 
                 excludeMappingConnection = False
                 
                 # check exclusion mapping list
                 excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
+                
+                # if it should be excluded, then it's ok to keep this connection
+                if not excludeMappingConnection:
+                    self.sourceIdToIDDict[currSourceId].append(altId)
                 
                 if excludeMappingConnection:
                     self.curationAvoidanceCount = self.curationAvoidanceCount + 1
