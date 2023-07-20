@@ -8,6 +8,7 @@ import os
 from parse.MetabolomicsData import MetabolomicsData
 import pandas as pd
 from rampConfig.RampConfig import RampConfig
+from jupyterlab_server.process import pty
 
 
 class hmdbData(MetabolomicsData):
@@ -85,6 +86,11 @@ class hmdbData(MetabolomicsData):
         # only not empty when a catalyzed class exists 
         # key: matabole, value: list of genes
         self.metabolitesLinkedToGenes = dict()
+        
+        # holds protein ids to their type designation
+        # primarily used to populate the catalyzed resource.
+        self.protein2type = dict()
+        
         # self.inchiDict = dict()
         ###################################################################
         
@@ -140,6 +146,7 @@ class hmdbData(MetabolomicsData):
         tree = self.getMetaboliteOtherIDs()
 
         self.getPathwaysandSynonyms(tree)
+        
         self.getGenes(tree)
 
         self.getOntology(tree)
@@ -147,6 +154,11 @@ class hmdbData(MetabolomicsData):
         self.getPathwaysLinkedToGene()
         self.getMetabolitesClasses(tree)
         self.getStatus(tree)
+        
+        # wth just adding a type to met -> prot -> type, by adding <tab>protein_type. :)
+        self.annealProteinTypeToMet2ProtDict()
+        
+        
         if writeToFile:
             self.write_myself_files('hmdb')
         
@@ -1060,7 +1072,8 @@ class hmdbData(MetabolomicsData):
         root = tree.getroot()
          
         for protein in root:
-            accession = protein.find('{http://www.hmdb.ca}accession')            
+            accession = protein.find('{http://www.hmdb.ca}accession')
+            pType = protein.find('{http://www.hmdb.ca}protein_type')        
             uniprotidtag = protein.find('{http://www.hmdb.ca}uniprot_id')
             genenametag = protein.find('{http://www.hmdb.ca}gene_name')
             id_mapping = {
@@ -1083,6 +1096,9 @@ class hmdbData(MetabolomicsData):
                 # prepend hmdb: to the HMDBP ID
                 accessionnum = 'hmdb:' + accession.text
                 uniprotid = 'uniprot:' + uniprotidtag.text
+                proteinType = pType.text
+                self.protein2type[accessionnum] = proteinType
+                
                 if genenametag is not None and genenametag.text is not None:
                     genename = 'gene_symbol:' + genenametag.text
                 else:
@@ -1284,6 +1300,11 @@ class hmdbData(MetabolomicsData):
             
             if hmdbid != None and status != None:
                 self.metStatus['hmdb:' + hmdbid.text] = status.text
+
+    def annealProteinTypeToMet2ProtDict(self):
+        for met in self.metabolitesLinkedToGenes:
+            ptype = self.protein2type.get(met, "Unknown")
+            self.metabolitesLinkedToGenes[met] = self.metabolitesLinkedToGenes[met] + "\t" + ptype
 
 # rConf = RampConfig()
 # rConf.loadConfig("../../config/external_resource_config.txt")
