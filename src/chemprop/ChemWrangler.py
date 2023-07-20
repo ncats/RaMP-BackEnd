@@ -367,6 +367,8 @@ class ChemWrangler(object):
         mol = Molecule()
         mol.source = source
         
+        i = 0
+        
         while True:
             line = sdfDB.readline()
 
@@ -377,12 +379,16 @@ class ChemWrangler(object):
             mol.source = source
         
             lineToks = line.split("\t")
-            mol.id = lineToks[0].strip()
-            mol.monoisotopicMass = lineToks[1].strip()
-            mol.inchiKey = lineToks[2].strip()
-            mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
+            mol.id = 'pubchem:' + lineToks[0].strip()
+            mol.monoisotopicMass = float(lineToks[2].strip())
+            # mol.inchiKey = lineToks[2].strip()
+            # mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
         
             molDict[mol.id] = mol
+            
+            i = i + 1
+            if i % 100000000 == 0:
+                print("pubchem load progres = "+str(i))
             
         sdfDB.close()
         
@@ -429,10 +435,10 @@ class ChemWrangler(object):
                 file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('chebi', file)
             if source == 'kegg':
-                file = "../../misc/data/chemprops/kegg_compound.txt"
+                file = "../misc/data/chemprops/kegg_compound.txt"
                 self.readSDF('kegg', file)
             if source == 'pubchem':
-                file = "../../misc/data/chemprops/pubchem_id_mi_inchikey_issue_set.txt"
+                file = "../misc/data/chemprops/CID-Mass"
                 self.readSDF('pubchem', file) 
             if source == 'lipidmaps':
                 sdfConfig = self.resourceConfig.getConfig('lipidmaps_met')

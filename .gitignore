@@ -3,5 +3,5 @@ misc/data/
 misc/sql/
 misc/output/
 misc/jupyter/
-
+conf/*db_props*
 

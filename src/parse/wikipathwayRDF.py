@@ -446,7 +446,8 @@ class WikipathwaysRDF(MetabolomicsData):
             
             # skip pubchem.substance id at this moment
             #ttd.drug is new addition for the feb 10 2019 data
-            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey']:
+            # sikp uniprot ids on metabolites... for small peptides            
+            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
                 
                 metabolite_list.add(metabolites_id)
@@ -613,7 +614,7 @@ class WikipathwaysRDF(MetabolomicsData):
         elif prefix == 'kegg.glycan' or prefix == 'kegg_glycan':
             id = 'kegg_glycan:' +id
         elif prefix == 'brenda':
-            id = 'brenda:' +id    
+            id = 'brenda:' +id  
         else:
             id = 'UNKNOWN_ID_TYPE_HEYYYYYY:' + id
 
