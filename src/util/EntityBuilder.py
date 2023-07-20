@@ -60,6 +60,9 @@ class EntityBuilder(object):
         '''
         Constructor
         '''
+        
+        self.localPathPrefix = './'
+        
         # config for data sources
         self.resConfig = resourceConfig
         
@@ -90,7 +93,7 @@ class EntityBuilder(object):
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
-        self.dataSource2.sourceLocPath = '../misc/output/reactome/';
+        self.dataSource2.sourceLocPath = self.localPathPrefix + '../misc/output/reactome/';
          
         self.sourceList.append(self.dataSource2)
          
@@ -98,7 +101,7 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
-        self.dataSource3.sourceLocPath = '../misc/output/wikipathwayRDF/';        
+        self.dataSource3.sourceLocPath = self.localPathPrefix + '../misc/output/wikipathwayRDF/';        
          
         self.sourceList.append(self.dataSource3)
          
@@ -106,7 +109,7 @@ class EntityBuilder(object):
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
         self.dataSource4.haveChemClassInfo = True
-        self.dataSource4.sourceLocPath = '../misc/output/lipidmaps/';        
+        self.dataSource4.sourceLocPath = self.localPathPrefix + '../misc/output/lipidmaps/';        
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
@@ -126,7 +129,7 @@ class EntityBuilder(object):
         # mapping exclusion list and population of the list
         # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
-        self.mappingExclustionList.populateExclusionList("../config/curation_mapping_issues_list.txt")
+        self.mappingExclustionList.populateExclusionList(self.localPathPrefix + "../config/curation_mapping_issues_list.txt")
     
         # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()
@@ -183,6 +186,16 @@ class EntityBuilder(object):
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
+        # we have some inchikey prefix values, for those mets build an inchikey prefix to met mapping
+        self.metaboliteList.buildInchiKeyPrefixToMetaboliteMapping()
+        
+        # now build neighbor relationships recursively so that each met knows it's neighborhood (phew)
+        # then visit each neighborhood to set common rampIds
+        # there can be some very big neighborhoods. Each met should be in exactly one nieghborhood
+        # but because of id mapping and multiple inchikeys per ramp id, we cross inchi boundaries supported by ids.
+        # my brain is going to explode :) 
+        self.metaboliteList.collapseMetsOnInchiKeyPrefix()
+        
         # loader file writes
         
         # make sql directory if it doesn't exist
@@ -237,14 +250,16 @@ class EntityBuilder(object):
                 
                 # add the sourceId and altId to the support dictionary
                 if currSourceId not in self.sourceIdToIDDict:
-                    self.sourceIdToIDDict[currSourceId] = list()
-                
-                self.sourceIdToIDDict[currSourceId].append(altId)
+                    self.sourceIdToIDDict[currSourceId] = list()                
                 
                 excludeMappingConnection = False
                 
                 # check exclusion mapping list
                 excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
+                
+                # if it should be excluded, then it's ok to keep this connection
+                if not excludeMappingConnection:
+                    self.sourceIdToIDDict[currSourceId].append(altId)
                 
                 if excludeMappingConnection:
                     self.curationAvoidanceCount = self.curationAvoidanceCount + 1
@@ -342,7 +357,7 @@ class EntityBuilder(object):
                     met.addCommonName(row[0], row[1], source)
     
         # resolve common name for ids without corresponding common names
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         for met in mets:
             met.resolveCommonNames()
     
@@ -361,7 +376,7 @@ class EntityBuilder(object):
                 hmdbStatus[row[0]] = row[1]
             
             # traverse metabolite list
-            mets = self.metaboliteList.getUniqueMetabolites()
+            mets = self.metaboliteList.getAllMetabolites()
             for met in mets:
                 idlist = met.idDict.get("hmdb", None)
                 if idlist is not None:
@@ -1059,7 +1074,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         print("Starting Write of metabolites: size = " + str(len(mets)))
         
@@ -1101,7 +1116,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytetopathway.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             sourcefile.write(met.toPathwayMapString())
@@ -1132,7 +1147,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
-        for met in self.metaboliteList.getUniqueMetabolites():
+        for met in self.metaboliteList.getAllMetabolites():
             sourcefile.write(met.rampId + "\tcompound\n")
             
         for gene in self.geneList.getUniqueGenes():
@@ -1146,7 +1161,7 @@ class EntityBuilder(object):
         Writes chemcial properties file for all data sources.
         """
         chemPropsFile  = open("../misc/sql/chemProps.txt", "w+", encoding='utf-8')
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         for met in mets:
             if len(met.chemPropsMolecules) > 0:
                 chemPropsFile.write(met.toChemPropsString())
@@ -1160,7 +1175,7 @@ class EntityBuilder(object):
         """
         synonymfile  = open("../misc/sql/analytesynonym.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             s = met.toSynonymsString()        
@@ -1181,7 +1196,7 @@ class EntityBuilder(object):
         """
         file = open("../misc/sql/catalyzes.txt", "w+", encoding='utf-8')
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             s = met.toMetToGeneAssociationString()
@@ -1208,7 +1223,7 @@ class EntityBuilder(object):
     
     
     def writeOntologyAssociations(self):
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
 
         file = open("../misc/sql/analyteToOntology.txt", "w+", encoding='utf-8')
         for met in mets:
@@ -1220,7 +1235,7 @@ class EntityBuilder(object):
         
             
     def writeMetaboliteClass(self):
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
 
         file = open("../misc/sql/metaboliteClass.txt", "w+", encoding='utf-8')
         for met in mets:
@@ -1318,7 +1333,7 @@ class EntityBuilder(object):
         """
         problemMets = list()
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             dev = met.checkMWParity(mwTolerance, pctOrAbs)
@@ -1336,7 +1351,7 @@ class EntityBuilder(object):
         """
         problemMets = list()
         
-        mets = self.metaboliteList.getUniqueMetabolites()
+        mets = self.metaboliteList.getAllMetabolites()
         
         for met in mets:
             uniqueInchiBaseCnt = met.checkInchiBaseParity()
@@ -1414,7 +1429,7 @@ class EntityBuilder(object):
             
             totalMismatches.extend(mismatchList)
                   
-        with open("../misc/resourceConfig/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
+        with open("../misc/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
     
@@ -1554,26 +1569,31 @@ class EntityBuilder(object):
         
 #        12/2021 - temporary code used to evaluate pubchem cids that were associated with
 #        The code uses pubchempy and their api to pull in compound attributes used to validate pubchem mapping
-#        
+#       
+#         pubchemCidMW = [] 
 #         for id in met.idList:
 #              #this will accumulate pubchem monoisotopic masses
 #             if id.startswith("pubchem"):
-#                  
-#                            
+#                                               
 #                 if id not in pubchemMW:
 #                     try:
 #                         c = pcp.Compound.from_cid(id.split(":")[1])
 #                     except:
 #                         continue
 #                         print("Cid lacks a record at pubchem: " + id)
-#                      
+#                       
 #                     # give pubchem a rest
 #                     time.sleep(0.75)
 #                     if c is not None and c.inchikey is not None:
 #                         pubchemMW[id] = c.monoisotopic_mass
+#                         pubchemCidMW.append([id,c.monoisotopic_mass])
 #                         if c.inchikey is not None:
 #                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey + "\t" + c.molecular_formula)
-
+#         
+#         
+#             
+#         pubchemCidMW = pd.DataFrame(pubchemCidMW)
+#         pubchemCidMW.to_csv("pubchem_cid_to_mi.txt", sep='\t')
                    
         # now reconcile the differences, hmdb to pubchem and chebi to pubchem, also hmdb and chebi to kegg
         misMatchList = list()
@@ -1802,8 +1822,8 @@ class MappingExclusionList(object):
         print("Exclusion List Size = " + str(len(list(self.sourceIdToExtIdDict.keys()))))
         
 
-# builder = EntityBuilder()
-#builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
+builder = EntityBuilder()
+builder.crossCheckMetaboliteHarmony(buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct')
 # builder.fullBuild()
 # print("starting to load metabolites")
 # builder.loadMetaboList()

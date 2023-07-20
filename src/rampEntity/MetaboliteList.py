@@ -6,6 +6,7 @@ Created on Nov 6, 2020
 from rampEntity.Metabolite import Metabolite
 from itertools import permutations 
 
+
 class MetaboliteList(object):
     '''
     Container list class holding metabolites. The list class supports access and set methods as well as
@@ -17,6 +18,8 @@ class MetaboliteList(object):
         Constructor
         '''
         self.metaboliteSourceIdList = dict()
+        
+        self.inchikeyPrefixToMetab = dict()
         
         self.sourceSummary = dict()
         
@@ -62,6 +65,8 @@ class MetaboliteList(object):
         """
         return list(set(self.metaboliteSourceIdList.values()))
     
+    def getAllMetabolites(self):
+        return list(self.metaboliteSourceIdList.values())                    
             
     def generateMetaboliteSourceStats(self, sourceList):
         """
@@ -101,6 +106,100 @@ class MetaboliteList(object):
         print("Tot Molecules records: " + str(molRecords))
         
         
-                    
+    
+    def buildInchiKeyPrefixToMetaboliteMapping(self):
         
+        self.inchikeyPrefixToMetab
+        
+        inchiPrefMap = dict()
+        noInchiMet = list()
+        
+        mets = self.getUniqueMetabolites()
+        
+        # build a mapping from inchi prefix to metabolites
+        for met in mets:
+            haveInchiPrefix = False
+            inchiKeyPrefixes = met.getInchiPrefixes()
+            for prefix in inchiKeyPrefixes:
+                haveInchiPrefix = True
+                metList = self.inchikeyPrefixToMetab.get(prefix, None)
+                if metList is None:
+                    metList = list()
+                    metList.append(met)
+                    self.inchikeyPrefixToMetab[prefix] = metList
+                else:
+                    metList.append(met)
+#             if len(met.chemPropsMolecules) > 0:
+#                 for source in met.chemPropsMolecules:
+#                     
+#                     molDict = met.chemPropsMolecules[molname]
+#                     for sourceId in molDict:
+#                         mol = molDict[sourceId]
+#                         if len(mol.inchiKeyPrefix) > 0:
+#                             haveInchiPrefix = True
+#                             metList = self.inchikeyPrefixToMetab.get(mol.inchiKeyPrefix, None)
+#                             if metList is None:
+#                                 metList = list()
+#                                 metList.append(met)
+#                                 self.inchikeyPrefixToMetab[mol.inchiKeyPrefix] = metList
+#                             else:
+#                                 metList.append(met)
+            if not haveInchiPrefix:
+                noInchiMet.append(met)
+    
+    
+    def collapseMetsOnInchiKeyPrefix(self):
+        for inchiPrefix in self.inchikeyPrefixToMetab:
+            metList = self.inchikeyPrefixToMetab[inchiPrefix]
+            if len(metList) > 1:
+                firstPass = True
+                rampId = ""
+                for met in metList:
+                    if firstPass:
+                        firstPass = False
+                        rampId = met.rampId
+                    else:
+                        met.rampId  = rampId    
+                    
+    # if a metabolite has chemical properties, and the chem props include the inchi prefix of interest
+    # return the list of metabolites                
+    def collapseMetaboliteListOnInchiPrefix(self):
+                
+        # now we collapse, we need to reach out to others
+        inchiPrefixesHit = []
+        inchiPrefixesToRemove = []
+        
+        rampIdSets = dict()
+        
+        for inchiPrefix in self.inchikeyPrefixToMetab:
+            currMets = []
+            inchiPrefixesHit = []
+            metList = self.inchikeyPrefixToMetab[inchiPrefix]
+            rampId = ""
+            
+            # Just keep the same metabolite objects, but set the ramp id to be the same :)
+            if len(metList) > 1:
+                for met in metList:
+                    for met2 in metList:
+                        if met != met2:
+                            met.addInchiNeighbor(met2)
+            
+        # now each metabolite linked by an inchi has a list of it's neighbors
+        # neighbors propagate through neighbors in each addition so that neighbors meet neighbors
+        # neighbors are connected by shared inchi prefixes
+        # now a smart traversal should set common ramp ids across all neighbors
+        mets = self.getUniqueMetabolites()
+        
+        touchedMets = list()
+        for met in mets:
+            inchiNeigbors = met.getInchiNeighborhood()    
+            
+            rampId = met.rampId
+            for neighbor in inchiNeigbors:
+                # if we've not examined a neighborhood, then set the common ramp id
+                if neighbor not in touchedMets:
+                    touchedMets.append(neighbor)
+                    neighbor.rampId = rampId                    
+                    
+            
     

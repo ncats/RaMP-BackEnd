@@ -241,7 +241,8 @@ class hmdbData(MetabolomicsData):
                            "het_id": "NA",
                            "hmdb_id": 'NA',
                            "CAS": "NA",
-                           'LIPIDMAPS':'NA'}
+                           'LIPIDMAPS':'NA',
+                           'hmdb_secondary_id':'NA'}
                 # Store target tag and key value for mapping dictionary
                 idtag = {"chebi_id":'chebi_id',
                          "kegg_id":'kegg_id',
@@ -273,6 +274,16 @@ class hmdbData(MetabolomicsData):
                     if childtag == "accession":
                         metabohmdbid = 'hmdb:' + child.text.strip()
                         mapping['hmdb_id'] = metabohmdbid
+                        
+                    # capture secondary ids    
+                    elif childtag == "secondary_accessions":
+                        children = child.findall('{http://www.hmdb.ca}accession')
+                        if children is not None:
+                            for kid in children:
+                                if type(mapping['hmdb_secondary_id']) is not list:
+                                    mapping['hmdb_secondary_id'] = list()                               
+                                mapping['hmdb_secondary_id'].append('hmdb:' + kid.text.strip())
+                            
                     # if this tag is in the id we are looking for
                     elif childtag in idtag:
                         source = idtag[childtag]
@@ -1174,6 +1185,7 @@ class hmdbData(MetabolomicsData):
         This function is used to give categories of hmdb pathways
         The raw data is from SMPDB.txt, which depends on the version of SMPDB
         '''
+        
 #         SMPDB2 = []
 #         with open('../misc/SMPDB.txt', 'r') as f:
 #             for line in f:

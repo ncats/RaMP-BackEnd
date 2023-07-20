@@ -52,6 +52,8 @@ class Metabolite(object):
         
         self.isCofactor = 0
                  
+        self.inchiPrefixNeigbors = list()         
+                 
     def __eq__(self, other):
         """
         Equality check. Checks for shared ramp_id or a non-empty intersection of ids lists.
@@ -455,5 +457,47 @@ class Metabolite(object):
     
             
     #def setStatus(self):            
+    def getInchiPrefixes(self):
+        inchiPrefixes = []
+        for source in self.chemPropsMolecules:
+            molDict = self.chemPropsMolecules[source]
+            for sourceId in molDict:
+                mol = molDict[sourceId]
+                if mol.inchiKeyPrefix is not "" and mol.inchiKeyPrefix not in inchiPrefixes:
+                    inchiPrefixes.append(mol.inchiKeyPrefix)
+        return inchiPrefixes
+    
+    def addInchiNeighbor(self, otherMet):
+        if self is not otherMet:
+            if otherMet not in self.inchiPrefixNeigbors:
+                # if the other met hasn't already been added as a neighbor
+                for neighbor in self.inchiPrefixNeigbors:
+                    # add neighbors to the other met - introductions...
+                    neighbor.addInchiNeighbor(otherMet)
+                    # introduce other neighbor to existing neighbors
+                    otherMet.addInchiNeighbor(neighbor)
+                
+                # finally add the new neighbor to the neighbor list    
+                self.inchiPrefixNeigbors.append(otherMet)
+            
+    
+    def getInchiNeighborhood(self):
+        
+        neighbors = self.inchiPrefixNeigbors
+        
+        for neighbor in self.inchiPrefixNeigbors:
+            neighbor.getNeighbors(neighbors)
+
+        return neighbors
+
+    # recursive get neighbors
+    def getNeighbors(self, neighbors):
+               
+        for neighbor in self.inchiPrefixNeigbors:
+            # just work on new neighbors, add the neighbor and get their neighbors
+            if(neighbor not in neighbors):
+                neighbors.append(neighbor)
+                neighbor.getNeighbors(neighbors)
+     
     
     
