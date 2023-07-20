@@ -357,7 +357,8 @@ class reactomeData(MetabolomicsData):
         #print("Unfound genes for name are " + str(len(reactGeneIds)))
         
         Ids = reactGeneIds
-        url ="http://www.uniprot.org/uniprot/"
+        # url ="http://www.uniprot.org/uniprot/"
+        url ="https://rest.uniprot.org/uniprotkb/"        
         dir = "../misc/data/Uniprot/"
         self.check_path(dir)
         files = os.listdir(dir)

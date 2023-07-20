@@ -88,7 +88,9 @@ class rampDBBulkLoader(object):
         # final catch of a situation that can be avoided   
         if(uniqueCol):
             df = df.drop_duplicates(subset=[uniqueCol], inplace=False)
-    
+        else:
+            df = df.drop_duplicates(ignore_index=False, inplace=False, keep='first')
+            
         # this loads the data frame into the table.
         try:
             df.to_sql(table, engine, if_exists = 'append', index=False)
@@ -277,7 +279,10 @@ class rampDBBulkLoader(object):
         dbVersion = dbVersionDF.iloc[0,0]
         today = dbVersionDF.iloc[0,1].date()
 
-        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None)
+        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None, header=0)
+
+        for c in versionInfo.columns:
+            print("column: "+c)
 
         versionInfo['ramp_db_version'] = dbVersion
         versionInfo['db_mod_date'] = today
@@ -926,6 +931,9 @@ class intersectNode(object):
         
 # start = time.time()
 #loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
+
+#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
+      
 #sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
 #print('have json res')
 #print(jsonRes)
@@ -939,10 +947,18 @@ class intersectNode(object):
 
 #loader.updateSourcePathwayCount()
 #wloader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/36760461")
+
+# loader.currDBVersion = "v2.2.0"
+#loader.updateSourcePathwayCount()
+
+#loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/38534654")
+
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #ei = loader.collectEntityIntersects("compound", 'json', False)
 #print(ei)
-# loader.updateEntityIntersects(filterComps=False)
+#loader.updateEntityIntersects(filterComps=False)
+
+
 
 #loader.updateDataStatusSummary()
 # print(str(time.time()-start))
@@ -953,3 +969,5 @@ class intersectNode(object):
 
 #loader.updateDBVersion('specified', "v2.1.0", "August 2022 Update")
 
+# loader.updateDBVersion('specified', "v2.2.0", "secondary hmdb ids added, merge common inchi-key prefix")
+# loader.updateVersionInfo("../../config/ramp_resource_version_update.txt") 
