@@ -353,6 +353,9 @@ class WikipathwaysRDF(MetabolomicsData):
                 print ("protein: " + protein)
                 print ("pathway: " + this_pathway)
             if genesource not in not_retrieved:
+                # some new source id types we don't want to capture, July 2023 started to get hgnc numbers, wiki only has 154 of them... skip them.
+                if genesource not in possible_source:
+                    continue
                 geneMapping[possible_source[genesource]] = [geneid]
                 genelist.add(geneid)
                 for key,value in bdbLinks.items():
