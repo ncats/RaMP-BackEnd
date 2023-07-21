@@ -369,7 +369,7 @@ class Metabolite(object):
         s = ""
         
         for gene in self.associatedGenes:
-            s = s + self.rampId + "\t" + gene.rampId + "\n"
+            s = s + self.rampId + "\t" + gene.rampId + "\t" + gene.proteinType + "\n"
         
         return s
     
