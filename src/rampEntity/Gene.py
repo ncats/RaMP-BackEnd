@@ -43,6 +43,7 @@ class Gene(object):
         # list of sources associated with the gene.          
         self.sources = list()
         
+        self.proteinType = "Unknown"
     
     def __eq__(self, other):
         """

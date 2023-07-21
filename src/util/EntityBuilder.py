@@ -897,7 +897,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesLinkedToGenes.txt"
     
             metaboliteToGene = dict()
-            
+            geneToProteinType = dict()
             
             if path.exists(file):
 #                print ("metaboliteToGene mappings for " + source)
@@ -909,8 +909,12 @@ class EntityBuilder(object):
                 for i,row in df.iterrows():
                     met = row[0]
                     gene = row[1]
+                    proteinType = row[2]
+                    
                     if met not in metaboliteToGene:
                         metaboliteToGene[met] = list()
+                    
+                    geneToProteinType[gene] = proteinType
                     
                     metaboliteToGene[met].append(gene)
 
@@ -920,6 +924,10 @@ class EntityBuilder(object):
                     
                     targetMet = self.metaboliteList.getMetaboliteBySourceId(met)
                     targetGene = self.geneList.getGeneById(gene)
+                    
+                    # add protein type to targetGene
+                    if targetGene is not None:
+                        targetGene.proteinType = geneToProteinType[gene] 
                     
                     if targetMet and targetGene:
                         targetMet.addAssociatedGene(targetGene)

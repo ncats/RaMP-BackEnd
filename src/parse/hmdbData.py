@@ -8,7 +8,7 @@ import os
 from parse.MetabolomicsData import MetabolomicsData
 import pandas as pd
 from rampConfig.RampConfig import RampConfig
-from jupyterlab_server.process import pty
+
 
 
 class hmdbData(MetabolomicsData):
@@ -1303,8 +1303,12 @@ class hmdbData(MetabolomicsData):
 
     def annealProteinTypeToMet2ProtDict(self):
         for met in self.metabolitesLinkedToGenes:
-            ptype = self.protein2type.get(met, "Unknown")
-            self.metabolitesLinkedToGenes[met] = self.metabolitesLinkedToGenes[met] + "\t" + ptype
+            prots = self.metabolitesLinkedToGenes[met]
+            protDict = dict()
+            for prot in prots:                
+                ptype = self.protein2type.get(prot, "Unknown")
+                protDict[prot] = ptype
+            self.metabolitesLinkedToGenes[met] = protDict
 
 # rConf = RampConfig()
 # rConf.loadConfig("../../config/external_resource_config.txt")

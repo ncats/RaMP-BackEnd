@@ -345,6 +345,10 @@ class ChemWrangler(object):
                 for val in vals:
                     mol.addName(val.strip())
                     mol.nameDict[source] = val.strip()
+            if line == '> <ABBREVIATION>':
+                name = sdfDB.readline().strip()
+                mol.addName(name)
+                mol.nameDict[source] = name
             if line == '> <FORMULA>':
                 mol.formula = sdfDB.readline().strip()
             if line in idDict:
