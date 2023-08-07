@@ -1258,7 +1258,8 @@ class EntityBuilder(object):
         
         for rxnId in self.reactionDict:
             rxn = self.reactionDict[rxnId]
-            file.write(rxn.getMainRecordString())
+            if rxn.status > 0:
+                file.write(rxn.getMainRecordString())
             
         file.close()
         
