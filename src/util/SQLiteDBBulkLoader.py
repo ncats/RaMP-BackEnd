@@ -924,15 +924,15 @@ class SQLiteDBBulkLoader(object):
 
     def generateAndLoadRampSupplementalData(self):
         
-        dataBuilder = RampSupplementalDataBuilder(dbType = 'sqlite', credInfo = self.sqliteFileName)        
+        dataBuilder = RampSupplementalDataBuilder(dbType = 'sqlite', sqliteCreds = self.sqliteFileName)        
         
         dataSources = ['reactome', 'wiki', 'kegg']
         analyteTypes = ['metab', 'gene']
         
-#         pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
-#         pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
-#         pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
-#         
+        pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
+        pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
+        pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
+         
         analyteSets = dict()
         
         for source in dataSources:
@@ -946,30 +946,38 @@ class SQLiteDBBulkLoader(object):
         sqlDelete = "delete from ramp_data_object"
         
         
-        sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_object)"
+        sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_blob)"
         
         with self.engine.connect() as conn:
             conn.execute(sqlDelete)
             
+            #meta_data = MetaData(bind=conn)
+            #meta_data.reflect()
+            #dataObj = meta_data.tables['ramp_data_object']
+            
             vals = dict()
             
-#             vals['data_key'] = 'analyte_result'
-#             objVal = pwSimMat_analytes.to_csv(sep="\t")
-#             objVal = zlib.compress(objVal.encode())            
-#             vals['data_object'] = objVal
-#             conn.execute(sql, vals)
-# 
-#             vals['data_key'] = 'metabolites_result'
-#             objVal = pwSimMat_mets.to_csv(sep="\t")
-#             objVal = zlib.compress(objVal.encode())            
-#             vals['data_object'] = objVal
-#             conn.execute(sql, vals)
-#             
-#             vals['data_key'] = 'genes_result'
-#             objVal = pwSimMat_genes.to_csv(sep="\t")
-#             objVal = zlib.compress(objVal.encode())            
-#             vals['data_object'] = objVal
-#             conn.execute(sql, vals)
+            vals['data_key'] = 'analyte_result'
+            objVal = pwSimMat_analytes.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            conn.execute(sql, vals)
+            #conn.execute(dataObj.insert(), vals) 
+
+            vals['data_key'] = 'metabolites_result'
+            objVal = pwSimMat_mets.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            conn.execute(sql, vals)
+            #conn.execute(dataObj.insert(), vals) 
+
+ 
+            vals['data_key'] = 'genes_result'
+            objVal = pwSimMat_genes.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            conn.execute(sql, vals)
+            #conn.execute(dataObj.insert(), vals) 
             
             for analyteKey in analyteSets:
 
@@ -978,10 +986,14 @@ class SQLiteDBBulkLoader(object):
                 objVal = analyteSets[analyteKey]
                 objVal = objVal.to_csv(sep="\t")
                 objVal = zlib.compress(objVal.encode())
-                vals['data_object'] = objVal
+                vals['data_blob'] = objVal
+                # conn.execute(dataObj.insert(), vals) 
                 conn.execute(sql, vals)
                 
-            conn.close()
+            conn.close()            
+
+            
+                
         
 
 
@@ -1040,9 +1052,9 @@ class intersectNode(object):
         self.size = 0
         self.id = ""              
         
-loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="X:\\braistedjc\\tmp_work\\RaMP_SQLite_v2.3.0.sqlite")
+#loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0.sqlite")
 #loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0_Structure.sqlite")
-loader.generateAndLoadRampSupplementalData()
+#loader.generateAndLoadRampSupplementalData()
 
 
    
