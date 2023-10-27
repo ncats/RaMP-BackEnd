@@ -68,6 +68,11 @@ class mainDBLoad():
         # this method populates a table that reflects the current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
+        
+        # generate pathway similarity matrices, analyte lists and whatnot
+        # this process replaced the old system of having Rdata in the package
+        loader.generateAndLoadRampSupplementalData()
+
 
 
 loader = mainDBLoad()

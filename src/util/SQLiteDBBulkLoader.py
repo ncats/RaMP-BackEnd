@@ -929,10 +929,10 @@ class SQLiteDBBulkLoader(object):
         dataSources = ['reactome', 'wiki', 'kegg']
         analyteTypes = ['metab', 'gene']
         
-        pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
-        pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
-        pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
-        
+#         pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
+#         pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
+#         pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
+#         
         analyteSets = dict()
         
         for source in dataSources:
@@ -941,31 +941,35 @@ class SQLiteDBBulkLoader(object):
         
         #pwSimMat_mets.to_csv("C:/Users/braistedjc/Desktop/Analysis/Ramp/Junk_Test_Mets_Sim_Mat.txt", sep="\t")
         
-        analytesSim = pwSimMat_mets.to_csv(sep="\t")
-        analytesSim = zlib.compress(analytesSim.encode())
+        #analytesSim = pwSimMat_mets.to_csv(sep="\t")
+        #analytesSim = zlib.compress(analytesSim.encode())
+        sqlDelete = "delete from ramp_data_object"
+        
         
         sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_object)"
         
         with self.engine.connect() as conn:
+            conn.execute(sqlDelete)
+            
             vals = dict()
             
-            vals['data_key'] = 'analyte_result'
-            objVal = pwSimMat_analytes.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_object'] = objVal
-            conn.execute(sql, vals)
-
-            vals['data_key'] = 'metabolites_result'
-            objVal = pwSimMat_mets.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_object'] = objVal
-            conn.execute(sql, vals)
-            
-            vals['data_key'] = 'genes_result'
-            objVal = pwSimMat_genes.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_object'] = objVal
-            conn.execute(sql, vals)
+#             vals['data_key'] = 'analyte_result'
+#             objVal = pwSimMat_analytes.to_csv(sep="\t")
+#             objVal = zlib.compress(objVal.encode())            
+#             vals['data_object'] = objVal
+#             conn.execute(sql, vals)
+# 
+#             vals['data_key'] = 'metabolites_result'
+#             objVal = pwSimMat_mets.to_csv(sep="\t")
+#             objVal = zlib.compress(objVal.encode())            
+#             vals['data_object'] = objVal
+#             conn.execute(sql, vals)
+#             
+#             vals['data_key'] = 'genes_result'
+#             objVal = pwSimMat_genes.to_csv(sep="\t")
+#             objVal = zlib.compress(objVal.encode())            
+#             vals['data_object'] = objVal
+#             conn.execute(sql, vals)
             
             for analyteKey in analyteSets:
 
@@ -1036,9 +1040,9 @@ class intersectNode(object):
         self.size = 0
         self.id = ""              
         
-
+loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="X:\\braistedjc\\tmp_work\\RaMP_SQLite_v2.3.0.sqlite")
 #loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0_Structure.sqlite")
-#loader.generateAndLoadRampSupplementalData()
+loader.generateAndLoadRampSupplementalData()
 
 
    
