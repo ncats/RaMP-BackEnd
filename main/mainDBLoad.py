@@ -79,8 +79,8 @@ loader = mainDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
-loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', 
-                                   optionalVersionOveride = "", 
-                                   optionalVersionNote = "20220822 patch release, update chem_props inchi values.", 
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', 
+                                   optionalVersionOveride = "2.4.0", 
+                                   optionalVersionNote = "20231027 Data refresh. Inchi-key harmonization.", 
                                    truncateTables=True)
 

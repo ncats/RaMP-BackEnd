@@ -530,11 +530,11 @@ class Metabolite(object):
             for sourceId in molDict:
                 mol = molDict[sourceId]
                 
-               if(mol.mw is not None and mol.mw != ""):
+                if(mol.mw is not None and mol.mw != ""):
                     mw = float(mol.mw)
                     if not math.isnan(mw):
                         mws.append(mw)
-                                        
+                
         if(len(mws) > 0):
             medMw = median(mws)
                

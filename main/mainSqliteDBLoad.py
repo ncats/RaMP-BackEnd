@@ -36,7 +36,7 @@ class mainSQLiteDBLoad(object):
  
         # pass the credentials object to the constructed rampDBBulLoader
         
-        loader = SQLiteDBBulkLoader(self.dbPropsFile, sqliteFile)
+        loader = SQLiteDBBulkLoader(dbPropsFile=self.dbPropsFile, sqliteFileName=sqliteFile)
 
 
         # truncate tables
@@ -79,7 +79,7 @@ loader = mainSQLiteDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
-loader.loadDBAfterTruncatingTables(sqliteFile = '../RaMP_SQLite_v2.3.0_Structure.sqlite', incrementLevel = 'specified',  
+loader.loadDBAfterTruncatingTables(sqliteFile = '/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0.sqlite', incrementLevel = 'specified',  
                                    optionalVersionOveride = "2.3.0", 
                                    optionalVersionNote = "20230727 data update/refresh release", 
                                    truncateTables=True)

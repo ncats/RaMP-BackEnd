@@ -12,6 +12,7 @@ import os.path
 from os import path
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
+from sqlalchemy import bindparam
 import logging
 from jproperties import Properties
 from urllib.parse import quote_plus
@@ -48,7 +49,7 @@ class rampDBBulkLoader(object):
          
         pd.set_option('display.max_columns', None)   
      
-        
+        self.engine = self.createMySQLEngine()
     
     def remove_whitespace(self, dF):     
         for colName in dF.columns:
@@ -57,6 +58,17 @@ class rampDBBulkLoader(object):
                 print("fixing column...")
         return dF
                 
+    def createMySQLEngine(self):
+        print("In supplemental data builder, building mysql engine")
+        #self.dbConf.dumpConfig()
+        #print(type(dbConf.port))
+        #conStr = ("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}?port={port}").format(username=seldbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname,port=dbConf.port)
+        #print(conStr)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}:{port}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname,port=self.dbConf.port)), echo=False)
+
+        return engine
+
+
             
         
     
@@ -109,7 +121,7 @@ class rampDBBulkLoader(object):
         #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
         data = pd.read_table(file_path, sep="\t", header=None, names=colNames, index_col=None, engine="python")     
         df = pd.DataFrame(data)
-    
+     
         # issue with whitespace    
         df = self.remove_whitespace(df)
         
@@ -154,6 +166,7 @@ class rampDBBulkLoader(object):
                          user=self.dbConf.username,
                          password=self.dbConf.conpass,
                          db=self.dbConf.dbname,
+                         port=self.dbConf.port,
                          charset = 'utf8',
                          use_unicode=True)
         #conn.set_charset_collation('utf16')
@@ -248,7 +261,7 @@ class rampDBBulkLoader(object):
             fileResource.initFileResource(config)            
             resources.append(fileResource)
             
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
 
         print("Hey in loading loop now") 
         for resource in resources:
@@ -267,7 +280,7 @@ class rampDBBulkLoader(object):
     def updateVersionInfo(self, infoFile):
         print("Updating Version Info")
 
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
        
         sql = "select ramp_version, load_timestamp from db_version order by load_timestamp desc limit 1"
         
@@ -304,7 +317,7 @@ class rampDBBulkLoader(object):
         
         print("starting update entity summary")
         
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
         
         sqlMets = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource not like '%%kegg' group by dataSource"
         sqlKeggMets = "select count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource like '%%_kegg'"
@@ -401,7 +414,7 @@ class rampDBBulkLoader(object):
         
         self.dbConf.dumpConfig()
         
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
         
         versionSQL = "select * from db_version where load_timestamp = (select max(load_timestamp) from db_version)"
 
@@ -467,7 +480,8 @@ class rampDBBulkLoader(object):
         vals.append({'met_intersects_json':cmpdIntersects, 'gene_intersects_json':geneIntersects, 'met_intersects_json_pw_mapped':cmpdIntersectsInPW, 'gene_intersects_json_pw_mapped':geneIntersectsInPW})
         
         if self.currDBVersion != None:
-            engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+
+            engine =  self.engine
             
             with engine.connect() as conn:
                 meta_data = MetaData(bind=conn)
@@ -816,7 +830,7 @@ class rampDBBulkLoader(object):
         "where ap.pathwaySource != 'hmdb' group by ap.rampId) as metPathwayInfo "\
         "set source.pathwayCount = metPathwayInfo.pathwayCount where source.rampId = metPathwayInfo.rampId"
                 
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
    
         with engine.connect() as conn:
             conn.execute(sql)
@@ -832,7 +846,7 @@ class rampDBBulkLoader(object):
         "(select rampOntologyId, count(distinct(rampCompoundId)) as metCount from analytehasontology group by rampOntologyId)"\
         "as ontologyMetInfo set ontology.metCount = ontologyMetInfo.metCount where ontology.rampOntologyId = ontologyMetInfo.rampOntologyId"
     
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
    
         with engine.connect() as conn:
             conn.execute(sql)
@@ -843,7 +857,7 @@ class rampDBBulkLoader(object):
     def updateCurrentDBVersionDumpURL(self, dumpUrl):
         self.dbConf.dumpConfig()
         
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
         
         print("Updating DB Version")
                 
@@ -862,7 +876,9 @@ class rampDBBulkLoader(object):
     def truncateTables(self, tablesToSkip):
         self.dbConf.dumpConfig()
         
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        engine = self.engine
+
+        #engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
         
         print("Updating DB Version")
                 
@@ -889,7 +905,7 @@ class rampDBBulkLoader(object):
         pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
         pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
         pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
-         
+        
         analyteSets = dict()
         
         for source in dataSources:
@@ -897,58 +913,65 @@ class rampDBBulkLoader(object):
                 analyteSets[source + "_" + analyteType] = dataBuilder.buildAnalyteSet(dataSource=source, geneOrMet=analyteType)
         
         #pwSimMat_mets.to_csv("C:/Users/braistedjc/Desktop/Analysis/Ramp/Junk_Test_Mets_Sim_Mat.txt", sep="\t")
+        
         #analytesSim = pwSimMat_mets.to_csv(sep="\t")
         #analytesSim = zlib.compress(analytesSim.encode())
         sqlDelete = "delete from ramp_data_object"
         
         
-        sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_object)"
-        
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        # sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_blob)"
+        sql = "insert into ramp_data_object (data_key, data_blob) values (%s, %s)"
+
+        baseSQL = "insert into ramp_data_object values ("
+        engine = self.engine
+        # engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}?port={port}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname,port=self.dbConf.port)), echo=False)
         
         with engine.connect() as conn:
             conn.execute(sqlDelete)
-            
-            meta_data = MetaData(bind=conn)
-            meta_data.reflect()
-            dataObj = meta_data.tables['ramp_data_object']
+         
+            #meta_data = MetaData(bind=conn)
+            #meta_data.reflect()
+            #dataObj = meta_data.tables['ramp_data_object']
             
             vals = dict()
             
-            vals['data_key'] = 'analyte_result'
+            #vals['data_key'] = 'analyte_result'
             objVal = pwSimMat_analytes.to_csv(sep="\t")
             objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
-            #conn.execute(sql, vals)
-            conn.execute(dataObj.insert(), vals) 
+            #vals['data_blob'] = bindparam(objVal)
+            #sql = baseSQL + "'analyte_result'" + ', ' + objVal + ')'
+            conn.execute(sql, 'analyte_result', objVal)
+            #conn.execute(dataObj.insert(), vals) 
 
-            vals['data_key'] = 'metabolites_result'
+            #vals['data_key'] = 'metabolites_result'
             objVal = pwSimMat_mets.to_csv(sep="\t")
             objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
+            #vals['data_blob'] = objVal
+            conn.execute(sql, 'metabolites_result', objVal)
+
             #conn.execute(sql, vals)
-            conn.execute(dataObj.insert(), vals) 
+            #conn.execute(dataObj.insert(), vals) 
 
  
-            vals['data_key'] = 'genes_result'
+            #vals['data_key'] = 'genes_result'
             objVal = pwSimMat_genes.to_csv(sep="\t")
             objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
+            #vals['data_blob'] = objVal
+            conn.execute(sql, 'genes_result', objVal)
+
             #conn.execute(sql, vals)
-            conn.execute(dataObj.insert(), vals) 
+            #conn.execute(dataObj.insert(), vals) 
             
             for analyteKey in analyteSets:
-
                 print("Analyte_Key: "+analyteKey)
-                vals['data_key'] = analyteKey
+                #vals['data_key'] = analyteKey
                 objVal = analyteSets[analyteKey]
                 objVal = objVal.to_csv(sep="\t")
                 objVal = zlib.compress(objVal.encode())
-                vals['data_blob'] = objVal
-                conn.execute(dataObj.insert(), vals) 
-                #conn.execute(sql, vals)
-                
-            conn.close()            
+                #vals['data_blob'] = objVal
+                conn.execute(sql, analyteKey, objVal)
+                                
+            conn.close()
                 
             
 class dbConfig(object):
@@ -964,12 +987,14 @@ class dbConfig(object):
         self.username = dbConfig.get("username").data
         self.host = dbConfig.get("host").data
         self.dbname = dbConfig.get("dbname").data
+        self.port = int(dbConfig.get("port").data)
         
     def dumpConfig(self):        
         print(self.host)
         print(self.dbname)
         print(self.username)
-        print(self.conpass)    
+        print(self.conpass)
+        print(self.port)    
         
         
 class rampFileResource(object):
