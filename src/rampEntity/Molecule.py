@@ -22,9 +22,9 @@ class Molecule(object):
         self.inchiKey = ""
         
         self.inchiKeyPrefix = ""
-        
-        self.inchiKeyDuplex = ""
                 
+        self.inchiKeyDuplex = ""
+
         self.inchi = ""        
         
         self.mw = None
@@ -53,7 +53,7 @@ class Molecule(object):
         if len(self.names) > 0:
             name = self.names[0]
         s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchiKey + "\t" + self.inchi + "\t" 
-        
+
         mw = self.mw
         mi = self.monoisotopicMass
 

@@ -49,7 +49,13 @@ class RampSupplementalDataBuilder(object):
         return engine
 
     def createMySQLEngine(self, dbConf = None):
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname)), echo=False)
+        print("In ramp supplimental data builder, building mysql engine")
+        dbConf.dumpConfig()
+        print(type(dbConf.port))
+        conStr = ("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}?port={port}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname,port=dbConf.port)
+        print(conStr)
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}:{port}/{dbname}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname,port=dbConf.port)), echo=False)
+
         return engine
     
     
@@ -123,7 +129,6 @@ class RampSupplementalDataBuilder(object):
         
         print("building analyte stat set")
         
-        # NOTE the % has to be escaped for mysql, also works for sqlite, but is optional for sqlite.
         rampIdPrefix = "RAMP_C%%"
         if geneOrMet == 'gene':
             rampIdPrefix = "RAMP_G%%"
@@ -135,9 +140,7 @@ class RampSupplementalDataBuilder(object):
         df = None
 
         with self.engine.connect() as conn:
-            
-            print(sql)
-            
+
             df = conn.execute(sql).all()
             df = pd.DataFrame(df)
             
@@ -146,6 +149,10 @@ class RampSupplementalDataBuilder(object):
             print("Stats header")
             print(df.columns)
             print(type(df))
+
+            df.columns = ['pathwayRampID', 'Freq', 'pathwaySource']
+            print(df.columns)
+
             
             print(df.head(5))
             
@@ -154,12 +161,11 @@ class RampSupplementalDataBuilder(object):
         return df
 
         
-pwob = RampSupplementalDataBuilder(dbType = "sqlite", sqliteCreds = "X:\\braistedjc\\tmp_work\\RaMP_SQLite_v2.3.1b.sqlite")
+#pwob = RampSupplementalDataBuilder(dbType = "sqlite", sqliteCreds = "/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.1b.sqlite")
 #pwob.listTables()
-dm = pwob.buildSimilarityMatrix(matrixType = "analytes")
-print(dm.values.sum())
-
-# pwob.buildSimilarityMatrix(matrixType = "genes")
+#pwob.buildBaseMatrix(matrixType = "analytes")
+#dm = pwob.buildSimilarityMatrix(matrixType = "analytes")
+#print(str(dm.values.sum()))
 
 #pwob.buildAnalyteSet("wiki", "met")
 #pwob.buildAnalyteSet("wiki", "gene")
