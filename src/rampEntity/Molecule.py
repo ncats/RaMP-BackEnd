@@ -22,14 +22,16 @@ class Molecule(object):
         self.inchiKey = ""
         
         self.inchiKeyPrefix = ""
+        
+        self.inchiKeyDuplex = ""
                 
         self.inchi = ""        
         
-        self.mw = ""
+        self.mw = None
         
         self.formula = ""
         
-        self.monoisotopicMass = ""
+        self.monoisotopicMass = None
         
         self.names = [] 
         
@@ -51,7 +53,17 @@ class Molecule(object):
         if len(self.names) > 0:
             name = self.names[0]
         s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchiKey + "\t" + self.inchi + "\t" 
-        s = s + self.mw + "\t" + self.monoisotopicMass + "\t" + name + "\t" + self.formula+ "\n"
+        
+        mw = self.mw
+        mi = self.monoisotopicMass
+
+        if(mw is None):
+            mw = ""
+
+        if(mi is None):
+            mi = ""
+
+        s = s + str(mw) + "\t" + str(mi) + "\t" + name + "\t" + self.formula+ "\n"
         return s
         
     def toSourceString(self):

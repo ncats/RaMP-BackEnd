@@ -3,6 +3,8 @@ Created on Nov 6, 2020
 
 @author: braistedjc
 '''
+from statistics import median
+import math
 
 class Metabolite(object):
     '''
@@ -467,6 +469,26 @@ class Metabolite(object):
                     inchiPrefixes.append(mol.inchiKeyPrefix)
         return inchiPrefixes
     
+    def getInchiKeys(self):
+        inchiKeys = []
+        for source in self.chemPropsMolecules:
+            molDict = self.chemPropsMolecules[source]
+            for sourceId in molDict:
+                mol = molDict[sourceId]
+                if mol.inchiKey is not "" and mol.inchiKey not in inchiKeys:
+                    inchiKeys.append(mol.inchiKey)
+        return inchiKeys
+    
+    def getInchiKeyDuplexes(self):
+        inchiKeyDuplexes = []
+        for source in self.chemPropsMolecules:
+            molDict = self.chemPropsMolecules[source]
+            for sourceId in molDict:
+                mol = molDict[sourceId]
+                if mol.inchiKeyDuplex is not "" and mol.inchiKeyDuplex not in inchiKeyDuplexes:
+                    inchiKeyDuplexes.append(mol.inchiKeyDuplex)
+        return inchiKeyDuplexes
+        
     def addInchiNeighbor(self, otherMet):
         if self is not otherMet:
             if otherMet not in self.inchiPrefixNeigbors:
@@ -498,6 +520,23 @@ class Metabolite(object):
             if(neighbor not in neighbors):
                 neighbors.append(neighbor)
                 neighbor.getNeighbors(neighbors)
+
      
-    
+    def getAveMW(self):
+        mws = []
+        medMw = 0.0
+        for source in self.chemPropsMolecules:
+            molDict = self.chemPropsMolecules[source]
+            for sourceId in molDict:
+                mol = molDict[sourceId]
+                
+               if(mol.mw is not None and mol.mw != ""):
+                    mw = float(mol.mw)
+                    if not math.isnan(mw):
+                        mws.append(mw)
+                                        
+        if(len(mws) > 0):
+            medMw = median(mws)
+               
+        return medMw
     

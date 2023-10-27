@@ -6,6 +6,7 @@ Created on Aug 25, 2020
 import sys
 import mysql.connector
 import pandas as pd
+import zlib
 from pandas.api.types import is_string_dtype
 import os.path
 from os import path
@@ -18,6 +19,7 @@ import itertools
 import time
 from datetime import date
 import json
+from util.RampSupplementalDataBuilder import RampSupplementalDataBuilder
 
 class rampDBBulkLoader(object):
 
@@ -874,6 +876,79 @@ class rampDBBulkLoader(object):
                 conn.execute("truncate "+tableName)
          
             conn.close()
+    
+    
+                
+    def generateAndLoadRampSupplementalData(self):
+        
+        dataBuilder = RampSupplementalDataBuilder(dbType = 'mysql', sqliteCreds = None, dbConf = self.dbConf)        
+        
+        dataSources = ['reactome', 'wiki', 'kegg']
+        analyteTypes = ['metab', 'gene']
+        
+        pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
+        pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
+        pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
+         
+        analyteSets = dict()
+        
+        for source in dataSources:
+            for analyteType in analyteTypes:
+                analyteSets[source + "_" + analyteType] = dataBuilder.buildAnalyteSet(dataSource=source, geneOrMet=analyteType)
+        
+        #pwSimMat_mets.to_csv("C:/Users/braistedjc/Desktop/Analysis/Ramp/Junk_Test_Mets_Sim_Mat.txt", sep="\t")
+        #analytesSim = pwSimMat_mets.to_csv(sep="\t")
+        #analytesSim = zlib.compress(analytesSim.encode())
+        sqlDelete = "delete from ramp_data_object"
+        
+        
+        sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_object)"
+        
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
+        
+        with engine.connect() as conn:
+            conn.execute(sqlDelete)
+            
+            meta_data = MetaData(bind=conn)
+            meta_data.reflect()
+            dataObj = meta_data.tables['ramp_data_object']
+            
+            vals = dict()
+            
+            vals['data_key'] = 'analyte_result'
+            objVal = pwSimMat_analytes.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            #conn.execute(sql, vals)
+            conn.execute(dataObj.insert(), vals) 
+
+            vals['data_key'] = 'metabolites_result'
+            objVal = pwSimMat_mets.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            #conn.execute(sql, vals)
+            conn.execute(dataObj.insert(), vals) 
+
+ 
+            vals['data_key'] = 'genes_result'
+            objVal = pwSimMat_genes.to_csv(sep="\t")
+            objVal = zlib.compress(objVal.encode())            
+            vals['data_blob'] = objVal
+            #conn.execute(sql, vals)
+            conn.execute(dataObj.insert(), vals) 
+            
+            for analyteKey in analyteSets:
+
+                print("Analyte_Key: "+analyteKey)
+                vals['data_key'] = analyteKey
+                objVal = analyteSets[analyteKey]
+                objVal = objVal.to_csv(sep="\t")
+                objVal = zlib.compress(objVal.encode())
+                vals['data_blob'] = objVal
+                conn.execute(dataObj.insert(), vals) 
+                #conn.execute(sql, vals)
+                
+            conn.close()            
                 
             
 class dbConfig(object):

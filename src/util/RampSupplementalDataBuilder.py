@@ -7,6 +7,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from sklearn.metrics.pairwise import pairwise_distances
+#from .rampDBBulkLoader import dbConfig
 
 class RampSupplementalDataBuilder(object):
     '''
@@ -14,7 +15,7 @@ class RampSupplementalDataBuilder(object):
     '''
 
 
-    def __init__(self, dbType, credInfo):
+    def __init__(self, dbType, sqliteCreds=None, dbConf=None):
         '''
         Constructor
         '''
@@ -22,13 +23,15 @@ class RampSupplementalDataBuilder(object):
         self.dbType = dbType
         
         # a MySQL RaMP db_properties file, or an SQLite DB file 
-        self.credInfo = credInfo
+        self.credInfo = sqliteCreds
 
         # sqlalchemy engine to provide connections to DB        
         self.engine = None
         
         if self.dbType == 'sqlite':
             self.engine = self.createSQLiteEngine(self.credInfo)
+        else:
+            self.engine = self.createMySQLEngine(dbConf)
         
         # all analyte pathway similarity matrix
         self.analyteResult = None
@@ -44,12 +47,17 @@ class RampSupplementalDataBuilder(object):
     def createSQLiteEngine(self, sqliteFile=None):
         engine = create_engine('sqlite:///'+sqliteFile, echo=False)
         return engine
+
+    def createMySQLEngine(self, dbConf = None):
+        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname)), echo=False)
+        return engine
+    
     
     def listTables(self):
         if self.dbType == 'mysql':
             sql = 'show tables'
         elif self.dbType == 'sqlite':
-            sql = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%'";
+            sql = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%%'";
         else:
             print("Unsupported DB Type: " + self.dbType)
             return
@@ -70,14 +78,14 @@ class RampSupplementalDataBuilder(object):
     def buildSimilarityMatrix(self, matrixType):
         df = None
         
-        analyteKey = 'RAMP_%'
+        analyteKey = 'RAMP_%%'
         minPathwaySize = 10
         
         if matrixType == 'mets':
-            analyteKey = 'RAMP_C%'
+            analyteKey = 'RAMP_C%%'
             minPathwaySize = 5
         elif matrixType == 'genes':
-            analyteKey = 'RAMP_G%'
+            analyteKey = 'RAMP_G%%'
             minPathwaySize = 5
         
         sql = "select ap.pathwayRampId, ap.rampID from analytehaspathway ap, pathway p "\
@@ -115,17 +123,21 @@ class RampSupplementalDataBuilder(object):
         
         print("building analyte stat set")
         
-        rampIdPrefix = "RAMP_C%"
-        if geneOrMet == 'genes':
-            rampIdPrefix = "RAMP_G%"
+        # NOTE the % has to be escaped for mysql, also works for sqlite, but is optional for sqlite.
+        rampIdPrefix = "RAMP_C%%"
+        if geneOrMet == 'gene':
+            rampIdPrefix = "RAMP_G%%"
         
-        sql = "select ap.pathwayRampId, count(distinct(ap.rampId)) as Freq, p.type as pathwaySource "\
+        sql = "select ap.pathwayRampId as pathwayRampId, count(distinct(ap.rampId)) as Freq, p.type as pathwaySource "\
         "from analytehaspathway ap, pathway p "\
         "where p.type = '" + dataSource + "' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + rampIdPrefix + "' group by ap.pathwayRampId"
 
         df = None
 
         with self.engine.connect() as conn:
+            
+            print(sql)
+            
             df = conn.execute(sql).all()
             df = pd.DataFrame(df)
             
@@ -133,15 +145,20 @@ class RampSupplementalDataBuilder(object):
             print(df.shape)
             print("Stats header")
             print(df.columns)
+            print(type(df))
+            
+            print(df.head(5))
             
             conn.close()
 
         return df
 
         
-#pwob = PathwayOverlapBuilder(dbType = "sqlite", credInfo = "X:\\braistedjc\\tmp_work\\RaMP_SQLite_v2.3.0_Structure.sqlite")
+pwob = RampSupplementalDataBuilder(dbType = "sqlite", sqliteCreds = "X:\\braistedjc\\tmp_work\\RaMP_SQLite_v2.3.1b.sqlite")
 #pwob.listTables()
-#pwob.buildBaseMatrix(matrixType = "analytes")
+dm = pwob.buildSimilarityMatrix(matrixType = "analytes")
+print(dm.values.sum())
+
 # pwob.buildSimilarityMatrix(matrixType = "genes")
 
 #pwob.buildAnalyteSet("wiki", "met")
