@@ -3,7 +3,6 @@ sys.path.append('../src')
 from util.rampDBBulkLoader import rampDBBulkLoader
 
 
-
 class mainDBLoad():
     
     def __init__(self):
@@ -73,14 +72,12 @@ class mainDBLoad():
         # this process replaced the old system of having Rdata in the package
         loader.generateAndLoadRampSupplementalData()
 
-
-
 loader = mainDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
 loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', 
-                                   optionalVersionOveride = "2.4.0", 
-                                   optionalVersionNote = "20231027 Data refresh. Inchi-key harmonization.", 
+                                   optionalVersionOveride = "2.4.2", 
+                                   optionalVersionNote = "20231107 Data refresh. Rhea Reaction Classes. Reactome gene patch.",
                                    truncateTables=True)
 

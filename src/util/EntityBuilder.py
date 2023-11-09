@@ -562,6 +562,8 @@ class EntityBuilder(object):
         Populates the gene list from all data sources using the <source>geneInfoDictionary files.
         This builds gene entities and merges based on common ids.
         """
+        f = open("geneList.log", 'w')
+
         Metabolite.__equalityMetric = eqMetric
         
         for src in self.sourceList:
@@ -600,10 +602,24 @@ class EntityBuilder(object):
                         gene.addId(altId, source)
                         self.geneList.addGene(altId, gene)
 
+                        if gene.rampId == 'RAMP_G_000008086':
+                            f.write("Creating our gene...RAMP_G_000008086\n")
+                            f.write(gene.rampId+"\n")
+                            f.write("\t".join(gene.idList)+"\n")
+                            #f.write(gene.idDict)
+                
                     gene.addId(currSourceId, source)                        
                     gene.addSource(source)                    
                     self.geneList.addGene(currSourceId, gene)
-                
+
+                    if gene.rampId == 'RAMP_G_000008086':
+                       f.write("Adding IDs to our gene...RAMP_G_000008086\n")
+                       f.write(gene.rampId + "\n")
+                       f.write(currSourceId + "\n")
+                       f.write(source + "\n")
+                       f.write("\t".join(gene.idList) + "\n")
+
+
                     # this is a sourceId lets add 
                 else:
                     # need to check if the alt id already exists as a key id
@@ -612,6 +628,14 @@ class EntityBuilder(object):
                         gene2.addId(altId, source)
                         gene2.addSource(source)
                         gene2.addId(currSourceId, source)
+
+
+                        if gene2.rampId == 'RAMP_G_000008086':
+                            f.write("Linked and adding to our  gene...RAMP_G_000008086\n")
+                            f.write(altId + "\n")
+                            f.write(source + "\n")
+                            f.write(currSourceId + "\n")
+
                         #metaboliteList.addMataboliteByAltId(altId, met2)
                         # this reasigns the primary source id and strands the 'metabolite' record
                         self.geneList.addGene(currSourceId, gene2)
@@ -624,6 +648,20 @@ class EntityBuilder(object):
                         # we don't want two records
                         # we need to consolidate metabolites... I think
                         if(gene2 is not gene):
+
+                            if("gene_symbol:MDM2" in gene.idList or "gene_symbol:MDM2" in gene2.idList):
+                                print("SUBSUME GENE\n")
+                               # print(gene.rampId)
+                               # print(gene.idList)
+                               # print(gene.idDict)
+
+                                print("///\n")
+                                #print(gene2.rampId)
+                                #print(gene2.idList)
+                                #print(gene2.idDict)
+                                #print(" ")
+                                #print(" ")
+
                             # keep the original metabolite (met2) and transfer info
                             gene2.subsumeGene(gene)
                             
@@ -639,6 +677,8 @@ class EntityBuilder(object):
                         self.geneList.addGene(altId, gene)
                         # safe add, adds unique source to metabolite
                         gene.addSource(source)
+        f.close()
+
 
 
     def loadOntolgies(self):
@@ -951,7 +991,7 @@ class EntityBuilder(object):
         self.buildRxnsFromRhea(rheaPath + "/rhea_primary_records.txt")
         self.appendRxnProteinsFromRhea(rheaPath + "/rhea_uniprot_mapping.txt")
         self.appendRxnParticipantsFromRhea(rheaPath + "/rhea_rxn_to_chebi_and_dir.txt")
-            
+        self.dumpReactionToEcEnzymeClass(rheaPath + "/rhea_reaction_to_ec.txt")
                 
     def buildRxnsFromRhea(self, path):
         print("Building Rhea Reactions")
@@ -1018,7 +1058,7 @@ class EntityBuilder(object):
             if rxn is not None and met is not None:
                 
                 if met.isCofactor == 1:
-                    print("in append rxn members... cofactor = 1 :)")
+                    # print("in append rxn members... cofactor = 1 :)")
                     rheaCofactCnt = rheaCofactCnt + 1
                     
                 if(rxnSide == 0):
@@ -1031,8 +1071,31 @@ class EntityBuilder(object):
                 print("in append participants from Rhea... have a None rxn for id: "+rheaId)
         
         print("Rhea cofact count/est: "+str(rheaCofactCnt))
+
         
+    def dumpReactionToEcEnzymeClass(self, path):
+
+        rxn2EcClassFile = open("../misc/sql/rheaReactionToEcClass.txt", 'w')
+        
+        with open(path, 'r') as data:
+            for line in data:
+                print("reading rh2ec file")
+                print(line)
+                sline = line.split("\t")
+                rheaId = sline[0]
+                print(rheaId)
+                rxn = self.reactionDict.get(rheaId, None)
             
+                if rxn is not None:
+                    rampRxnId = rxn.rxnRampId
+                    if rampRxnId != "":
+                        rxn2EcClassFile.write(rampRxnId + "\t" + line)
+            
+        rxn2EcClassFile.close()
+        print("reaction dict key examples")
+        print(list(self.reactionDict.keys())[0:4])
+
+
 #     def fullBuild(self):
 #         """
 #         This high level method performs the entire process of entity construction
@@ -1287,9 +1350,6 @@ class EntityBuilder(object):
             file.write(rxn.getReactionProteinToMetString('rhea'))
             
         file.close()
-        
-
-
 
 
     def remove_whitespace(self, dF):     

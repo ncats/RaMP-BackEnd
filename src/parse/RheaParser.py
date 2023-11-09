@@ -12,7 +12,7 @@ from rampEntity.Protein import Protein
 from rampConfig.RampConfig import RampConfig
 import numpy as np
 
-from rdflib import URIRef,Graph
+from rdflib import URIRef, Graph
 import rdflib.namespace
 from rdflib.namespace import RDF,FOAF,RDFS,DC,DCTERMS
 from builtins import str
@@ -49,6 +49,8 @@ class RheaParser(MetabolomicsData):
         
         self.rheaProteinDict = dict()
         
+        self.rheaEcToClassDict = dict()
+        
         self.rheaLocalRdfFile = ""
         
         self.rheaLocalRheaToUniprotFile = ""
@@ -56,6 +58,8 @@ class RheaParser(MetabolomicsData):
         self.rheaLocalRheaToEcFile = ""
 
         self.rheaLocalRxnDirectionFile = ""
+        
+        self.expasyLocalEc2ClassFile = ""
         
         self.humanUniprotRecordDict = dict()
         
@@ -78,9 +82,13 @@ class RheaParser(MetabolomicsData):
                  
         # builds reactions objects
         self.processAllReactions()
-         
+        
+        # this gets expasy ec to enzyme class
+        self.ecToEnzymeClassFromExpasy()        
+        
         self.appendUniprotToReaction()
         self.appendEcToReaction()
+         
          
         self.setReactionHumanUniprotState()
         self.setReactionHumanChebiState()
@@ -136,6 +144,7 @@ class RheaParser(MetabolomicsData):
         uniprotToRheaConf = self.config.getConfig('uniprot_to_rhea')
         rheaToEcConf = self.config.getConfig('rhea_to_ec')
         rheaDirectionConf = self.config.getConfig('rhea_rxn_direction')
+        expasyEc2EnzymeClassConf = self.config.getConfig('expasy_ec2class')
 
         localDir = rdfConf.localDir
         
@@ -199,6 +208,20 @@ class RheaParser(MetabolomicsData):
         else:
             print("Using cached Rhea reaction direction file.")
 
+
+        # supporting expasy EC to Enzyme Class file
+        ec2classFile = expasyEc2EnzymeClassConf.extractFileName
+
+        self.expasyLocalEc2ClassFile = self.relDir + localDir + ec2classFile
+
+        if not exists(self.relDir + localDir + ec2classFile):
+            rheaDirUrl = expasyEc2EnzymeClassConf.sourceURL
+            rheaDirRemoteFile = expasyEc2EnzymeClassConf.sourceFileName
+            
+            self.download_files(rheaDirUrl, self.relDir + localDir + rheaDirRemoteFile)            
+        else:
+            print("Using cached Expasy ec2enzymeClass file.")
+            
 
      
     def constructRDF(self):
@@ -594,7 +617,21 @@ class RheaParser(MetabolomicsData):
         for acc in self.rheaReactionDict:
             rxn = self.rheaReactionDict[acc]
             recordOut.write(rxn.getRheaIdToUniprotMappingString())    
-                    
+        
+        recordOut.close()
+
+
+        recordsFile = "rhea_reaction_to_ec.txt"
+                
+        recordOut = open(dir + recordsFile, 'w', encoding="utf-8")
+        for acc in self.rheaReactionDict:
+            rxn = self.rheaReactionDict[acc]
+            ecList = rxn.ec
+            if ecList is not None and len(ecList) > 0:
+                ecBlock = self.buildRxnEcExportBlock(acc, ecList)
+                if len(ecBlock) > 0:
+                    recordOut.write(ecBlock)
+        
         recordOut.close()
 
 
@@ -699,15 +736,78 @@ class RheaParser(MetabolomicsData):
         print(str(r2u.shape))
         
         for idx, row in r2u.iterrows():
-            r2EcMap['rhea:'+str(row.RHEA_ID)] = row.ID
+            rheaRxnId = 'rhea:'+str(row.RHEA_ID)
+            ecList = r2EcMap.get(rheaRxnId,None)
+            if ecList is None:
+                r2EcMap[rheaRxnId] = [row.ID]
+            else:
+                ecList.append(row.ID)
 
         for rxn in r2EcMap:
-            ec = r2EcMap[rxn]
+            ecList = r2EcMap[rxn]
             currRxn = self.rheaReactionDict.get(rxn, None)
             if currRxn is not None:
-                currRxn.ec = ec
-
+                currRxn.ec = list(set(ecList))
         
+    def ecToEnzymeClassFromExpasy(self):
+        
+        # ec2class = pd.read_csv(self.expasyLocalEc2ClassFile, sep="\t", skiprows=11, skipfooter=5)
+        with open(self.expasyLocalEc2ClassFile, 'r') as ec2c:
+            ec2classStrings = ec2c.readlines()
+        
+            start = 11
+            end = len(ec2classStrings) - 6
+        
+        for i in range(start, end):
+            line = ec2classStrings[i].strip()
+            ec_data = line.split("  ")
+            ec = ec_data[0]
+            enzClass = ec_data[1]
+            if len(ec_data) == 3:
+                enzClass = ec_data[2]
+            ec = ec.replace(" ", "")
+            enzClass = enzClass.strip() 
+            self.rheaEcToClassDict[ec] = enzClass
+
+
+
+    def buildRxnEcExportBlock(self, rxnId, ecList):
+        ecBlock = ""
+        enzClassJoin = ""
+        for ec in ecList:
+            ecChildren = self.getEcChildren(ec)
+            enzClassJoin = ""
+            i = 0
+            for ecc in ecChildren:
+                enzClass = self.rheaEcToClassDict.get(ecc, None)
+                if enzClass is not None:
+                    if i == 0:
+                        enzClassJoin = enzClass
+                        # just mark that we are past the first entry
+                        i = 1
+                    else:
+                        # concatentate the enzyme class info :), I think this is finally correct :)
+                        enzClassJoin = enzClassJoin + " | " + enzClass
+                    ecLevel = 4 - ecc.count("-")
+                    ecBlock = ecBlock + rxnId + "\t" + ecc + "\t" + str(ecLevel) + "\t" + enzClass + "\t" + enzClassJoin + "\n"
+                    
+                    
+        return ecBlock             
+
+
+    def getEcChildren(self, ec):
+        data = ec.split('.')
+        ecVariants = [ec]
+        ecVariants.append(data[0] + "." + data[1] + "." + data[2] + ".-")
+        ecVariants.append(data[0] + "." + data[1] + ".-.-")
+        ecVariants.append(data[0] + ".-.-.-")
+        ecVariants = sorted(ecVariants)
+        return ecVariants
+
+    
+   
+        
+                
 #rConf = RampConfig()
 #rConf.loadConfig("../../config/external_resource_config.txt")
 # # #                         
