@@ -418,18 +418,18 @@ class reactomeData(MetabolomicsData):
                                         
                         # we now have uniprot to 'common_name', really gene id.
                         # now we want to grab the NCBI/Entrez 'GeneID'                 
-                        if childtag == "dbReference":
-                            if child2.get("type") == "GeneID":
-                                geneId = child2.get("id")
-                                geneId = 'entrez:'+geneId
+#                        if childtag == "dbReference":
+#                            if child2.get("type") == "GeneID":
+#                                geneId = child2.get("id")
+#                                geneId = 'entrez:'+geneId
                                 # protein to gene can be 1:n, so they have to be stored as a list
                                 # lets check for a value
-                                idList = mapping.get("small_e_entrez", None)
-                                if(idList == None):
-                                    idList = list()
-                                    mapping["small_e_entrez"] = idList
+#                                idList = mapping.get("small_e_entrez", None)
+#                                if(idList == None):
+#                                    idList = list()
+#                                    mapping["small_e_entrez"] = idList
 
-                                idList.append(geneId)  
+#                                idList.append(geneId)  
                                 
                         
                                         

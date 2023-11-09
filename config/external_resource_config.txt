@@ -14,3 +14,4 @@ rhea_to_ec	http	https://ftp.expasy.org/databases/rhea/tsv/rhea2ec.tsv	rhea2ec.ts
 rhea_rxn_direction	http	https://ftp.expasy.org/databases/rhea/tsv/rhea-directions.tsv	rhea-directions.tsv	rhea-directions.tsv	../misc/data/rhea/	none	rhea_rxn_direction_table
 chebi_to_chebi_relations	http	http://ftp.ebi.ac.uk/pub/databases/chebi/Flat_file_tab_delimited/relation.tsv	relation.tsv	relation.tsv	../misc/data/chebi/	none	chebi_relations
 chebi_ontology_owl	http	http://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi.owl.gz	chebi.owl.gz	chebi.owl	../misc/data/chebi/	gzip	chebi_ontology
+expasy_ec2class	ftp	https://ftp.expasy.org/databases/enzyme/enzclass.txt	enzclass.txt	enzclass.txt	../misc/data/rhea	none	expasy_ec2class
