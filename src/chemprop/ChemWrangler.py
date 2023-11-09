@@ -162,7 +162,8 @@ class ChemWrangler(object):
                 mol.smiles = sdfDB.readline().strip()
             if line == '> <INCHI_KEY>':
                 mol.inchiKey = sdfDB.readline().strip()
-                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]                
+                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
+                mol.inchiKeyDuplex = mol.inchiKey.split("-")[0] + "-" + mol.inchiKey.split("-")[1]                
             if line == '> <INCHI_IDENTIFIER>':
                 mol.inchi = sdfDB.readline().strip()                                          
             if line == '> <MOLECULAR_WEIGHT>':
@@ -211,7 +212,8 @@ class ChemWrangler(object):
                 mol.smiles = sdfDB.readline().strip()
             if line == '> <InChIKey>':
                 mol.inchiKey = sdfDB.readline().strip()
-                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]                
+                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
+                mol.inchiKeyDuplex = mol.inchiKey.split("-")[0] + "-" + mol.inchiKey.split("-")[1]                
             if line == '> <InChI>':
                 mol.inchi = sdfDB.readline().strip()                                      
             if line == '> <MASS>':
@@ -320,7 +322,8 @@ class ChemWrangler(object):
                 mol.smiles = sdfDB.readline().strip()
             if line == '> <INCHI_KEY>':
                 mol.inchiKey = sdfDB.readline().strip()
-                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]                
+                mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
+                mol.inchiKeyDuplex = mol.inchiKey.split("-")[0] + "-" + mol.inchiKey.split("-")[1]           
             if line == '> <INCHI>':
                 mol.inchi = sdfDB.readline().strip()                                      
             if line == '> <MASS>':

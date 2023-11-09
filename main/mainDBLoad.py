@@ -3,7 +3,6 @@ sys.path.append('../src')
 from util.rampDBBulkLoader import rampDBBulkLoader
 
 
-
 class mainDBLoad():
     
     def __init__(self):
@@ -68,14 +67,17 @@ class mainDBLoad():
         # this method populates a table that reflects the current status of the database.
         # metrics such as gene and metabolite counts for reach data sets are tallied.
         loader.updateDataStatusSummary()
-
+        
+        # generate pathway similarity matrices, analyte lists and whatnot
+        # this process replaced the old system of having Rdata in the package
+        loader.generateAndLoadRampSupplementalData()
 
 loader = mainDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
-loader.loadDBAfterTruncatingTables(incrementLevel = 'increment_patch_release', 
-                                   optionalVersionOveride = "", 
-                                   optionalVersionNote = "20220822 patch release, update chem_props inchi values.", 
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified', 
+                                   optionalVersionOveride = "2.4.2", 
+                                   optionalVersionNote = "20231107 Data refresh. Rhea Reaction Classes. Reactome gene patch.",
                                    truncateTables=True)
 
