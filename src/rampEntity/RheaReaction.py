@@ -67,11 +67,23 @@ class RheaReaction(object):
         
         self.hasAHumanMetabolite = False
                 
+        self.ecAssociationBlock = []     
+                
                 
     def getBasicRecordString(self):
         ec = self.ec
+        
         if ec is None:
-           ec = "" 
+            ecVal = ""
+        else:
+            eCount = 0
+            ec = sorted(ec)
+            for e in ec:
+                if eCount == 0:
+                    ecVal = e
+                else:
+                    ecVal = ecVal + "; " + e
+                        
         dir = self.direction
         if dir is None:
             dir = ""
@@ -80,15 +92,27 @@ class RheaReaction(object):
         onlyHumanMets = self.hasOnlyHumanMetabolites * 1
         
         s = (self.rhea_id + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t" +self.direction + "\t" + self.rhea_label + "\t" + 
-             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ec + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
+             self.rhea_equation + "\t" + self.rhea_html_eq + "\t" + ecVal + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) +"\n")
        
         return s
     
     
     def getMainRecordString(self):
         ec = self.ec
-        if ec is None:
-            ec = ""
+        
+        if ec is None or type(ec) == float:
+            ecVal = ""        
+        else:
+            if len(ec) == 1:
+                ecVal = ec[0]
+            else:
+                eCount = 0
+                ec = sorted(ec)
+                for e in ec:
+                    if eCount == 0:
+                        ecVal = e
+                    else:
+                        ecVal = ecVal + "; " + e
             
         direction = self.direction
         
@@ -100,7 +124,7 @@ class RheaReaction(object):
         
         s = str(self.rxnRampId) + "\t" + str(self.rhea_id) + "\t" + str(self.status) + "\t" + str(self.isTransport) + "\t"
         s = s + str(direction) + "\t" + str(self.rhea_label) + "\t" 
-        s = s + str(self.rhea_equation) + "\t" + str(self.rhea_html_eq) + "\t" + str(ec) + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) + "\n"
+        s = s + str(self.rhea_equation) + "\t" + str(self.rhea_html_eq) + "\t" + str(ecVal) + "\t" + str(humanEnzyme) + "\t" + str(onlyHumanMets) + "\n"
        
         return s
     
@@ -236,7 +260,7 @@ class RheaReaction(object):
         self.rhea_label = dataVals[4]
         self.rhea_equation = dataVals[5]
         self.rhea_html_eq = dataVals[6]
-        self.ec = dataVals[7]
+        self.ec = [dataVals[7]]
         self.hasHumanEnzyme = dataVals[8]
         self.hasOnlyHumanMetabolites = dataVals[9]
         
@@ -287,3 +311,17 @@ class RheaReaction(object):
                 s = s + self.rhea_id + "\t" + pid + "\t" + cid + "\t1\n"
         return s
                 
+                
+    def getRheaReactionToEcString(self):
+        ecBlock = ""
+        if len(self.ecAssociationBlock) > 0:
+            self.ecAssociationBlock = list(set(self.ecAssociationBlock))
+            for ecData in self.ecAssociationBlock:
+                ecBlock = ecBlock + self.rxnRampId + "\t" + self.rhea_id + "\t" + ecData.strip() + "\n"
+        
+        return ecBlock
+    
+    def addEcAssociationBlock(self, ecData):
+        self.ecAssociationBlock.append(ecData) 
+        
+   
