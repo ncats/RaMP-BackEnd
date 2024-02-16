@@ -389,11 +389,16 @@ class reactomeData(MetabolomicsData):
         files = os.listdir("../misc/data/Uniprot/")
         path = "../misc/data/Uniprot/"   
         i = 0
+        haveMapping = False
+        haveGeneSymbol = False
         #print('Parsing UniProt files ...')
         for f in files:
             i = i + 1
             #if i % 1000 == 0:
                 #print('Processing {} files'.format(i))
+
+            haveMapping = False
+            haveGeneSymbol = False
             try:
                 tree = ET.parse(path + f)
                 geneid = f.replace(".xml","")
@@ -410,31 +415,43 @@ class reactomeData(MetabolomicsData):
                                     #print(geneid+":"+name.text)
                                     try:
                                         mapping = self.geneInfoDictionary['uniprot:'+geneid]
+                                        haveMapping = True
                                         mapping["common_name"] = "gene_symbol:"+name.text
+                                        haveGeneSymbol = True
                                     except KeyError:
                                         pass
+                                        print("Key Error for "+geneid+" in file "+f)
+	                                
                                         # print("Raw data does not have this ID ...")
                                         # print(geneid)
                                         
                         # we now have uniprot to 'common_name', really gene id.
                         # now we want to grab the NCBI/Entrez 'GeneID'                 
-#                        if childtag == "dbReference":
-#                            if child2.get("type") == "GeneID":
-#                                geneId = child2.get("id")
-#                                geneId = 'entrez:'+geneId
+                        if childtag == "dbReference":
+                            if child2.get("type") == "GeneID":
+                                
+                                if not haveMapping:
+                                    print("Hey we are adding a gene id but don't have new mapping. Uniprot:"+f)
+                                    # we don't have the mapping for the protein based from above... 
+                                    # jump to next child... eventually next file.
+                                    continue
+
+                                geneId = child2.get("id")
+                                geneId = 'entrez:'+geneId
                                 # protein to gene can be 1:n, so they have to be stored as a list
                                 # lets check for a value
-#                                idList = mapping.get("small_e_entrez", None)
-#                                if(idList == None):
-#                                    idList = list()
-#                                    mapping["small_e_entrez"] = idList
+                                idList = mapping.get("small_e_entrez", None)
+                                if(idList == None):
+                                    idList = list()
+                                    mapping["small_e_entrez"] = idList
 
-#                                idList.append(geneId)  
+                                idList.append(geneId)  
                                 
                         
                                         
             except ET.ParseError:
                 print("Skip {} ...".format(f))
+                
                 pass
              
 #     def checkFiles(self):

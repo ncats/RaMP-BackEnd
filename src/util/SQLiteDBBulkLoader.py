@@ -156,7 +156,6 @@ class SQLiteDBBulkLoader(object):
             df = df.drop_duplicates(ignore_index=False, inplace=False, keep='first')
             print(str(df.shape))
 
-        print(df.head(n=5))
         table = resource.destTable
         # this loads the data frame into the table.
         try:
@@ -834,7 +833,7 @@ class SQLiteDBBulkLoader(object):
         #    conn.execute(sql)
         #    conn.close()
     
-        sql = "select ap.rampId, count(distinct(ap.pathwayRampId)) as pathwayCount from analytehaspathway ap "\
+        sql = "select count(distinct(ap.pathwayRampId)) as pathwayCount, ap.rampId from analytehaspathway ap "\
         "where ap.pathwaySource != 'hmdb' group by ap.rampId"
         
         sql2 = "update source set pathwayCount = :pathwayCount where rampId = :rampId"
@@ -842,11 +841,20 @@ class SQLiteDBBulkLoader(object):
         with self.engine.connect() as conn:
             df = conn.execute(sql).all()
             df = pd.DataFrame(df)
-            df.columns = ["rampId", "pathwayCount"]
-            
+            df.columns = ["pathwayCount", "rampId"]
+
+            print("setting pw count... shape=")
+            print(df.shape)
+            print(df.head(10))
+
+            k = 0
             for i,row in df.iterrows():
+                k = k + 1
+                if k < 10:
+                    print(row)
+                    print("\n")
                 conn.execute(sql2, row)
-            
+
             conn.close()
 
         print("Finished: updating pathway counts in source table")
