@@ -14,11 +14,9 @@ import numpy as np
 
 from rdflib import URIRef, Graph
 import rdflib.namespace
-from rdflib.namespace import RDF,FOAF,RDFS,DC,DCTERMS
 from builtins import str
 from rampEntity.RheaReaction import RheaReaction
 from rampEntity.RheaCompound import RheaCompound
-from libchebipy._parsers import __FORMULAE
 from parse.UniprotParser import UniprotParser
 from parse.ChebiOwlParser import ChebiOwlParser
 
