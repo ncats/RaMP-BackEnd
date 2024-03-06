@@ -33,7 +33,36 @@ class UniprotParser(MetabolomicsData):
     
     def parseUniprot(self):
 
+        # need to load uniprot TrEMBL and SwissProt human
+
+        # TrEMBL
         proteinConfig = self.resourceConfig.getConfig("uniprot_human")
+        file_proteins = proteinConfig.sourceFileName
+        proteins_url = proteinConfig.sourceURL        
+        localDir = proteinConfig.localDir
+        extractFile = proteinConfig.extractFileName 
+        remoteFile = proteinConfig.sourceFileName
+
+
+        # make the data dir if needed...
+        if not exists(self.relDir + localDir):
+            os.mkdir(self.relDir + localDir)
+
+        if not exists(self.relDir + localDir + extractFile):
+
+            self.download_files(proteins_url, self.relDir + localDir + remoteFile)
+            
+            with gzip.open(self.relDir + localDir + remoteFile, 'rb') as f_in:
+                with open(self.relDir + localDir + extractFile, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        else:
+            print("Uniprot (Human) exists. Using cached copy.")
+                
+        self.parseUniprotFile(self.relDir + localDir + extractFile)
+
+
+        # now add SwissProt human
+        proteinConfig = self.resourceConfig.getConfig("swissprot_human")
         file_proteins = proteinConfig.sourceFileName
         proteins_url = proteinConfig.sourceURL        
         localDir = proteinConfig.localDir
@@ -58,7 +87,9 @@ class UniprotParser(MetabolomicsData):
         self.parseUniprotFile(self.relDir + localDir + extractFile)
         
         self.exportUniprotIntermediatFiles()
-        
+    
+    
+    
     
     def parseUniprotFile(self, filePath):
         proteinDB = open(filePath, 'r+', encoding="utf-8")
