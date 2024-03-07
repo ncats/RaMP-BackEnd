@@ -58,8 +58,16 @@ class UniprotParser(MetabolomicsData):
         else:
             print("Uniprot (Human) exists. Using cached copy.")
                 
+                
+
+        print("starting to parse uniprot trembl dat file")
+        print(extractFile)                
+                
         self.parseUniprotFile(self.relDir + localDir + extractFile)
 
+        print("number of uniprot trembl records")
+        tremblCount = len(self.uniprotRecords)
+        print(str(tremblCount))
 
         # now add SwissProt human
         proteinConfig = self.resourceConfig.getConfig("swissprot_human")
@@ -83,8 +91,17 @@ class UniprotParser(MetabolomicsData):
                     shutil.copyfileobj(f_in, f_out)
         else:
             print("Uniprot (Human) exists. Using cached copy.")
+            
+            
+            
+        print("starting to parse uniprot swissprot dat file")
+        print(extractFile)
                 
         self.parseUniprotFile(self.relDir + localDir + extractFile)
+
+        print("number of uniprot trembl PLUSE swissprot records")
+        tremblCount = len(self.uniprotRecords)
+        print(str(tremblCount))
         
         self.exportUniprotIntermediatFiles()
     
@@ -148,8 +165,14 @@ class UniprotParser(MetabolomicsData):
                 protein.uniprotAcc = accs[0]
                 protein.secondaryAccs = accs
                 
+                if protein.uniprotAcc == 'uniprot:P19835':
+                    print("HEYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY we have P19835 in uniprot parser")
+                    print(accs)
             else:
                 for acc in accs:
+                    if acc == 'uniprot:P19835':
+                        print("HEYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY we have P19835 AS A SECONDARY ACC in uniprot parser")
+
                     protein.secondaryAccs.append(acc)
 
             

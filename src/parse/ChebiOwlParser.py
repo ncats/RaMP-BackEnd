@@ -66,7 +66,7 @@ class ChebiOwlParser(MetabolomicsData):
             os.mkdir(self.relDir + localDir)
 
         #make an output dir for parsing
-        self.outputDir = self.relDir + "../misc/output/chebi"
+        self.outputDir = self.relDir + "../misc/output/chebi/"
         if not exists(self.outputDir):
             os.mkdir(self.outputDir)
         
@@ -444,7 +444,7 @@ class ChebiOwlParser(MetabolomicsData):
         print(str(len(set(xlist))))
         print(self.localOntoDir)
                 
-        with open(self.outputDir + '\human_chebi_ids.txt', 'w') as f:
+        with open(self.outputDir + '/human_chebi_ids.txt', 'w') as f:
             for line in xlist:
                 f.write(self.uriToChebiId(line)+"\n")
                 

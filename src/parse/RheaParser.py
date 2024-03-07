@@ -53,6 +53,8 @@ class RheaParser(MetabolomicsData):
         
         self.rheaLocalRheaToUniprotFile = ""
         
+        self.rheaLocalRheaToSwissprotFile = ""
+        
         self.rheaLocalRheaToEcFile = ""
 
         self.rheaLocalRxnDirectionFile = ""
@@ -98,6 +100,8 @@ class RheaParser(MetabolomicsData):
     def buildSupportingUniprotData(self):
         print("building uniprot data store")
         uniParser = UniprotParser(self.config)
+        
+        # this will parse human uniprot, including SwissProt and TrEMBL accessions.
         uniParser.parseUniprot()
         self.humanUniprotRecordDict = uniParser.uniprotRecords
         
@@ -116,6 +120,7 @@ class RheaParser(MetabolomicsData):
         print("in rhea uniprot build")
         print("length of the dict"+str(len(self.humanUniprotRecordDict.keys())))
         print("length of the set"+str(len(self.humanUniprotAccSet)))
+
 
     def buildSupportingChebiData(self):
         print("building chebi data store")
@@ -140,6 +145,7 @@ class RheaParser(MetabolomicsData):
 
         rdfConf = self.config.getConfig('rhea_rdf')
         uniprotToRheaConf = self.config.getConfig('uniprot_to_rhea')
+        swissprotToRheaConf = self.config.getConfig('swissprot_to_rhea')
         rheaToEcConf = self.config.getConfig('rhea_to_ec')
         rheaDirectionConf = self.config.getConfig('rhea_rxn_direction')
         expasyEc2EnzymeClassConf = self.config.getConfig('expasy_ec2class')
@@ -179,7 +185,25 @@ class RheaParser(MetabolomicsData):
             self.download_files(rhea2UniprotUrl, self.relDir + localDir + rhea2UniprotRemoteFile)            
         else:
             print("Using cached Rhea Uniprot-to-Rhea file.")
+        
+        
+        
+        # rhea to swissprot
+        rhea2SwissprotFile = swissprotToRheaConf.extractFileName
+        
+        self.rheaLocalRheaToSwissprotFile = self.relDir + localDir + rhea2SwissprotFile
+        
+        if not exists(self.relDir + localDir + rhea2SwissprotFile):
+            rhea2SwissprotUrl = swissprotToRheaConf.sourceURL
+            rhea2SwissprotRemoteFile = swissprotToRheaConf.sourceFileName
             
+            self.download_files(rhea2SwissprotUrl, self.relDir + localDir + rhea2SwissprotRemoteFile)            
+        else:
+            print("Using cached Rhea swissprot-to-Rhea file.")
+            
+        
+        
+        
         # rhea to ec
         rhea2EcFile = rheaToEcConf.extractFileName
         
@@ -710,6 +734,8 @@ class RheaParser(MetabolomicsData):
                 else:
                     unis.append('uniprot:'+row.ID)
 
+
+
         for rxn in r2uMap:
             #print('adding uniprot')
             #print('reaction '+rxn)
@@ -721,7 +747,40 @@ class RheaParser(MetabolomicsData):
             if currRxn is not None:   
                 currRxn.proteins = uniSet
                 #print("setting proteins, len:"+str(len(currRxn.proteins)))
+        
+        
             
+        # swiss prot    
+        r2u = pd.read_csv(self.rheaLocalRheaToSwissprotFile, sep="\t", header=0)
+        
+        print(str(r2u.shape))
+        
+        for idx, row in r2u.iterrows():
+            #print(row)
+            #print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
+
+            # !!! just adding human uniprot            
+            if ("uniprot:" + row.ID) in self.humanUniprotAccSet:
+                #print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
+                if unis is None:     
+                    unis = ['uniprot:'+row.ID]
+                    r2uMap['rhea:'+str(row.RHEA_ID)] = unis
+                else:
+                    unis.append('uniprot:'+row.ID)
+
+        for rxn in r2uMap:
+            #print('adding uniprot')
+            #print('reaction '+rxn)
+            
+            uniSet = r2uMap[rxn]
+            currRxn = self.rheaReactionDict.get(rxn, None)
+            if currRxn is None:
+                currRxn = self.rheaReactionDict.get("rhea:"+rxn, None)
+            if currRxn is not None:   
+                currRxn.proteins = uniSet
+                #print("setting proteins, len:"+str(len(currRxn.proteins)))
+                
         
         
     def appendEcToReaction(self):
@@ -753,8 +812,9 @@ class RheaParser(MetabolomicsData):
         with open(self.expasyLocalEc2ClassFile, 'r') as ec2c:
             ec2classStrings = ec2c.readlines()
         
+            # The file has a header and a footer that have to be skipped.
             start = 11
-            end = len(ec2classStrings) - 6
+            end = len(ec2classStrings) - 5
         
         for i in range(start, end):
             line = ec2classStrings[i].strip()
