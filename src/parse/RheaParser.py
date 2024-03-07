@@ -182,7 +182,12 @@ class RheaParser(MetabolomicsData):
             rhea2UniprotUrl = uniprotToRheaConf.sourceURL
             rhea2UniprotRemoteFile = uniprotToRheaConf.sourceFileName
             
-            self.download_files(rhea2UniprotUrl, self.relDir + localDir + rhea2UniprotRemoteFile)            
+            self.download_files(rhea2UniprotUrl, self.relDir + localDir + rhea2UniprotRemoteFile)
+            swissProtLocalFileName = uniprotToRheaConf.extractFileName
+            # now gunzip
+            with gzip.open(self.relDir + localDir + rhea2UniprotRemoteFile, 'rb') as f_in:
+                with open(self.relDir + localDir + swissProtLocalFileName, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)      
         else:
             print("Using cached Rhea Uniprot-to-Rhea file.")
         
