@@ -185,19 +185,19 @@ class RheaReaction(object):
                 name = names.get(uniprot, None)
                 if name is None:
                     name = "UNK"
-                    print("export rxn to prot, HAVE NAME DICT, BUT NO NAME for uniprot: "+uniprot + " DICT LEN: " + str(len(list(names.keys()))))
+                    #print("export rxn to prot, HAVE NAME DICT, BUT NO NAME for uniprot: "+uniprot + " DICT LEN: " + str(len(list(names.keys()))))
                 else:
                     # print("Have a name in rxt to prot... but it's an empty string **|"+name+"|**")
                     if name == "":
                         name = "UNK5"
                         
-                        print("Dumping Names...")
-                        for i in names:
-                            print(str(i) + "---" + str(names[i]))
+                        #print("Dumping Names...")
+                        #for i in names:
+                        #    print(str(i) + "---" + str(names[i]))
  
             else:
                 name = "UNK2"
-                print("export rxn to prot, NO NAME DICT")
+                #print("export rxn to prot, NO NAME DICT")
             
             if name == "":
                 name = "UNK3"
@@ -284,7 +284,7 @@ class RheaReaction(object):
             if cmpd is not None:
                 isCofactor = cmpd.isCofactor
                 
-            s = s + self.rhea_id + "\t" + cid + "\t0\t" + str(isCofactor) + "\n" 
+                s = s + self.rhea_id + "\t" + cid + "\t0\t" + str(isCofactor) + "\n" 
        
         for cid in self.right_comp_ids:
             cmpd = self.getCompById(cid, self.right_comps)
@@ -292,7 +292,7 @@ class RheaReaction(object):
             if cmpd is not None:
                 isCofactor = cmpd.isCofactor
                 
-            s = s + self.rhea_id + "\t" + cid + "\t1\t" + str(isCofactor) + "\n"            
+                s = s + self.rhea_id + "\t" + cid + "\t1\t" + str(isCofactor) + "\n"            
 
         return s
     
@@ -325,3 +325,37 @@ class RheaReaction(object):
         self.ecAssociationBlock.append(ecData) 
         
    
+    def doIHaveACofactorCompoundCheck(self):
+        for c in self.left_comps:
+            if c.isCofactor == 1:
+                return 1
+
+        for c in self.right_comps:
+            if c.isCofactor == 1:
+                return 1
+        
+        return 0    
+            
+#     def doIHaveACofactorCompoundIdCheck(self):
+#         for cid in self.left_comp_ids:
+#             c = self.getCompById(cid, self.left_comps)
+#             if c is not None:
+#                 if c.isCofactor == 1:
+#                     return 1
+#             else:
+#                 print("have an left ID with no compound???? "+ str(cid))
+# 
+#         for cid in self.right_comp_ids:
+#             c = self.getCompById(cid, self.right_comps)
+#             if c is not None:
+#                 if c.isCofactor == 1:
+#                     return 1
+#             else:
+#                 print("have an right ID with no compound???? "+ str(cid))
+# 
+#         return 0   
+            
+            
+            
+                
+        

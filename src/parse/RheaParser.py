@@ -19,8 +19,10 @@ from rampEntity.RheaReaction import RheaReaction
 from rampEntity.RheaCompound import RheaCompound
 from parse.UniprotParser import UniprotParser
 from parse.ChebiOwlParser import ChebiOwlParser
+from parse.UniprotEnzymeParser import UniprotEnzymeParser
 
 import pandas as pd
+from parse.UniprotEnzymeParser import UniprotEnzymeParser
 
 
 
@@ -44,6 +46,8 @@ class RheaParser(MetabolomicsData):
         self.rheaReactionDict = dict()
         
         self.rheaCompoundDict = dict()
+        
+        self.rheaCompoundList = list()
         
         self.rheaProteinDict = dict()
         
@@ -92,8 +96,16 @@ class RheaParser(MetabolomicsData):
          
         self.setReactionHumanUniprotState()
         self.setReactionHumanChebiState()
+        
+        # lets check cofactor status....
+#         for cmpd in self.rheaCompoundList:
+#             if cmpd.chembiId in self.chebiCofactorSet:
+#                 cmpd.isCofactor = 1
+            
          
         self.exportIntermediateFiles()
+        
+        
     
 
 
@@ -140,6 +152,9 @@ class RheaParser(MetabolomicsData):
         self.chebiHumanIdSet = cop.chebiHumanIdSet
         
         self.chebiCofactorSet = cop.extractCofactorStatus(self.chebiCofactorId)
+        print("In chebi owl building cofactor set. Size of cofactor set...:")
+        print(len(self.chebiCofactorSet))
+        
     
     def getRheaFiles(self):
 
@@ -391,6 +406,7 @@ class RheaParser(MetabolomicsData):
                         compound.formula = formula
 
                     self.rheaCompoundDict[compound.chebiId] = compound
+                    self.rheaCompoundList.append(compound)
                     reaction.left_comps.append(compound)
 
             for rightRef in rightRefs:
@@ -428,6 +444,7 @@ class RheaParser(MetabolomicsData):
                         compound.formula = formula    
                               
                     self.rheaCompoundDict[compound.chebiId] = compound
+                    self.rheaCompoundList.append(compound)
                     reaction.right_comps.append(compound)
         
             
@@ -446,6 +463,8 @@ class RheaParser(MetabolomicsData):
             
             # only the UN reactions have compound id lists
             # others must inherit from the UN.
+            
+            # Aaaannnnndddd also the comps have to be set, I think...
 
             rxn = self.rheaReactionDict.get('rhea:'+str(row[0]).strip(), None)
             lrRxn = self.rheaReactionDict.get('rhea:'+str(row[1]).strip(), None)
@@ -456,15 +475,27 @@ class RheaParser(MetabolomicsData):
                 if lrRxn is not None:
                     lrRxn.left_comp_ids = rxn.left_comp_ids
                     lrRxn.right_comp_ids = rxn.right_comp_ids
+                    
+                    lrRxn.left_comps = rxn.left_comps
+                    lrRxn.right_comps = rxn.right_comps
+                    
+                    
                 if rlRxn is not None:
                     # note that when rxn is R to L, then the 
                     # formula still goes left to right when written, so relative side of compounds changes.
                     rlRxn.left_comp_ids = rxn.right_comp_ids
                     rlRxn.right_comp_ids = rxn.left_comp_ids
+                    
+                    rlRxn.left_comps = rxn.right_comps
+                    rlRxn.right_comps = rxn.left_comps
+                    
+                    
                 if bdRxn is not None:
                     bdRxn.left_comp_ids = rxn.left_comp_ids
                     bdRxn.right_comp_ids = rxn.right_comp_ids
-            
+                    
+                    bdRxn.left_comps = rxn.left_comps
+                    bdRxn.right_comps = rxn.right_comps
         
         
         print("In direction processing dirMapping size and reaction dict size")
@@ -832,6 +863,13 @@ class RheaParser(MetabolomicsData):
             enzClass = enzClass.strip() 
             self.rheaEcToClassDict[ec] = enzClass
 
+        # grab level 4 ec from another source
+        uep = UniprotEnzymeParser(self.config)
+        level4Ec = uep.parseEnzyme()
+        
+        for ec in level4Ec:
+            self.rheaEcToClassDict[ec] = level4Ec[ec]
+        
 
 
     def buildRxnEcExportBlock(self, rxnId, ecList):

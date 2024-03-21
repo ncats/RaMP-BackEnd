@@ -342,7 +342,7 @@ class EntityBuilder(object):
         Appends metabolite common names to metabolite records for all data sources
         """
         for src in self.sourceList:
-            print(src.sourceName);
+            # print(src.sourceName);
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteCommonName.txt"
@@ -1070,6 +1070,7 @@ class EntityBuilder(object):
             else:
                 print("in append participants from Rhea... have a None rxn for id: "+rheaId)
         
+        print("n/n/n/n/****************************")
         print("Rhea cofact count/est: "+str(rheaCofactCnt))
 
         
@@ -1079,11 +1080,11 @@ class EntityBuilder(object):
         
         with open(path, 'r') as data:
             for line in data:
-                print("reading rh2ec file")
-                print(line)
+                #print("reading rh2ec file")
+                #print(line)
                 sline = line.split("\t")
                 rheaId = sline[0]
-                print(rheaId)
+                #print(rheaId)
                 rxn = self.reactionDict.get(rheaId, None)
             
                 if rxn is not None:
@@ -1092,8 +1093,8 @@ class EntityBuilder(object):
                         rxn2EcClassFile.write(rampRxnId + "\t" + line)
             
         rxn2EcClassFile.close()
-        print("reaction dict key examples")
-        print(list(self.reactionDict.keys())[0:4])
+        #print("reaction dict key examples")
+        #print(list(self.reactionDict.keys())[0:4])
 
 
 #     def fullBuild(self):
@@ -1326,14 +1327,26 @@ class EntityBuilder(object):
             
         file.close()
         
+        cofactorCompCount = 0
+        #cofactorCompIdCount = 0
         
         file = open("../misc/sql/reaction_to_metabolite.txt", "w+", encoding='utf-8')
 
         for rxnId in self.reactionDict:
             rxn = self.reactionDict[rxnId]
+            
+            cofactorCompCount = cofactorCompCount + rxn.doIHaveACofactorCompoundCheck()
+
+            #cofactorCompIdCount = cofactorCompIdCount + rxn.doIHaveACofactorCompoundIdCheck()
+            
             file.write(rxn.getMainReactionToMetString('rhea'))
             
         file.close()
+        
+        # cofactor checks
+        print('n/n/n/n/ cofactor check when writing rhea rxn2met')
+        print(cofactorCompCount)
+        #print(cofactorCompIdCount)
 
         file = open("../misc/sql/reaction_to_protein.txt", "w+", encoding='utf-8')
         

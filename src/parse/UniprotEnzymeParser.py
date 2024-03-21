@@ -63,7 +63,7 @@ class UniprotEnzymeParser(MetabolomicsData):
         print(str(ecCount))
 
         # now add SwissProt human
-  
+        return self.ecToDescription  
 
 
     def parseEnzymeDatFile(self, filePath):
@@ -113,7 +113,7 @@ class UniprotEnzymeParser(MetabolomicsData):
                         self.ecToDescription[ec] = description
                 start = 1
 
-        return self.ecToDescription
+
     
 
 # testing code

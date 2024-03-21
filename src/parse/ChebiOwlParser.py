@@ -3,6 +3,7 @@ Created on Jul 6, 2022
 
 @author: braistedjc
 '''
+
 from rdflib import *
 import rdflib
 import sys, os
