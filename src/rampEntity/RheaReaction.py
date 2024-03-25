@@ -209,6 +209,59 @@ class RheaReaction(object):
         
         return s    
            
+           
+           
+    def getMainReactionToProteinStringAllIds(self, source):
+        
+        s = ""
+        
+        uniprotIdSet = set()
+        
+        for p in self.proteins:
+
+            ids = p.idDict.get(source, None)
+            
+            if ids is not None and len(ids) > 0:
+                
+                for uniprot in ids:
+                    
+                    #uniprot = ids[0]
+                          
+                    names = p.commonNameDict.get(source, None)
+                    name = " "
+                    
+                    if names is not None:
+                        name = names.get(uniprot, None)
+                        if name is None:
+                            name = "UNK"
+                            #print("export rxn to prot, HAVE NAME DICT, BUT NO NAME for uniprot: "+uniprot + " DICT LEN: " + str(len(list(names.keys()))))
+                        else:
+                            # print("Have a name in rxt to prot... but it's an empty string **|"+name+"|**")
+                            if name == "":
+                                name = ""
+                                
+                                #print("Dumping Names...")
+                                #for i in names:
+                                #    print(str(i) + "---" + str(names[i]))
+         
+                    else:
+                        name = ""
+                        #print("export rxn to prot, NO NAME DICT")
+                    
+#                     if name == "":
+#                         name = "UNK3"
+#                     
+#                     if name == " ":
+#                         name = "UNK4"
+
+                    if uniprot not in uniprotIdSet:                        
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
+                        uniprotIdSet.add(uniprot)
+            
+        return s    
+    
+           
+           
     def getReactionProteinToMetString(self, source):
         
         s = ""

@@ -33,6 +33,7 @@ from pandas.io.html import _remove_whitespace
 
 import pubchempy as pcp
 import time
+from unittest.mock import inplace
 
 class EntityBuilder(object):
     '''
@@ -579,6 +580,7 @@ class EntityBuilder(object):
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
+            df.drop_duplicates(inplace = True)
                 
             for i,row in df.iterrows():
                 
@@ -1007,6 +1009,7 @@ class EntityBuilder(object):
             self.reactionDict[rxn.rhea_id] = rxn            
         
         
+        
     def appendRxnProteinsFromRhea(self, path):
         print("Adding Reaction Proteins")
 
@@ -1028,9 +1031,14 @@ class EntityBuilder(object):
                 if protein is not None:
                     protein.soureId = uniprot
                     rxn.proteins.append(protein)
+                
+                else:
+                    # we need to make a protein? 
+                    # how is the geneList made. Does it include all genes/proteins from Rhea????
+                    print("No rxn for uniprot = "+uniprot)
             
             else:
-                print("No gene for uniprot = "+uniprot)
+                print("No rxn record = "+rheaId)
                    
         
         
@@ -1352,7 +1360,7 @@ class EntityBuilder(object):
         
         for rxnId in self.reactionDict:
             rxn = self.reactionDict[rxnId]
-            file.write(rxn.getMainReactionToProteinString('rhea'))
+            file.write(rxn.getMainReactionToProteinStringAllIds('rhea'))
             
         file.close()
 
