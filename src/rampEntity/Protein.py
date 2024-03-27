@@ -30,9 +30,14 @@ class Protein(object):
         
         self.hgncSymbol = ""
         
+        # status of review by uniprot.
+        # TrEMBL uniprot entries are not fully curated (0)
+        # SwissProt uniprot entries are completely curated (1)
+        self.isReviewed = 0
+        
     
     def getPrimaryRecord(self):
-        s = self.uniprotAcc + "\t" + self.id + "\t" + self.geneName + "\t" + self.recName + "\t" + self.hgncSymbol + "\n"
+        s = self.uniprotAcc + "\t" + self.id + "\t" + self.geneName + "\t" + self.recName + "\t" + self.hgncSymbol + '\t' + str(self.isReviewed) + "\n"
         return s
     
     def getSecondaryToPrimaryRecord(self):

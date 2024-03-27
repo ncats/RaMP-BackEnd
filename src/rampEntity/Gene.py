@@ -44,6 +44,11 @@ class Gene(object):
         self.sources = list()
         
         self.proteinType = "Unknown"
+        
+        # status of review by uniprot.
+        # TrEMBL uniprot entries are not fully curated (0)
+        # SwissProt uniprot entries are completely curated (1)
+        self.isReviewed = 0
     
     def __eq__(self, other):
         """

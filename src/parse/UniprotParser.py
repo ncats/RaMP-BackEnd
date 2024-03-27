@@ -29,6 +29,8 @@ class UniprotParser(MetabolomicsData):
         self.uniprotRecords = dict()
         
         self.keyFields = ['AC', "DE", "GN", "ID", "DR"]
+        
+        self.parsingReviewedProteins = 0
 
     
     def parseUniprot(self):
@@ -63,11 +65,13 @@ class UniprotParser(MetabolomicsData):
         print("starting to parse uniprot trembl dat file")
         print(extractFile)                
                 
-        self.parseUniprotFile(self.relDir + localDir + extractFile)
+        self.parsingReviewedProteins = 0
+        self.parseUniprotFile(self.relDir + localDir + extractFile, 0)
 
         print("number of uniprot trembl records")
         tremblCount = len(self.uniprotRecords)
         print(str(tremblCount))
+
 
         # now add SwissProt human
         proteinConfig = self.resourceConfig.getConfig("swissprot_human")
@@ -97,7 +101,8 @@ class UniprotParser(MetabolomicsData):
         print("starting to parse uniprot swissprot dat file")
         print(extractFile)
                 
-        self.parseUniprotFile(self.relDir + localDir + extractFile)
+        self.parsingReviewedProteins = 1
+        self.parseUniprotFile(self.relDir + localDir + extractFile, 1)
 
         print("number of uniprot trembl PLUSE swissprot records")
         tremblCount = len(self.uniprotRecords)
@@ -108,7 +113,7 @@ class UniprotParser(MetabolomicsData):
     
     
     
-    def parseUniprotFile(self, filePath):
+    def parseUniprotFile(self, filePath, isProteinReviewed):
         proteinDB = open(filePath, 'r+', encoding="utf-8")
         
         protein = None
@@ -125,6 +130,7 @@ class UniprotParser(MetabolomicsData):
             
             if(start == 1):
                 protein = Protein()
+                protein.isReviewed = isProteinReviewed
                 start = 0
                 
             prefix = line[0:2]
@@ -141,11 +147,13 @@ class UniprotParser(MetabolomicsData):
                 
                 #print("uniprot key: "+protein.uniprotAcc)
                 protein = Protein()
-                
+                protein.isReviewed = isProteinReviewed
             
             
             
     def processData(self, prefix, line, proteinDB, protein):
+        
+        #protein.isReviewed = self.parsingReviewedProteins
         
         line = (line[3:(len(line)-1)]).strip()
         
@@ -165,14 +173,8 @@ class UniprotParser(MetabolomicsData):
                 protein.uniprotAcc = accs[0]
                 protein.secondaryAccs = accs
                 
-                if protein.uniprotAcc == 'uniprot:P19835':
-                    print("HEYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY we have P19835 in uniprot parser")
-                    print(accs)
             else:
                 for acc in accs:
-                    if acc == 'uniprot:P19835':
-                        print("HEYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY we have P19835 AS A SECONDARY ACC in uniprot parser")
-
                     protein.secondaryAccs.append(acc)
 
             
@@ -185,6 +187,13 @@ class UniprotParser(MetabolomicsData):
                     if recName[-1] == ";":
                         recName = recName[0:(len(recName)-1)]
                     protein.recName = recName
+                if(line[0:7] == 'SubName'):
+                    line = line.replace("SubName: Full=", "")
+                    recName = line.split('{')[0].strip()
+                    if recName[-1] == ";":
+                        recName = recName[0:(len(recName)-1)]
+                    protein.recName = recName
+                    
             
         elif(prefix == 'GN'):
             # print("GN process")

@@ -144,6 +144,14 @@ class EntityBuilder(object):
         
         self.hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
         
+        # a simple list of uniprot accessions that are secondary
+        # use this for rhea export... to skip any uniprot in this list
+        self.uniprotSecondaryAccessions = set()
+        
+        # suport for delivering the correct proteins for rhea
+        self.rheaToSwissprotDict = dict()
+        self.rheaToTremblDict = dict()
+        
     def fullBuild(self):
         """
         This high level method performs the entire process of entity construction
@@ -161,6 +169,9 @@ class EntityBuilder(object):
         # load pathways
         self.loadPathways()
         self.addPathwayCategory()
+
+        # collect uniprot secondary accessions
+        self.getUniprotSecondaryAccessions()
 
         # load genes
         self.loadGeneList()
@@ -556,7 +567,21 @@ class EntityBuilder(object):
         # print(str(len(strandedMetSourceIds)))
         # print(str(len(strandedPathSourceIds)))
         
+    def getUniprotSecondaryAccessions(self):
+        
+        self.uniprotSecondaryAccessions = set()
 
+        file = "../misc/output/uniprot_human/uniprot_acc_mapping.txt"
+        
+        data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+        
+        for idx, row in data.iterrows():
+            altId = row[0]
+            id = row[1]
+            
+            if altId != id:
+                self.uniprotSecondaryAccessions.add(altId)
+        
 
     def loadGeneList(self, eqMetric = 0):
         """
@@ -1018,19 +1043,55 @@ class EntityBuilder(object):
 
         records = pd.read_table(path, header=None)
 
+        self.rheaToSwissprotDict = dict()
+        self.rheaToTremblDict = dict()
+
         # just read them in first...
         for idx, record in records.iterrows():
             
             rheaId = record[0]
             uniprot = record[1]
+            isReviewed = record[3]
 
             rxn = self.reactionDict.get(rheaId, None)
             
+            if isReviewed == 1:
+                idSet = self.rheaToSwissprotDict.get(rheaId, None)
+                if idSet is None:
+                    idSet = set()
+                    self.rheaToSwissprotDict[rheaId] = idSet
+                
+                idSet.add(uniprot)
+            else:
+                idSet = self.rheaToTremblDict.get(rheaId, None)
+                if idSet is None:
+                    idSet = set()
+                    self.rheaToTremblDict[rheaId] = idSet
+                
+                idSet.add(uniprot)
+                        
+                
+            
+            if uniprot == "uniprot:Q13574":
+                print(" Found the uniprot Q13574 in the FILE.............................................................................")
             if rxn is not None:
                 protein = self.geneList.getGeneById(uniprot)
                 if protein is not None:
-                    protein.soureId = uniprot
+                    if uniprot == "uniprot:Q13574":
+                        print(" Found the uniprot Q13574 actual PROTEIN.............................................................................")
+                        print("Primary ID in protein = "+protein.sourceId)
+                        print("Print all ids in order:")
+                        rids = protein.idDict.get("rhea", None)
+                        
+                        if rids is not None:
+                            for id in rids:
+                                print(id)
+                        
+                        print("End Protein Ids List")
+                    
+                    protein.sourceId = uniprot
                     rxn.proteins.append(protein)
+                    protein.isReviewed = isReviewed
                 
                 else:
                     # we need to make a protein? 
@@ -1360,7 +1421,10 @@ class EntityBuilder(object):
         
         for rxnId in self.reactionDict:
             rxn = self.reactionDict[rxnId]
-            file.write(rxn.getMainReactionToProteinStringAllIds('rhea'))
+            swissProtIds = self.rheaToSwissprotDict.get(rxnId, None)
+            tremblProtIds = self.rheaToTremblDict.get(rxnId, None)
+            if swissProtIds is not None or tremblProtIds is not None:
+                file.write(rxn.getMainReactionToProteinStringAllIds('rhea', self.uniprotSecondaryAccessions, swissProtIds, tremblProtIds))
             
         file.close()
 

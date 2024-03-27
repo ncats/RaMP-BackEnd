@@ -47,6 +47,8 @@ class RheaReaction(object):
         # mapping rhea id to uniprot ids, can be 1:n
         self.proteins = []
         
+        self.proteinDict = dict()
+        
         self.isTransport = 0        
                 
         # compounds ids for left side, populate using rhea2ec tsv file.
@@ -172,11 +174,12 @@ class RheaReaction(object):
                 
         for p in self.proteins:
 
-            ids = p.idDict.get(source, None)
-            if ids is not None and len(ids) > 0:
-                uniprot = ids[0]
-            else:
-                uniprot = 'NA'            
+            uniprot = p.sourceId
+#            ids = p.idDict.get(source, None)
+#            if ids is not None and len(ids) > 0:                
+#                uniprot = ids[0]
+#            else:
+#                uniprot = 'NA'            
 
             names = p.commonNameDict.get(source, None)
             name = " "
@@ -205,17 +208,35 @@ class RheaReaction(object):
             if name == " ":
                 name = "UNK4"
                 
-            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
+            s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\t" + str(p.isReviewed) + "\n"
         
         return s    
            
            
            
-    def getMainReactionToProteinStringAllIds(self, source):
+    def getMainReactionToProteinStringAllIds(self, source, secondaryIdSet, swissProtIds, tremblProtIds):
         
         s = ""
         
+        if self.direction != 'UN':
+            return s
+        
         uniprotIdSet = set()
+        
+        outputCount = 0
+        
+        if swissProtIds is None:
+            swissCount = 0
+        else:
+            swissCount = len(swissProtIds)
+
+        if tremblProtIds is None:
+            tremblCount = 0
+        else:
+            tremblCount = len(tremblProtIds)
+
+        
+        totalIdCount = swissCount + tremblCount
         
         for p in self.proteins:
 
@@ -225,7 +246,20 @@ class RheaReaction(object):
                 
                 for uniprot in ids:
                     
-                    #uniprot = ids[0]
+                    if uniprot in secondaryIdSet:                        
+                        continue
+                    
+                    if swissProtIds is not None and uniprot in swissProtIds:
+                        isReviewed = 1
+                        outputCount = outputCount + 1
+                    elif tremblProtIds is not None and uniprot in tremblProtIds:
+                        isReviewed = 0
+                        outputCount = outputCount + 1
+                    else:
+                        # limits reporting of non-rhea proteins
+                        continue
+                    
+                    #uniprot = ids[0]                    
                           
                     names = p.commonNameDict.get(source, None)
                     name = " "
@@ -255,9 +289,13 @@ class RheaReaction(object):
 #                         name = "UNK4"
 
                     if uniprot not in uniprotIdSet:                        
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t" + name + "\t" + str(isReviewed) + "\n"
                         uniprotIdSet.add(uniprot)
-            
+        
+        if outputCount < totalIdCount:
+            print("rhea protein output mismatch. totalIdCount = " + str(totalIdCount), + " outputCount = " + str(outputCount))
+        
+        
         return s    
     
            
@@ -288,7 +326,7 @@ class RheaReaction(object):
                             cid = list(namesDict.keys())[0]
                             name = namesDict[cid]
                 
-                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + str(met.isCofactor) + "\n"
+                        s = s + self.rxnRampId + "\t" + self.rhea_id + "\t" + p.rampId + "\t" + uniprot + "\t0\t" + met.rampId + "\t" + cid + "\t" + name + "\t" + str(met.isCofactor) + str(p.isReviewed) + "\n"
                         
                 for met in self.right_comps:
                     if met.rampId not in hitMets:
@@ -352,7 +390,15 @@ class RheaReaction(object):
     def getRheaIdToUniprotMappingString(self):    
         s = ""
         for pid in self.proteins:
-            s = s + self.rhea_id + "\t" + pid + "\t0\n"             
+            pName = ""
+            p = self.proteinDict.get(pid, None)
+            protIsReviewed = 0
+            if p is not None:
+                protIsReviewed = p.isReviewed
+            else:
+                protIsReviewed = 3
+                
+            s = s + self.rhea_id + "\t" + pid + "\t0\t" + str(protIsReviewed) + "\n"             
         return s
 
     def getCompoundToProteinString(self):
@@ -408,7 +454,10 @@ class RheaReaction(object):
 # 
 #         return 0   
             
-            
-            
+    def addProteinSet(self, accList, accToProteinMap):
+        for acc in accList:
+            p = accToProteinMap.get(acc, None)
+            if p is not None:
+                self.proteinDict[acc] = p
                 
         

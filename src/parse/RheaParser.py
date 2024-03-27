@@ -65,15 +65,22 @@ class RheaParser(MetabolomicsData):
         
         self.expasyLocalEc2ClassFile = ""
         
-        self.humanUniprotRecordDict = dict()
+        self.humanPrimaryUniprotRecordDict = dict()
+
+        self.humanSecondaryUniprotRecordDict = dict()
         
-        self.humanUniprotAccSet = set()
+        self.humanPrimaryUniprotAccSet = set()
+        
+        self.humanSecondaryUniprotAccSet = set()
         
         self.chebiHumanIdSet = set()
         
         self.chebiCofactorId = "23357"
         
         self.chebiCofactorSet = set()
+        
+        self.parsingReviewedProteins = 0
+
                      
     def processRhea(self):
         self.buildSupportingUniprotData()
@@ -106,9 +113,6 @@ class RheaParser(MetabolomicsData):
         self.exportIntermediateFiles()
         
         
-    
-
-
     def buildSupportingUniprotData(self):
         print("building uniprot data store")
         uniParser = UniprotParser(self.config)
@@ -117,22 +121,25 @@ class RheaParser(MetabolomicsData):
         uniParser.parseUniprot()
         self.humanUniprotRecordDict = uniParser.uniprotRecords
         
-        threadedUniprotDict = dict()
+        threadedPrimaryUniprotDict = dict()
+        threadedSecondaryUniprotDict = dict()
         
         for acc in self.humanUniprotRecordDict:
-            self.humanUniprotAccSet.add(acc)
-            p = self.humanUniprotRecordDict[acc]
-            threadedUniprotDict[acc] = p
+            self.humanPrimaryUniprotAccSet.add(acc)
+            p = self.humanPrimaryUniprotRecordDict[acc]
+            threadedPrimaryUniprotDict[acc] = p
             for acc2 in p.secondaryAccs:
-                self.humanUniprotAccSet.add(acc2)
-                threadedUniprotDict[acc2] = p
+                self.humanSecondaryUniprotAccSet.add(acc2)
+                threadedSecondaryUniprotDict[acc2] = p
                 
-        self.humanUniprotRecordDict = threadedUniprotDict        
+        self.humanPrimaryUniprotRecordDict = threadedPrimaryUniprotDict        
+        self.humanSecondaryUniprotRecordDict = threadedSecondaryUniprotDict
     
         print("in rhea uniprot build")
-        print("length of the dict"+str(len(self.humanUniprotRecordDict.keys())))
-        print("length of the set"+str(len(self.humanUniprotAccSet)))
-
+        print("length of the primary dict"+str(len(self.humanPrimaryUniprotRecordDict.keys())))
+        print("length of the primary set"+str(len(self.humanPrimaryUniprotAccSet)))
+        print("length of the secondary dict"+str(len(self.humanSecondaryUniprotRecordDict.keys())))
+        print("length of the secondary set"+str(len(self.humanSecondaryUniprotAccSet)))
 
     def buildSupportingChebiData(self):
         print("building chebi data store")
@@ -198,10 +205,10 @@ class RheaParser(MetabolomicsData):
             rhea2UniprotRemoteFile = uniprotToRheaConf.sourceFileName
             
             self.download_files(rhea2UniprotUrl, self.relDir + localDir + rhea2UniprotRemoteFile)
-            swissProtLocalFileName = uniprotToRheaConf.extractFileName
+            uniprotProtLocalFileName = uniprotToRheaConf.extractFileName
             # now gunzip
             with gzip.open(self.relDir + localDir + rhea2UniprotRemoteFile, 'rb') as f_in:
-                with open(self.relDir + localDir + swissProtLocalFileName, 'wb') as f_out:
+                with open(self.relDir + localDir + uniprotProtLocalFileName, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)      
         else:
             print("Using cached Rhea Uniprot-to-Rhea file.")
@@ -760,9 +767,12 @@ class RheaParser(MetabolomicsData):
             #print(row)
             #print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
 
+            uniprot = "uniprot:" + row.ID
+
             # !!! just adding human uniprot            
-            if ("uniprot:" + row.ID) in self.humanUniprotAccSet:
+            if uniprot in self.humanUniprotAccSet:
                 #print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                               
                 unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
                 if unis is None:     
                     unis = ['uniprot:'+row.ID]
@@ -780,10 +790,10 @@ class RheaParser(MetabolomicsData):
             currRxn = self.rheaReactionDict.get(rxn, None)
             if currRxn is None:
                 currRxn = self.rheaReactionDict.get("rhea:"+rxn, None)
-            if currRxn is not None:   
+            if currRxn is not None: 
                 currRxn.proteins = uniSet
                 #print("setting proteins, len:"+str(len(currRxn.proteins)))
-        
+                currRxn.addProteinSet(uniSet, self.humanUniprotRecordDict)
         
             
         # swiss prot    
@@ -816,7 +826,7 @@ class RheaParser(MetabolomicsData):
             if currRxn is not None:   
                 currRxn.proteins = uniSet
                 #print("setting proteins, len:"+str(len(currRxn.proteins)))
-                
+                currRxn.addProteinSet(uniSet, self.humanUniprotRecordDict)
         
         
     def appendEcToReaction(self):
