@@ -89,7 +89,10 @@ class EntityBuilder(object):
         # This data source list will eventually be populated by config file
         self.source = DataSource()        
         self.sourceList.append(self.source)
-     
+
+        if not os.path.exists(self.source.exportPath):
+            os.makedirs(self.source.exportPath)
+
         self.dataSource2 = DataSource()
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
@@ -209,11 +212,6 @@ class EntityBuilder(object):
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
         
         # loader file writes
-        
-        # make sql directory if it doesn't exist
-        if not exists("../misc/sql"):
-            os.mkdir("../misc/sql")
-        
         self.writePathways()
         self.writeAnalyteSource()
         self.writeAnalyteSynonyms()
@@ -248,7 +246,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
          
@@ -359,7 +357,7 @@ class EntityBuilder(object):
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteCommonName.txt"
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -382,7 +380,7 @@ class EntityBuilder(object):
             # capture id to status dictionary
             hmdbStatus = dict()
             file = hmdbSrc.sourceLocPath + "/" + hmdbSrc.filePrefix + "metStatus.txt"
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
 
             for i,row in data.iterrows():
                 hmdbStatus[row[0]] = row[1]
@@ -418,7 +416,7 @@ class EntityBuilder(object):
             if not os.path.exists(file) or os.path.getsize(file) < 1:
                 return
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -463,7 +461,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
         
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                         
@@ -490,7 +488,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, engine='python')
 
             for i,row in data.iterrows():
                 pathway = self.pathList.getPathwayBySourceId(row[0])
@@ -520,7 +518,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
         
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
@@ -573,7 +571,7 @@ class EntityBuilder(object):
 
         file = "../misc/output/uniprot_human/uniprot_acc_mapping.txt"
         
-        data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+        data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
         
         for idx, row in data.iterrows():
             altId = row[0]
@@ -602,7 +600,7 @@ class EntityBuilder(object):
                 print("in add gene list... geneInfoDictionary not found for :" + file)
                 continue
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             df.drop_duplicates(inplace = True)
@@ -722,7 +720,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
 
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
@@ -739,7 +737,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -756,7 +754,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
 
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -773,7 +771,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
 
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -789,7 +787,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
 
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -806,7 +804,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
         
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -823,7 +821,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
         
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
 
@@ -862,7 +860,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 continue
             
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
                 
@@ -885,7 +883,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteClass.txt"
                         
             if(path.exists(file) and src.haveChemClassInfo):    
-                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)            
+                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
                 df = pd.DataFrame(data)
                 df = self.remove_whitespace(df)
                 
@@ -916,7 +914,7 @@ class EntityBuilder(object):
             if not(path.exists(file)):
                 break
     
-            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+            data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
             
@@ -969,7 +967,7 @@ class EntityBuilder(object):
             if path.exists(file):
 #                print ("metaboliteToGene mappings for " + source)
                 
-                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False)
+                data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
                 df = pd.DataFrame(data)
                 df = self.remove_whitespace(df)
                 
@@ -1958,7 +1956,7 @@ class MappingExclusionList(object):
     
     def populateExclusionList(self, filePath):
 
-        data = pd.read_csv(filePath, delimiter=r'\t+', header=0, index_col=None)
+        data = pd.read_csv(filePath, delimiter=r'\t+', header=0, index_col=None, engine='python')
         df = pd.DataFrame(data)
             
         for i,row in df.iterrows():

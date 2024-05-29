@@ -126,7 +126,7 @@ class RheaParser(MetabolomicsData):
         
         for acc in self.humanUniprotRecordDict:
             self.humanPrimaryUniprotAccSet.add(acc)
-            p = self.humanPrimaryUniprotRecordDict[acc]
+            p = self.humanUniprotRecordDict[acc]
             threadedPrimaryUniprotDict[acc] = p
             for acc2 in p.secondaryAccs:
                 self.humanSecondaryUniprotAccSet.add(acc2)
@@ -458,7 +458,7 @@ class RheaParser(MetabolomicsData):
             
     def processReactionDirectionInfo(self):
         
-        dirTable = pd.read_csv(self.rheaLocalRxnDirectionFile, sep="\t", header=0)
+        dirTable = pd.read_csv(self.rheaLocalRxnDirectionFile, sep="\t", header=0, engine='python')
         
         dirMapping = dict()
         
@@ -557,7 +557,7 @@ class RheaParser(MetabolomicsData):
         for rheaId in self.rheaReactionDict:
             rxn = self.rheaReactionDict[rheaId]
             for p in rxn.proteins:
-                if p in self.humanUniprotAccSet:
+                if p in self.humanPrimaryUniprotAccSet:
                     if rxn.status == 1:
                         numHumanUniprot = numHumanUniprot + 1
                         if rxn.direction == 'UN':
@@ -757,7 +757,7 @@ class RheaParser(MetabolomicsData):
     def appendUniprotToReaction(self):
         #self.rheaLocalRheaToEcFile
         #self.rheaLocalRheaToUniprotFile
-        r2u = pd.read_csv(self.rheaLocalRheaToUniprotFile, sep="\t", header=0)
+        r2u = pd.read_csv(self.rheaLocalRheaToUniprotFile, sep="\t", header=0, engine='python')
         
         r2uMap = dict()
         
@@ -770,7 +770,7 @@ class RheaParser(MetabolomicsData):
             uniprot = "uniprot:" + row.ID
 
             # !!! just adding human uniprot            
-            if uniprot in self.humanUniprotAccSet:
+            if uniprot in self.humanPrimaryUniprotAccSet:
                 #print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                                
                 unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
@@ -797,7 +797,7 @@ class RheaParser(MetabolomicsData):
         
             
         # swiss prot    
-        r2u = pd.read_csv(self.rheaLocalRheaToSwissprotFile, sep="\t", header=0)
+        r2u = pd.read_csv(self.rheaLocalRheaToSwissprotFile, sep="\t", header=0, engine='python')
         
         print(str(r2u.shape))
         
@@ -806,7 +806,7 @@ class RheaParser(MetabolomicsData):
             #print("appending protein accessions to reactions..." + str(row.RHEA_ID)+ "  " +str(row.ID))
 
             # !!! just adding human uniprot            
-            if ("uniprot:" + row.ID) in self.humanUniprotAccSet:
+            if ("uniprot:" + row.ID) in self.humanPrimaryUniprotAccSet:
                 #print("Have the human id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 unis = r2uMap.get("rhea:" + str(row.RHEA_ID))
                 if unis is None:     
@@ -832,7 +832,7 @@ class RheaParser(MetabolomicsData):
     def appendEcToReaction(self):
         #self.rheaLocalRheaToEcFile
         #self.rheaLocalRheaToUniprotFile
-        r2u = pd.read_csv(self.rheaLocalRheaToEcFile, sep="\t", header=0)
+        r2u = pd.read_csv(self.rheaLocalRheaToEcFile, sep="\t", header=0, engine='python')
         
         r2EcMap = dict()
         
@@ -854,7 +854,7 @@ class RheaParser(MetabolomicsData):
         
     def ecToEnzymeClassFromExpasy(self):
         
-        # ec2class = pd.read_csv(self.expasyLocalEc2ClassFile, sep="\t", skiprows=11, skipfooter=5)
+        # ec2class = pd.read_csv(self.expasyLocalEc2ClassFile, sep="\t", skiprows=11, skipfooter=5, engine='python')
         with open(self.expasyLocalEc2ClassFile, 'r') as ec2c:
             ec2classStrings = ec2c.readlines()
         

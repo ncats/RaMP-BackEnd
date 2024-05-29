@@ -79,8 +79,8 @@ loader = mainSQLiteDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
-loader.loadDBAfterTruncatingTables(sqliteFile = '/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_BASE.sqlite', incrementLevel = 'specified',  
-                                   optionalVersionOveride = "2.4.2", 
-                                   optionalVersionNote = "20231107 data update, Rhea reaction to EC reaction class. Reactome Genes Patch.", 
+loader.loadDBAfterTruncatingTables(sqliteFile = 'RaMP_SQLite_BASE.sqlite', incrementLevel = 'specified',
+                                   optionalVersionOveride = "2.6.0",
+                                   optionalVersionNote = "20240524 data update",
                                    truncateTables=True)
 

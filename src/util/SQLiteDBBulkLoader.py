@@ -4,13 +4,12 @@ Created on Aug 25, 2020
 @author: braistedjc
 '''
 import sys
-import mysql.connector
 import pandas as pd
+import numpy as np
 from pandas.api.types import is_string_dtype
 import os.path
 from os import path
-from sqlalchemy import create_engine
-from sqlalchemy import MetaData
+from sqlalchemy import create_engine, inspect, MetaData
 import logging
 from jproperties import Properties
 from urllib.parse import quote_plus
@@ -84,7 +83,7 @@ class SQLiteDBBulkLoader(object):
     # def loadFile(conn, file_path, table, stmt, colIndices):
     #     print(os.path.abspath(os.getcwd()))
     #     print(str(path.exists(file_path)))
-    #     data = pd.read_csv (file_path, sep='\t', header=None)
+    #     data = pd.read_csv (file_path, sep='\t', header=None, engine='python')
     #     df = pd.DataFrame(data)
     #     cursor = conn.cursor()
     #     cursor.executemany(stmt, df.iterrows())
@@ -94,7 +93,7 @@ class SQLiteDBBulkLoader(object):
         print(os.path.abspath(os.getcwd()))
         print(str(path.exists(file_path)))
    
-        data = pd.read_csv(file_path, delimiter=r'\t+', header=None, index_col=None, usecols=colIndices)
+        data = pd.read_csv(file_path, delimiter=r'\t+', header=None, index_col=None, usecols=colIndices, engine='python')
         df = pd.DataFrame(data)
     
         # issue with whitespace    
@@ -148,11 +147,11 @@ class SQLiteDBBulkLoader(object):
         
         print(str(df.shape))
         primaryKey = resource.primaryKey
-        if(primaryKey != "None"):
+        if(primaryKey != "None" and not (isinstance(primaryKey, float) and np.isnan(primaryKey))):
             df = df.drop_duplicates(subset=[primaryKey], inplace=False, keep='first')
         else:
             # rationale.... final check if we have a completely duplicated record over all columns
-            print("Droping full duplicates!")
+            print("Dropping full duplicates!")
             df = df.drop_duplicates(ignore_index=False, inplace=False, keep='first')
             print(str(df.shape))
 
@@ -162,95 +161,15 @@ class SQLiteDBBulkLoader(object):
             df.to_sql(table, self.engine, if_exists = 'append', index=False)
         except Exception as ex:   
             print(ex)
-            pass
-    
-    
+            raise ex
 
-    def loadIgnore(self, engine, resource):
-
-        conn = mysql.connector.connect(host= self.dbConf.host,
-                         user=self.dbConf.username,
-                         password=self.dbConf.conpass,
-                         db=self.dbConf.dbname,
-                         charset = 'utf8',
-                         use_unicode=True)
-        #conn.set_charset_collation('utf16')
-        cursor = conn.cursor()
-
-        table = resource.destTable
-        colNames = resource.columnNames
-        fileName = resource.stagingFile
-        
-        cols = "`,`".join([str(i) for i in colNames])
-        sql = "INSERT IGNORE INTO `"+table+"` (`" +cols+ "`) VALUES (" + "%s,"*(len(colNames)-1) + "%s)"
-        #sql = "INSERT IGNORE INTO '"+table+" VALUES (" + "%s,"*(len(colNames)-1) + "%s)"
-        #sql = "INSERT IGNORE INTO '"+table+" VALUES (%s)"
-        valueString = "VALUES ("
-        for col in colNames:
-            valueString = valueString + "%("+col+")s,"
-        valueString = valueString[:-1]    
-        valueString = valueString + ")"
-        #sql = "INSERT IGNORE INTO '"+table+"' (`" +cols+ "`) " + valueString
-        
-        print(sql)
-        stmt = "insert into {} ({})".format(table, colNames)
-
-        file_path = "../misc/sql/"+fileName
-        #data = pd.read_csv(file_path, sep="\t+", header=None, index_col=None, engine="python")
-        data = pd.read_table(file_path, sep="\t+", header=None, index_col=None, engine="python", keep_default_na=False)     
-
-        print(list(data.columns))
-
-        df = pd.DataFrame(data)
-
-        print(list(df.columns))
-
-    
-        # issue with whitespace    
-        df = self.remove_whitespace(df)
-        
-        # grab key columns append column names
-        colNames = resource.columnNames
-        print(df.shape)
-        if(len(df.columns) > len(colNames)):
-            print("too wide... cut down")           
-            df = df.iloc[ : , 0:len(colNames)]
-            print("new shape = "+str(df.shape))       
-        
-        df.columns = colNames
-        print("ColNames: "+str(colNames))
-        # should there be a unique key column? If so, keep the first instance
-        # this came up with a redundant recorde in the intermediate file of a 1:1. 
-        # final catch of a situation that can be avoided   
-        primaryKey = resource.primaryKey
-        if(primaryKey != "None"):
-            df = df.drop_duplicates(subset=[primaryKey], inplace=False, keep='first')
-        else:
-            # rationale.... final check if we have a completely duplicated record over all columns
-            df = df.drop_duplicates(ignore_index=False, inplace=False, keep="first")
-
-        records = list(df.itertuples(index=False))
-        print(records[1])
-        
-        with self.engine.connect() as conn:           
-            # cursor.executemany(sql, records)
-            for i,row in df.iterrows():
-                conn.execute(sql, tuple(row))
-                if(i % 1000 == 0):
-                    print(i)
-                    conn.commit()
-
-        
-        conn.commit()
-
-    
     def loadConfig(self):
         print("nothing")
 
         
     def load(self, rampResourceConfigFile):
     
-        resourceConfig = pd.read_csv(rampResourceConfigFile, sep='\t', index_col=None)
+        resourceConfig = pd.read_csv(rampResourceConfigFile, sep='\t', index_col=None, engine='python')
         resourceConfig = pd.DataFrame(resourceConfig)
         resources = []
         fileResource = rampFileResource()
@@ -267,19 +186,13 @@ class SQLiteDBBulkLoader(object):
             if(resource.loadStatus == "ready"):
                 #self.loadFile(resource, engine)
                 #self.odoLoadFile(resource)
-                if(resource.loadType != "bulk"):
-                    print("\n\nloadIgnore: "+resource.stagingFile+"\n\n")
-                    self.loadIgnore(self.engine, resource)
-                else:
-                    self.loadFile(resource, self.engine)
-                    print("\n\nbulkLoadFile: "+resource.stagingFile+"\n\n")
+                self.loadFile(resource, self.engine)
+                print("\n\nbulkLoadFile: "+resource.stagingFile+"\n\n")
 
 
     def updateVersionInfo(self, infoFile):
         print("Updating Version Info")
 
-        # engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
-       
         sql = "select ramp_version, load_timestamp from db_version order by load_timestamp desc limit 1"
         
         dbVersion = None
@@ -294,7 +207,7 @@ class SQLiteDBBulkLoader(object):
         dbVersion = dbVersionDF.iloc[0,0]
         today = dbVersionDF.iloc[0,1]
 
-        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None, header=0)
+        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None, header=0, engine='python')
 
         for c in versionInfo.columns:
             print("column: "+c)
@@ -317,9 +230,7 @@ class SQLiteDBBulkLoader(object):
     def updateDataStatusSummary(self):
         
         print("starting update entity summary")
-        
-        #engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}").format(username=self.dbConf.username, conpass=self.dbConf.conpass, host_url=self.dbConf.host,dbname=self.dbConf.dbname)), echo=False)
-        
+
         sqlMets = "select dataSource, count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource not like '%%kegg' group by dataSource"
         sqlKeggMets = "select count(distinct(rampId)) from source where geneOrCompound = 'compound' and dataSource like '%%_kegg'"
         
@@ -340,10 +251,13 @@ class SQLiteDBBulkLoader(object):
         statusTable = dict()
         
         sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'LIPIDMAPS', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI','rhea':'Rhea'}
-        
-        with self.engine.connect() as conn:
 
-            conn.execute("delete from entity_status_info")
+        inspector = inspect(self.engine)
+        table_exists = "entity_status_info" in inspector.get_table_names()
+
+        with self.engine.connect() as conn:
+            if table_exists:
+                conn.execute("delete from entity_status_info")
 
             rs = conn.execute(sqlMets)
             statusTable["Metabolites"] = dict()
@@ -819,19 +733,20 @@ class SQLiteDBBulkLoader(object):
             return jsonRes
         
         return nodeList
-    
-    
+
+
+    def create_column_if_not_exists(self, table, column):
+        inspector = inspect(self.engine)
+        columns = inspector.get_columns(table)
+        column_exists = any(col['name'] == column for col in columns)
+        if not column_exists:
+            with self.engine.connect() as conn:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} INTEGER DEFAULT 0")
+
     def updateSourcePathwayCount(self):
         print("Started: updating pathway counts in source table")
-        
-        #sql = "update source, "\
-        #"(select ap.rampId, count(distinct(ap.pathwayRampId)) as pathwayCount from analytehaspathway ap "\
-        #"where ap.pathwaySource != 'hmdb' group by ap.rampId) as metPathwayInfo "\
-        #"set source.pathwayCount = metPathwayInfo.pathwayCount where source.rampId = metPathwayInfo.rampId"
-                
-        #with self.engine.connect() as conn:
-        #    conn.execute(sql)
-        #    conn.close()
+
+        self.create_column_if_not_exists('source', 'pathwayCount')
     
         sql = "select count(distinct(ap.pathwayRampId)) as pathwayCount, ap.rampId from analytehaspathway ap "\
         "where ap.pathwaySource != 'hmdb' group by ap.rampId"
@@ -862,23 +777,8 @@ class SQLiteDBBulkLoader(object):
     
     def updateOntologyMetaboliteCounts(self):
         print("Started: updating metabolite counts in ontology table")
-        
-        #sql2 = "update ontology,"\
-        #"(select rampOntologyId, count(distinct(rampCompoundId)) as metCount from analytehasontology group by rampOntologyId)"\
-        #"as ontologyMetInfo set ontology.metCount = ontologyMetInfo.metCount where ontology.rampOntologyId = ontologyMetInfo.rampOntologyId"
-    
-        #sql3 = "update ontology "\
-        #"set metCount = data.countData FROM (select count(distinct(rampCompoundId)) as countData, rampOntologyId from analytehasontology group by rampOntologyId) "\
-        #"as data where ontology.rampOntologyId = data.rampOntologyId"
 
-        #sql = "update ontology "\
-        #"set metCount = data.countData FROM ontology,(select count(distinct(rampCompoundId)) as countData, rampOntologyId from analytehasontology group by rampOntologyId) "\
-        #"as data where ontology.rampOntologyId = data.rampOntologyId"
-
-
-        #with self.engine.connect() as conn:
-        #    conn.execute(sql)
-        #    conn.close()
+        self.create_column_if_not_exists('ontology', 'metCount')
 
         sql = "select count(distinct(rampCompoundId)) as metCount, rampOntologyId from analytehasontology group by rampOntologyId"
 
@@ -925,7 +825,7 @@ class SQLiteDBBulkLoader(object):
                 tableName = row[0]
                 if tableName in tablesToSkip:
                     continue
-                conn.execute("delete from "+tableName)
+                conn.execute("delete from " + tableName)
          
             conn.close()
                 
@@ -953,11 +853,14 @@ class SQLiteDBBulkLoader(object):
         #analytesSim = zlib.compress(analytesSim.encode())
         sqlDelete = "delete from ramp_data_object"
         
-        
         sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_blob)"
-        
+
+        inspector = inspect(self.engine)
+        table_exists = "ramp_data_object" in inspector.get_table_names()
+
         with self.engine.connect() as conn:
-            conn.execute(sqlDelete)
+            if table_exists:
+                conn.execute(sqlDelete)
             
             #meta_data = MetaData(bind=conn)
             #meta_data.reflect()
@@ -1015,18 +918,7 @@ class dbConfig(object):
         
         with open(configFile, 'rb') as config_file:
             dbConfig.load(config_file)
-        
-        self.conpass = quote_plus(dbConfig.get("conpass").data)
-        self.username = dbConfig.get("username").data
-        self.host = dbConfig.get("host").data
-        self.dbname = dbConfig.get("dbname").data
-        
-    def dumpConfig(self):        
-        print(self.host)
-        print(self.dbname)
-        print(self.username)
-        print(self.conpass)    
-        
+
         
 class rampFileResource(object):
 

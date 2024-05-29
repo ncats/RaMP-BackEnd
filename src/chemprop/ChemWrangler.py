@@ -565,7 +565,7 @@ class ChemWrangler(object):
             
         print("computing catalytic distances")
         
-        catMat = pd.read_csv(catalyzesFile, sep='\t', header=None)
+        catMat = pd.read_csv(catalyzesFile, sep='\t', header=None, engine='python')
         catMat.columns = ["compound","protein"]
 
         lowestDist = dict()

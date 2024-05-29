@@ -1,0 +1,10 @@
+rdflib==6.0.2
+pandas==1.5.3
+lxml
+libchebipy
+pubchempy
+
+sqlalchemy==1.4.52
+jproperties
+scikit-learn
+numpy

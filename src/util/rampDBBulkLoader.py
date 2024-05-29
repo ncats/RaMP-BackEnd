@@ -77,7 +77,7 @@ class rampDBBulkLoader(object):
     # def loadFile(conn, file_path, table, stmt, colIndices):
     #     print(os.path.abspath(os.getcwd()))
     #     print(str(path.exists(file_path)))
-    #     data = pd.read_csv (file_path, sep='\t', header=None)
+    #     data = pd.read_csv (file_path, sep='\t', header=None, engine='python')
     #     df = pd.DataFrame(data)
     #     cursor = conn.cursor()
     #     cursor.executemany(stmt, df.iterrows())
@@ -87,7 +87,7 @@ class rampDBBulkLoader(object):
         print(os.path.abspath(os.getcwd()))
         print(str(path.exists(file_path)))
    
-        data = pd.read_csv(file_path, delimiter=r'\t+', header=None, index_col=None, usecols=colIndices)
+        data = pd.read_csv(file_path, delimiter=r'\t+', header=None, index_col=None, usecols=colIndices, engine='python')
         df = pd.DataFrame(data)
     
         # issue with whitespace    
@@ -250,7 +250,7 @@ class rampDBBulkLoader(object):
         
     def load(self, rampResourceConfigFile):
     
-        resourceConfig = pd.read_csv(rampResourceConfigFile, sep='\t', index_col=None)
+        resourceConfig = pd.read_csv(rampResourceConfigFile, sep='\t', index_col=None, engine='python')
         resourceConfig = pd.DataFrame(resourceConfig)
         resources = []
         fileResource = rampFileResource()
@@ -294,7 +294,7 @@ class rampDBBulkLoader(object):
         dbVersion = dbVersionDF.iloc[0,0]
         today = dbVersionDF.iloc[0,1].date()
 
-        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None, header=0)
+        versionInfo = pd.read_csv(infoFile, sep='\t', index_col=None, header=0, engine='python')
 
         for c in versionInfo.columns:
             print("column: "+c)
@@ -820,11 +820,24 @@ class rampDBBulkLoader(object):
             return jsonRes
         
         return nodeList
-    
-    
+
+
+    def create_column_if_not_exists(self, table, column):  # probably translate this to mysql, or get rid of mysql
+        with self.engine.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"PRAGMA table_info({table})")
+            columns = cursor.fetchall()
+            column_exists = any(c[1] == column for c in columns)
+            # If the column does not exist, add it
+            if not column_exists:
+                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} INTEGER DEFAULT 0")
+                conn.commit()
+
     def updateSourcePathwayCount(self):
         print("Started: updating pathway counts in source table")
-        
+
+        self.create_column_if_not_exists('source', 'pathwayCount')
+
         sql = "update source, "\
         "(select ap.rampId, count(distinct(ap.pathwayRampId)) as pathwayCount from analytehaspathway ap "\
         "where ap.pathwaySource != 'hmdb' group by ap.rampId) as metPathwayInfo "\
@@ -841,6 +854,8 @@ class rampDBBulkLoader(object):
     
     def updateOntologyMetaboliteCounts(self):
         print("Started: updating metabolite counts in ontology table")
+
+        self.create_column_if_not_exists('ontology', 'metCount')
         
         sql = "update ontology,"\
         "(select rampOntologyId, count(distinct(rampCompoundId)) as metCount from analytehasontology group by rampOntologyId)"\
