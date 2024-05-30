@@ -6,3 +6,4 @@ misc/jupyter/
 conf/*db_props*
 
 .idea
+.venv

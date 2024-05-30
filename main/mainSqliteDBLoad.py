@@ -1,4 +1,5 @@
 import sys
+import shutil
 sys.path.append('../src')
 from util.SQLiteDBBulkLoader import SQLiteDBBulkLoader
 
@@ -7,36 +8,23 @@ from util.SQLiteDBBulkLoader import SQLiteDBBulkLoader
 class mainSQLiteDBLoad(object):
     
     def __init__(self):
-        
-        
-        # db login credentials and host info
-        # this is a private text file for login credentials
-        # Format:
-            # host=<host_uri>
-            # dbname=<db_name_usually_ramp>
-            # username=<db_user_name_often_root>
-            # conpass=<db_connection_password>
-        self.dbPropsFile = "../config/ramp_db_props.txt"
-        
         # config for tables to load
         # a tab delimited file indicating which tables to load.
         self.dbConfigFilePath = "../config/db_load_resource_config.txt"
         
     
     
-    def loadDBAfterTruncatingTables(self, sqliteFile, incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None, truncateTables = False, tablesToKeep=['db_version', 'version_info']):
-        
-        
-        
-    ################# DB Loading Instructions
-        
+    def loadDBAfterTruncatingTables(self, schema_file='../schema/RaMP_SQLite_BASE.sqlite', incrementLevel = 'increment_patch_release', optionalVersionOveride = None, optionalVersionNote = None, truncateTables = False, tablesToKeep=['db_version', 'version_info']):
+
+        if optionalVersionOveride:
+            sqliteFile = schema_file.replace('BASE', f'v{optionalVersionOveride}')
+            shutil.copy(schema_file, sqliteFile)
+        ################# DB Loading Instructions
         # Sets logging level
-   
         # config file holds login credentials in this format:
- 
         # pass the credentials object to the constructed rampDBBulLoader
         
-        loader = SQLiteDBBulkLoader(dbPropsFile=self.dbPropsFile, sqliteFileName=sqliteFile)
+        loader = SQLiteDBBulkLoader(sqliteFileName=sqliteFile)
 
 
         # truncate tables
@@ -79,7 +67,7 @@ loader = mainSQLiteDBLoad()
 
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
-loader.loadDBAfterTruncatingTables(sqliteFile = 'RaMP_SQLite_BASE.sqlite', incrementLevel = 'specified',
+loader.loadDBAfterTruncatingTables(incrementLevel = 'specified',
                                    optionalVersionOveride = "2.6.0",
                                    optionalVersionNote = "20240524 data update",
                                    truncateTables=True)

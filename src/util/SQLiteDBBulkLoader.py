@@ -33,11 +33,8 @@ The SQL file will need to have an existing DB.
 """
 class SQLiteDBBulkLoader(object):
 
-    def __init__(self, dbPropsFile, sqliteFileName):
+    def __init__(self, sqliteFileName):
         print("rampDBBulkLoaer__init__")
-        
-        # holds db credentials
-        # self.dbConf = dbConfig(dbPropsFile)
         
         self.sqliteFileName = sqliteFileName
         
