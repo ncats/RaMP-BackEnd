@@ -86,7 +86,7 @@ class WikipathwaysRDF(MetabolomicsData):
         if writeToFile:
             self.write_myself_files('wikipathwayRDF')
             
-        print("distinct lipidmap ids = " + str(len(self.lipidMapsIdCounterDict)))    
+        print("distinct lipidmap ids = " + str(len(self.lipidMapsIdCounterDict)))
             
     def getDatabaseFile(self):
         '''
@@ -134,15 +134,17 @@ class WikipathwaysRDF(MetabolomicsData):
         ('pav', rdflib.term.URIRef('http://purl.org/pav/'))
         '''
         rdftype = set()
-        path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        path = '../misc/data/wikipathwaysRDF/wp/'
         listoffiles = os.listdir(path)
         #print(listoffiles)
         listoffiles.sort()
-        #print('Total {} pathways in Human'.format(len(listoffiles)))
         for each in listoffiles:
             #print(each)
             g = Graph()
             g.parse(path+each,format = 'n3')
+            if not self.isHumanPathway(g):
+                print(f'skipping {each} as non-human')
+                continue
             #print('length of graph: {}'.format(len(g)))
             for s,p,o in g.triples((None, RDF.type,None)):
                 #print('---------------------------')
@@ -173,17 +175,26 @@ class WikipathwaysRDF(MetabolomicsData):
             '''
             self.pathwayDictionary[this_pathway] = o
             self.pathwayCategory[this_pathway] = 'NA'
-            
+
+    def isHumanPathway(self, g) -> bool:
+        organism_uri = URIRef('http://vocabularies.wikipathways.org/wp#organism')
+        for s, p, o in g.triples((None, organism_uri, None)):
+            return o.endswith("NCBITaxon_9606")
+
+
     def displayRDFfile(self,second = 3):
-        path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        path = '../misc/data/wikipathwaysRDF/wp/'
         listoffiles = os.listdir(path)
-        #print('Total {} pathways in Human'.format(len(listoffiles)))
         
         for each in listoffiles:
             this_pathway = each.replace('.ttl','')
             #print('pathway id is {}'.format(this_pathway))
             g = Graph()
             g.parse(path + each,format = 'n3')
+            if not self.isHumanPathway(g):
+                print(f'skipping {this_pathway} as non-human')
+                continue
+
             for s,p,o in g.triples((None,None,None)):
                 
                 print('---------------------------')
@@ -193,7 +204,7 @@ class WikipathwaysRDF(MetabolomicsData):
         
     def getIDMapingWithPathways(self): 
         '''
-        This function parse all RDF files in Human pathways from source files. Then call functions
+        This function parse all RDF files from source files. Then call functions
     
         1) self.getPathwayInfoFromGraph(g, this_pathway)
         2) self.getMetabolitesIDFromGraph(g,this_pathway)
@@ -201,16 +212,15 @@ class WikipathwaysRDF(MetabolomicsData):
         4) self.getCatalyzation(g, this_pathway) // Not implemented 
         
         '''
-        path = '../misc/data/wikipathwaysRDF/wp/Human/'
+        path = '../misc/data/wikipathwaysRDF/wp/'
         self.check_path(path)
         listoffiles = os.listdir(path)
-        #print('Total {} pathways in Human'.format(len(listoffiles)))
         
         
         total_files = len(listoffiles)
-        i = 0
         for each in listoffiles:
-            i = i + 1
+            if not each.endswith(".ttl"):
+                continue
             
             # get pathways id
             this_pathway = each.replace('.ttl','')
@@ -220,12 +230,13 @@ class WikipathwaysRDF(MetabolomicsData):
 #                 continue
 
 
-            #print('{}/{} ID:{}'.format(i,total_files,this_pathway))
             #print('Path '+path + " Each "+each)
             g = Graph()
             g.parse(path + each,format = 'n3')
             
             # get pathway information at first
+            if not self.isHumanPathway(g):
+                continue
             self.getPathwayInfoFromGraph(g, this_pathway)
             # get metabolites information at second
             self.getMetabolitesIDFromGraph(g,this_pathway)
@@ -448,9 +459,10 @@ class WikipathwaysRDF(MetabolomicsData):
                     print("Have list type for NA, for key:" + key)
             
             # skip pubchem.substance id at this moment
-            #ttd.drug is new addition for the feb 10 2019 data
-            # sikp uniprot ids on metabolites... for small peptides            
-            if source not in ['pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
+            # ttd.drug is new addition for the feb 10 2019 data
+            # skip uniprot ids on metabolites... for small peptides
+            # lipidbank is not supported yet
+            if source not in ['lipidbank', 'pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
                 
                 metabolite_list.add(metabolites_id)
