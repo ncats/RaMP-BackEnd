@@ -7,3 +7,4 @@ conf/*db_props*
 
 .idea
 .venv
+schema/Ramp_SQLite_v*

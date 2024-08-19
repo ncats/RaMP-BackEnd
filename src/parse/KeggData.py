@@ -255,8 +255,8 @@ class KeggData(MetabolomicsData):
                 #1) It is a gene that is also on the line marked gene
                 #2) It is a gene that is not on the line marked gene
             for line in onePathwayFile:
-                #A list of things that will signal the end of the genes 
-                if "COMPOUND" in line or "REFERENCE" in line or "KO_PATHWAY" in line:
+                #A list of things that will signal the end of the genes # TODO: this whole method of parsing needs a rethink
+                if "COMPOUND" in line or "REFERENCE" in line or "KO_PATHWAY" in line or "REL_PATHWAY" in line:
                     found = False
                     break
                 #on line marked gene
@@ -270,9 +270,12 @@ class KeggData(MetabolomicsData):
                 #not on line marked gene (but gene HAS BEEN found)
                 if found:
                     splitline = line.split("  ")
-                    geneid = splitline[6]
-                    if geneid not in geneDictionary:
-                        geneDictionary[geneid] =  "gene"
+                    if len(splitline) > 6:
+                        geneid = splitline[6]    # TODO: redo this in a better way
+                        if geneid not in geneDictionary:
+                            geneDictionary[geneid] =  "gene"
+                    else:
+                        print(splitline)
                     #add geneid to list for this pathway
                     continue
             onePathwayFile.close()
@@ -307,37 +310,38 @@ class KeggData(MetabolomicsData):
         
         '''            
         path = "../misc/data/kegg/pathwaysWithGenes/"
-        if self.check_path(path):
-            dir = os.listdir(path)
-            for key in self.pathwayDictionary:
-                filename = "hsa"+key+".txt"
-                if filename not in dir:
-                    url ="http://rest.kegg.jp/link/hsa/hsa" + key
-                    #print("download ... " + url)
-                    self.download_files(url,path + "hsa" +key+".txt")
-            print("getPathways_with_genes ... ")
-            # Update genes dict
-            genedir = os.listdir("../misc/data/kegg/genes/")
-            for file in dir:
-                filepath = path + file
-                pathwayFile = open(filepath)
-                for line in pathwayFile:
-                    splitline = line.split("\t")
-                    if(len(splitline) > 1):
-                        pathway = splitline[0].replace("path:hsa","")
-                        geneid = splitline[1].replace("hsa:","")
-                        geneid = geneid.replace("\n","")
-                        geneFile = geneid +".txt"
-                        if geneFile not in genedir:
-                            url = "http://rest.kegg.jp/get/" +"hsa:" + geneFile.replace(".txt","")
-                            
-                
-                            pathToSavedFile = "../misc/data/kegg/genes/" + geneFile
-                         
-                        
-                            self.download_files(url, pathToSavedFile)
-                        
-                pathwayFile.close()   
+        # KJK changing how check_path was used, because if directory existed already, the whole block wouldn't run
+        self.check_path(path)
+        dir = os.listdir(path)
+        for key in self.pathwayDictionary:
+            filename = "hsa"+key+".txt"
+            if filename not in dir:
+                url ="http://rest.kegg.jp/link/hsa/hsa" + key
+                #print("download ... " + url)
+                self.download_files(url,path + "hsa" +key+".txt")
+        print("getPathways_with_genes ... ")
+        # Update genes dict
+        genedir = os.listdir("../misc/data/kegg/genes/")
+        for file in dir:
+            filepath = path + file
+            pathwayFile = open(filepath)
+            for line in pathwayFile:
+                splitline = line.split("\t")
+                if(len(splitline) > 1):
+                    pathway = splitline[0].replace("path:hsa","")
+                    geneid = splitline[1].replace("hsa:","")
+                    geneid = geneid.replace("\n","")
+                    geneFile = geneid +".txt"
+                    if geneFile not in genedir:
+                        url = "http://rest.kegg.jp/get/" +"hsa:" + geneFile.replace(".txt","")
+
+
+                        pathToSavedFile = "../misc/data/kegg/genes/" + geneFile
+
+
+                        self.download_files(url, pathToSavedFile)
+
+            pathwayFile.close()
                 
                    
         
@@ -608,9 +612,9 @@ class KeggData(MetabolomicsData):
                 #2) It is a gene that is not on the line marked gene
             for line in onePathwayFile:
                 line = line.rstrip('\n')
-                 
-                #A list of things that will signal the end of the genes 
-                if "COMPOUND" in line or "REFERENCE" in line or "KO_PATHWAY" in line:
+
+                #A list of things that will signal the end of the genes # TODO: this whole method of parsing needs a rethink
+                if "COMPOUND" in line or "REFERENCE" in line or "KO_PATHWAY" in line or "REL_PATHWAY" in line:
                     found = False
                     break
                 #on line marked gene
@@ -676,7 +680,12 @@ class KeggData(MetabolomicsData):
                          'Enzyme Nomenclature': 'NA'}
                      
                     splitline = line.split("  ")
-                    geneid = splitline[6]
+
+                    if len(splitline) > 6:
+                        geneid = splitline[6]    # TODO: rethink this method of parsing
+                    else:
+                        print(splitline)
+                        continue
                     #time.sleep(3)
                     genefullname = splitline[7]
                     #remove [KO:K05757]-like attachment to the full name -- unsure what the point of it is 
@@ -727,7 +736,7 @@ class KeggData(MetabolomicsData):
                         #print("Add gene " + geneid)
                         #print(self.pathwaysWithGenesDictionary)
                         self.pathwaysWithGenesDictionary[pathway] = [geneid]
-            print("getPathwayLinkedToGene")
+
             pathwayFile.close()        
                 #time.sleep(3)
             

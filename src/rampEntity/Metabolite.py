@@ -15,9 +15,7 @@ class Metabolite(object):
     # Class variable to indicate the equality policy
     # 0 = ID based, 1 = full lychi-based, 2 = lychi H3 based, 3 = full InchiKey based, 4 = InchiKey prefix match
     __metaboliteEqualityMetric = 0
-    
     def __init__(self):
-        
         self.sourceId = ""
         
         self.rampId = ""
@@ -460,13 +458,13 @@ class Metabolite(object):
             
     #def setStatus(self):            
     def getInchiPrefixes(self):
-        inchiPrefixes = []
+        inchiPrefixes = set()
         for source in self.chemPropsMolecules:
             molDict = self.chemPropsMolecules[source]
             for sourceId in molDict:
                 mol = molDict[sourceId]
-                if mol.inchiKeyPrefix is not "" and mol.inchiKeyPrefix not in inchiPrefixes:
-                    inchiPrefixes.append(mol.inchiKeyPrefix)
+                if mol.inchiKeyPrefix is not "":
+                    inchiPrefixes.add(mol.inchiKeyPrefix)
         return inchiPrefixes
     
     def getInchiKeys(self):
@@ -480,13 +478,13 @@ class Metabolite(object):
         return inchiKeys
     
     def getInchiKeyDuplexes(self):
-        inchiKeyDuplexes = []
+        inchiKeyDuplexes = set()
         for source in self.chemPropsMolecules:
             molDict = self.chemPropsMolecules[source]
             for sourceId in molDict:
                 mol = molDict[sourceId]
-                if mol.inchiKeyDuplex is not "" and mol.inchiKeyDuplex not in inchiKeyDuplexes:
-                    inchiKeyDuplexes.append(mol.inchiKeyDuplex)
+                if mol.inchiKeyDuplex is not "":
+                    inchiKeyDuplexes.add(mol.inchiKeyDuplex)
         return inchiKeyDuplexes
         
     def addInchiNeighbor(self, otherMet):
@@ -522,7 +520,7 @@ class Metabolite(object):
                 neighbor.getNeighbors(neighbors)
 
      
-    def getAveMW(self):
+    def get_median_mw(self):
         mws = []
         medMw = 0.0
         for source in self.chemPropsMolecules:

@@ -179,8 +179,9 @@ class WikipathwaysRDF(MetabolomicsData):
     def isHumanPathway(self, g) -> bool:
         organism_uri = URIRef('http://vocabularies.wikipathways.org/wp#organism')
         for s, p, o in g.triples((None, organism_uri, None)):
-            return o.endswith("NCBITaxon_9606")
-
+            if o.endswith("NCBITaxon_9606"):
+                return True
+        return False
 
     def displayRDFfile(self,second = 3):
         path = '../misc/data/wikipathwaysRDF/wp/'
@@ -451,7 +452,7 @@ class WikipathwaysRDF(MetabolomicsData):
                               "CAS": "NA",
                               "WikiData": "NA",
                               "kegg_glycan": "NA",
-                              "LIPIDMAPS": "NA"                              
+                              "LIPIDMAPS": "NA"
                               }
             
             for key in metaboliteMapping:
@@ -461,8 +462,8 @@ class WikipathwaysRDF(MetabolomicsData):
             # skip pubchem.substance id at this moment
             # ttd.drug is new addition for the feb 10 2019 data
             # skip uniprot ids on metabolites... for small peptides
-            # lipidbank is not supported yet
-            if source not in ['lipidbank', 'pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
+            # lipidbank, reactome, pid.pathway are not supported yet
+            if source not in ['pid.pathway', 'reactome', 'lipidbank', 'pubchem.substance','drugbank','chembl.compound','kegg.drug', 'ttd.drug', 'inchikey', 'uniprot']:
                 metaboliteMapping[possible_source[source]] = [metabolites_id]
                 
                 metabolite_list.add(metabolites_id)

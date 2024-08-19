@@ -71,4 +71,3 @@ loader.loadDBAfterTruncatingTables(incrementLevel = 'specified',
                                    optionalVersionOveride = "2.6.0",
                                    optionalVersionNote = "20240524 data update",
                                    truncateTables=True)
-

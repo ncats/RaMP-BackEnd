@@ -187,12 +187,12 @@ class EntityBuilder(object):
         self.addMetaboliteHMDBStatus()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
-        
+
         self.loadOntolgies()
-        
-        self.loadMetaboliteToGene()        
+
+        self.loadMetaboliteToGene()
         self.metaboliteClassConnections()
-        
+
         # Rhea reactions
         self.processRheaReactions()
         
@@ -201,16 +201,8 @@ class EntityBuilder(object):
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
-        # we have some inchikey prefix values, for those mets build an inchikey prefix to met mapping
-        self.metaboliteList.buildInchiKeyPrefixToMetaboliteMapping()
-        
-        # now build neighbor relationships recursively so that each met knows it's neighborhood (phew)
-        # then visit each neighborhood to set common rampIds
-        # there can be some very big neighborhoods. Each met should be in exactly one nieghborhood
-        # but because of id mapping and multiple inchikeys per ramp id, we cross inchi boundaries supported by ids.
-        # my brain is going to explode :) 
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
-        
+
         # loader file writes
         self.writePathways()
         self.writeAnalyteSource()
@@ -249,14 +241,14 @@ class EntityBuilder(object):
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
-         
-            for i,row in df.iterrows():
-            
-                if row[1] == "smiles":
+
+            for row in df.itertuples(index=False):
+                row = [str(element) for element in row]
+                currSourceId, type, altId = row
+
+                if type == "smiles":
                     continue
 
-                currSourceId = str(row[0])                                            
-                altId = str(row[2])
                 
                 # add the sourceId and altId to the support dictionary
                 if currSourceId not in self.sourceIdToIDDict:
@@ -266,12 +258,11 @@ class EntityBuilder(object):
                 
                 # check exclusion mapping list
                 excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
-                
+
                 # if it should be excluded, then it's ok to keep this connection
                 if not excludeMappingConnection:
                     self.sourceIdToIDDict[currSourceId].append(altId)
-                
-                if excludeMappingConnection:
+                else:
                     self.curationAvoidanceCount = self.curationAvoidanceCount + 1
                 
                 metabolite = self.metaboliteList.getMetaboliteBySourceId(currSourceId)
@@ -1297,7 +1288,7 @@ class EntityBuilder(object):
        
     def writeChemProps(self):
         """
-        Writes chemcial properties file for all data sources.
+        Writes chemical properties file for all data sources.
         """
         chemPropsFile  = open("../misc/sql/chemProps.txt", "w+", encoding='utf-8')
         mets = self.metaboliteList.getAllMetabolites()

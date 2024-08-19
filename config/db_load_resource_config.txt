@@ -13,6 +13,6 @@ ready	ontology.txt	ontology	bulk	None	"rampOntologyId,commonName,HMDBOntologyTyp
 ready	analyteToOntology.txt	analytehasontology	bulk	None	"rampCompoundId,rampOntologyId"
 ready	reaction.txt	reaction	bulk	ramp_rxn_id	"ramp_rxn_id,rxn_source_id,status,is_transport,direction,label,equation,html_equation,ec_num,has_human_prot,only_human_mets"
 ready	reaction_to_metabolite.txt	reaction2met	bulk	None	"ramp_rxn_id,rxn_source_id,ramp_cmpd_id,substrate_product,met_source_id,met_name,is_cofactor"
-ready	reaction_to_protein.txt	reaction2protein	bulk	None	"ramp_rxn_id,rxn_source_id,ramp_gene_id,uniprot,protein_name"
+ready	reaction_to_protein.txt	reaction2protein	bulk	None	"ramp_rxn_id,rxn_source_id,ramp_gene_id,uniprot,protein_name,is_reviewed"
 ready	reaction_protein_to_metabolite.txt	reaction_protein2met	bulk	None	"ramp_rxn_id,rxn_source_id,ramp_gene_id,gene_source_id,substrate_product,ramp_cmpd_id,cmpd_source_id,cmpd_name,is_cofactor"
 ready	rheaReactionToEcClass.txt	reaction_ec_class	bulk	None	"ramp_rxn_id,rxn_source_id,rxn_class_ec,ec_level,rxn_class,rxn_class_hierarchy"
