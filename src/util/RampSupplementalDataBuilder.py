@@ -96,7 +96,14 @@ class RampSupplementalDataBuilder(object):
         
         sql = "select ap.pathwayRampId, ap.rampID from analytehaspathway ap, pathway p "\
         "where p.type != 'hmdb' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + analyteKey + "'"
-        
+
+        # This is how to run the pathway overlap for a single data source, e.g. wikipathways
+        # sql = f"""select p.sourceId, ap.rampID
+        # from analytehaspathway ap, pathway p
+        # where p.type == 'wiki' and
+        #       ap.pathwayRampId = p.pathwayRampId and
+        #       ap.rampId like '{analyteKey}'"""
+
         with self.engine.connect() as conn:
             df = conn.execute(sql).all()
             df = pd.DataFrame(df)

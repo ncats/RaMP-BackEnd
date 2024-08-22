@@ -440,10 +440,10 @@ class Metabolite(object):
         cname = list()
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
-                cname.append(self.commonNameDict[source][id])
-                
-        return "; ".join(cname)        
-            
+                if self.commonNameDict[source][id] is not None:
+                    cname.append(self.commonNameDict[source][id])
+        return "; ".join(cname)
+
     # check if a pathway of a given data source and category exists.        
     def checkPathwaySourceLink(self, source, category):
         jointMembership = False
