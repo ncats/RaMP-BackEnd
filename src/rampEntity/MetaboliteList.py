@@ -133,9 +133,10 @@ class MetaboliteList(object):
         return met1_inchis
 
     def collapseMetsOnInchiKeyPrefix(self):
+        print("merging metabolites based on inchi keys")
         metabolites = self.getUniqueMetabolites()
         inchi_set_index = dict()
-
+        count = 0
         for met in metabolites:
             keys = self.get_inchi_keys(met)
 
@@ -153,12 +154,24 @@ class MetaboliteList(object):
                     current_set = existing_set
                 else:
                     inchi_set_index[key] = current_set
-
+        final_met_map = {}
         for met in metabolites:
             keys = self.get_inchi_keys(met)
             if len(keys) > 0:
                 inchi_set = inchi_set_index[next(iter(keys))]
                 updated_id = inchi_set.name
-                if met.rampId != updated_id:
-                    met.rampId = updated_id
+                if updated_id in final_met_map:
+                    print(f'merging {met.rampId} into {updated_id}')
+                    count += 1
+                    print(inchi_set.inner_set)
+                    existing_met = final_met_map[updated_id]
+                    existing_met.subsumeMetabolite(met)
+                    for id in met.idList:
+                        self.addMetaboliteByAltId(id, existing_met)
+                else:
+                    final_met_map[updated_id] = met
+        print(f"merged {count} metabolites based on common inchikeys")
 
+    def determineBestNames(self):
+        for met in self.getUniqueMetabolites():
+            met.representativeName = met.get_most_common_value()

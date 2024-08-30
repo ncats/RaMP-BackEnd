@@ -5,13 +5,20 @@ Created on Nov 6, 2020
 '''
 from statistics import median
 import math
+from typing import List
 
-class Metabolite(object):
+from src.rampEntity.Analyte import Analyte, SourceData
+
+
+class Metabolite(Analyte):
     '''
     Ramp metabolite object data container. A ramp metabolite represents one or more chemical entities representing
     a metabolite or metabolite class.
     '''
-    
+
+    def get_type(self):
+        return 'compound'
+
     # Class variable to indicate the equality policy
     # 0 = ID based, 1 = full lychi-based, 2 = lychi H3 based, 3 = full InchiKey based, 4 = InchiKey prefix match
     __metaboliteEqualityMetric = 0
@@ -285,17 +292,16 @@ class Metabolite(object):
         if ontology not in self.ontologyTerms:
             self.ontologyTerms.append(ontology)
     
-    
-    def toSourceString(self):
+    # KJK - refactor to reuse this data
+    def getSourceData(self) -> List[SourceData]:
         """
-        Utility method to return a tab delimited string suitable for source export.
+        Utility method to return a table of source information.
         """
-        lines = 0
-        s = ""
         if self.hmdbStatus is not None:
             status = self.hmdbStatus
         else:
             status = "no_HMDB_status"
+        source_data = []
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
                 idSplit = id.split(":")
@@ -303,25 +309,31 @@ class Metabolite(object):
                     idType = idSplit[0]
                 else:
                     idType = "None"
-                lines = lines + 1
+
                 currSource = source
                 if idType == 'kegg':
                     if source == 'hmdb':
                         currSource = 'hmdb_kegg'
                     if source == 'wiki':
-                        currSource = 'wikipathways_kegg'    
-                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + status + "\t" + str(currSource) + "\n"
-            #s = s.strip()
+                        currSource = 'wikipathways_kegg'
+                source_data.append(SourceData(
+                    sourceId=id,
+                    rampId=self.rampId,
+                    IDtype=str(idType),
+                    geneOrCompound='compound',
+                    commonName=self.commonNameDict[source][id],
+                    priorityHMDBStatus=status,
+                    dataSource=currSource
+                ))
+        return source_data
 
-#         for source in self.idDict:
-#             for id in self.idDict[source]:
-#                 idSplit = id.split(":")
-#                 if len(idSplit) > 1:
-#                   idType = idSplit[0]
-#                 else:
-#                     idType = "NA"
-#                 s = s + str(id) + "\t" + str(self.rampId) + "\tcompound\t" + str(idType) + "\t" + "CommonNamePlaceHolder" + "\t" + str(source) +"\n"'''
-        return s;    
+    def toSourceString(self):
+        """
+        Utility method to return a tab delimited string suitable for source export.
+        """
+        source_data = self.getSourceData()
+
+        return "\n".join([source_info.get_insert_format() for source_info in source_data])
 
     
     def toPathwayMapString(self):
@@ -537,4 +549,3 @@ class Metabolite(object):
             medMw = median(mws)
                
         return medMw
-    

@@ -3,14 +3,20 @@ Created on Nov 24, 2020
 
 @author: braistedjc
 '''
+from typing import List
 
 import pandas as pd
 
-class Gene(object):
+from src.rampEntity.Analyte import Analyte, SourceData
+
+
+class Gene(Analyte):
     """
     The Gene class holds key fields used for defining a gene within ramp.
     This entity class was specifically created to hold a collection of ids, common names and synonyms.    
     """
+    def get_type(self):
+        return 'gene'
     
     def __init__(self):
         '''
@@ -126,54 +132,69 @@ class Gene(object):
         if source not in self.synonymDict:
             self.synonymDict[source] = list()
         if synonym not in self.synonymDict[source]:
-            self.synonymDict[source].append(synonym)  
-    
-    
+            self.synonymDict[source].append(synonym)
+
+    def getSourceData(self) -> List[SourceData]:
+        source_data = []
+        for source in self.commonNameDict:
+            haveKeggPathwayMap = self.checkPathwaySourceLink(source, "kegg")
+            for id in self.commonNameDict[source]:
+                currId = id
+                if isinstance(id, float) or isinstance(id, int):
+                    print(self.printGene())
+                idSplit = id.split(":")
+                if len(idSplit) > 1:
+                    idType = idSplit[0]
+                else:
+                    idType = "gene_symbol"
+                    currId = "gene_symbol:" + id
+
+                currSource = source
+
+                commonName = str(self.commonNameDict[source][id])
+                commonName = commonName.replace("gene_symbol:", "", 1)
+
+                if haveKeggPathwayMap:
+                    if source == 'hmdb':
+                        currSource = 'hmdb_kegg'
+                    if source == 'wiki':
+                        currSource = 'wikipathways_kegg'
+                    source_data.append(
+                        SourceData(
+                            sourceId=currId,
+                            rampId=self.rampId,
+                            IDtype=str(idType),
+                            geneOrCompound='gene',
+                            commonName=commonName,
+                            priorityHMDBStatus='N/A',
+                            dataSource=str(currSource)
+                        )
+                    )
+
+                source_data.append(
+                    SourceData(
+                        sourceId=currId,
+                        rampId=self.rampId,
+                        IDtype=str(idType),
+                        geneOrCompound='gene',
+                        commonName=commonName,
+                        priorityHMDBStatus='N/A',
+                        dataSource=str(source)
+                    )
+                )
+        return source_data
+
+
+
     def toSourceString(self):
         """
         Utility method to create a string suitable for source data output to file.
         The format is suitable for populating the source table.
         """
-        lines = 0
-        s = ""
-        for source in self.commonNameDict:
-            
-            haveKeggPathwayMap = self.checkPathwaySourceLink(source, "kegg")
-            
-            for id in self.commonNameDict[source]:
-                
-                currId = id
-                
-                if isinstance(id, float) or isinstance(id, int):
-                    print(self.printGene())
-                
-                idSplit = id.split(":")
-                if len(idSplit) > 1:
-                    idType = idSplit[0]
-                else:
-                    idType = "gene_symbol"                    
-                    currId = "gene_symbol:" + id
+        source_data = self.getSourceData()
 
-                lines = lines + 1
-                
-                currSource = source
-                                
-                commonName = str(self.commonNameDict[source][id])
-                commonName = commonName.replace("gene_symbol:", "", 1)
-                
-                if haveKeggPathwayMap:
-                    if source == 'hmdb':
-                        currSource = 'hmdb_kegg'             
-                    if source == 'wiki':
-                        currSource = 'wikipathways_kegg'
-                    # add a row for current source, embedded kegg
-                    s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + "N/A" + "\t" + str(currSource) + "\n"
-                        
-                             
-                s = s + str(currId) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tgene\t" + commonName + "\t" + "N/A" + "\t" + str(source) + "\n"
-                
-        return s
-       
+        return "\n".join([source_info.get_insert_format() for source_info in source_data])
+
        
     def toPathwayMapString(self):
         """
@@ -280,4 +301,3 @@ class Gene(object):
                 if jointMembership:
                     return jointMembership
         return jointMembership
-            

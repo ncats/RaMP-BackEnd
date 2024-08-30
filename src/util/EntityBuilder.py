@@ -204,6 +204,9 @@ class EntityBuilder(object):
         
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
 
+        self.metaboliteList.determineBestNames()
+        self.geneList.determineBestNames()
+
         # loader file writes
         self.writePathways()
         self.writeAnalyteSource()
@@ -1205,7 +1208,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
-        mets = self.metaboliteList.getAllMetabolites()
+        mets = self.metaboliteList.getUniqueMetabolites()
         
         print("Starting Write of metabolites: size = " + str(len(mets)))
         
@@ -1229,7 +1232,7 @@ class EntityBuilder(object):
             s = gene.toSourceString()
 
             try:
-                sourcefile.write(s)
+                sourcefile.write(s + '\n')
             except Exception as err:
                 print("Error writing this record:"+gene.rampId)
                 print("Error writing this record:"+gene.idList[0])
@@ -1278,11 +1281,11 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
-        for met in self.metaboliteList.getAllMetabolites():
-            sourcefile.write(met.rampId + "\tcompound\n")
+        for met in self.metaboliteList.getUniqueMetabolites():
+            sourcefile.write(f"{met.get_insert_format()}\n")
             
         for gene in self.geneList.getUniqueGenes():
-            sourcefile.write(gene.rampId + "\tgene\n")
+            sourcefile.write(f"{gene.get_insert_format()}\n")
                         
         sourcefile.close() 
 
@@ -1569,7 +1572,12 @@ class EntityBuilder(object):
         self.loadMetaboList()
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
-        
+
+        sources = ["hmdb", "chebi", "lipidmaps"]
+        self.loadChemstry(sources)
+        self.resolveChemistry(sources)
+        self.metaboliteList.collapseMetsOnInchiKeyPrefix()
+
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         sources = ["hmdb", "chebi", "kegg", "pubchem", "lipidmaps"]
         self.loadChemstry(sources)
@@ -1648,6 +1656,44 @@ class EntityBuilder(object):
                                        
         return misMatchList
 
+    def get_mw_for_id(self, met, id):
+        mws = []
+        for source in met.chemPropsMolecules:
+            if id in met.chemPropsMolecules[source]:
+                mol = met.chemPropsMolecules[source][id]
+                if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                    mws.append(float(mol.monoisotopicMass))
+        return mws
+
+    def get_common_name_for_id(self, met, id):
+        common_names = set()
+        for source in met.commonNameDict:
+            if id in met.commonNameDict[source]:
+                common_names.add(met.commonNameDict[source][id])
+        return list(common_names)
+
+    def write_all_ids_and_edges(self, met):
+        ids = set(met.idList)
+        nodes = []
+        relationships = []
+        for id in ids:
+            nodes.append((id, self.get_mw_for_id(met, id), self.get_common_name_for_id(met, id)))
+
+            if id in self.sourceIdToIDDict:
+                linked_ids = self.sourceIdToIDDict[id]
+                relationships.extend([(id, other_id) for other_id in linked_ids])
+
+        with open(f"problem_mets_with_no_known_source/{met.rampId}_nodes.tsv", 'w') as tsvfile:
+            writer: csv = csv.writer(tsvfile, delimiter='\t')
+            writer.writerows(nodes)
+
+        with open(f"problem_mets_with_no_known_source/{met.rampId}_relationships.tsv", 'w') as tsvfile:
+            writer: csv = csv.writer(tsvfile, delimiter='\t')
+            writer.writerows(relationships)
+
+
+
+
     #  KJK - refactor to do an all-to-all comparison to find the ID pairs that correspond to very different molecules
     def getMetaboliteIDMismatchMW(self, met, tolerance = 0.1, pctOrAbs = 'pct'):
         """
@@ -1681,6 +1727,7 @@ class EntityBuilder(object):
                     idToFormula[id] = ""
 
         misMatchList = list()
+        found_something = False
         for index, id in enumerate(mwDict.keys()):
             mw = mwDict[id]
             smiles = smileDict[id]
@@ -1690,10 +1737,15 @@ class EntityBuilder(object):
                 mw2 = mwDict[id2]
                 smiles2 = smileDict[id2]
                 if abs(mw-mw2)/min(mw, mw2) > tolerance or rgroupFormulaMolecules.get(id, False) or rgroupFormulaMolecules.get(id2, False):
+
                     if self.isaPrimaryIdMapping(id, id2) or self.isaPrimaryIdMapping(id2, id):
+                        found_something = True
                         misMatchList.append(
                             f"{rampId}\t{id}\t{mw}\t{id2}\t{mw2}\t{met.toCommonNameJoinString()}\t" +
                             f"{idToFormula.get(id,'')}\t{idToFormula.get(id2,'')}\t{smiles}\t{smiles2}")
+
+        if not found_something:
+            self.write_all_ids_and_edges(met)
 
         return misMatchList
     

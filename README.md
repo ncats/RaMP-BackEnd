@@ -5,22 +5,24 @@ This repository contains the source code that was used to create RaMP - a Relati
 #### Note that the files here are NOT RaMP but merely the scripts used to create RaMP. ####
 
 These scripts are used to build the RaMP database from scratch. 
-If you are looking for the RaMP mysql dump, you will find it here: https://github.com/ncats/RaMP-DB/tree/master/inst/extdata
-If you are looking to access RaMP through our shiny app, look here: https://github.com/ncats/RaMP-DB/
+You can download SQLite databases for the current and previous versions of RaMP in the repo for the RaMP R Package: https://github.com/ncats/RaMP-DB/tree/main/db
 
 ### The Basics ###
 Here is the overall workflow for getting the mySQL database up and running:
 
   1. git clone this repository
-  2. Run main.py successfully (purpose is to create intermediate data files in the misc/output folder for each data type.) Reading resource files from the various data sources is memory intensive. 
-  3. Run EntityBuilder.py to merge data to build entity relationships. This produces a file for each table in the RaMP DB Schema in the /misc/sql/loader.
-  4. Create an empty database in mySQL (e.g. called ramp) 
-  5. Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
+  2. Run main.py successfully - the purpose is to create a file for each table in the RaMP DB Schema in the /misc/sql folder.
+  3. Run ad_hoc_cross_check_met_harmony.py to check for bad mergers based on inconsistent molecular weights
+  4. update the optionalVersionOveride = "2.6.2", and optionalVersionNote in mainSqliteDBLoad.py
+  5. Run mainSqliteDBLoad.py to create and populate the new SQLite database. It will be saved to "src/schema"
   6. You can now query the database!
 
-Keep scrolling down for the details...
-
 ### Environment set-up ###
+* Create and activate a python virtual environment 
+  * python -m venv .venv
+  * source .venv/bin/activate 
+* install dependencies
+  * pip install -r requirements.txt
 
 #### Python ####
 RaMP was built using using python 3.8, which must be downloaded here: https://www.python.org/downloads/
@@ -48,21 +50,14 @@ Set up requires adding the Sphinx to your PYTHONPATH. Traditionally, this would 
 
 The main script to build the database is 'main.py'. This script calls the other classes and necessary code to build the database. 
 
-The first time 'main.py' is run, one must swith the "getDatabaseFiles" parameter to "True".  Setting this parameter to true will download the content of the databases (HMDB, Reactome, WikiPathways) on your computer.  By default, we have set "getDatabasefiles" to FALSE because you may need to gather the information from each database again if you add new functionalities to the scripts (in which case there is no need to download the original files again). Note that the Reactome resource updates monthly and changes the name of their files to add the date.  The src/parse/reactomeData.py file's getDatabaseFile method contains the variable to set.
+The first time 'main.py' is run, the raw data files will download, and may take a long time. Note that the WikiPathways resource updates monthly and changes the name of their files to add the date.  The config/external_resource_config.txt needs to be updated with the correct new version name.
 
-The output of running 'main.py' are intermediate files that are created in data-source specific files in misc/output. 
-
-The next step is building entities and final files for database loading. The files in misc/output are input into an entity harmonization process that enforces entity curation patches, aggregates duplicate gene and compound entities from different data soruces and builds entity relationships. This step is kicked off by running /src/util/EntityBuilder.py. This step will refer to a text file that contains manual curation results that captures known problems in entity mappings held in certain data sources. The compound curation list prevents incorrect mappings between compounds from being introduced to the RaMP database. 
+The output of running 'main.py' are intermediate files that are created in data-source specific files in misc/output. The EntityBuilder 
+will automatically run afterwards to build the final files for database loading. The entity harmonization process enforces entity curation patches, aggregates duplicate gene and compound entities from different data sources and builds entity relationships. This step will refer to a text file that contains manual curation results that captures known problems in entity mappings held in certain data sources. The compound curation list prevents incorrect mappings between compounds from being introduced to the RaMP database. 
 
 *importing sql tables*
 
-Import the sql files into the database using src/util/rampDBBulkLoader. See code section for details: [DB Loading Code](https://github.com/ncats/RaMP-BackEnd/blob/9e0ab9c719f3a690272fc7a0ae669b6f11d74b7a/src/util/rampDBBulkLoader.py#L393)
-
-[Additional information coming soon on bringing up mysql and initial creation of the database schema]
-
-You may also need to download mySQL: https://www.mysql.com/downloads/. 
-
-
+Import the sql files into the database using mainSqliteDBLoad.py.
 
 #### Overview of folders in this repo ####
 The repo contains the following folders
@@ -70,8 +65,6 @@ The repo contains the following folders
     **src**: contains classes used by main.py (most of the code)
 
     **main**: contains main.py -- uses the classes in src (code)
-
-    **docs**: documentation/user manual
 
     **tests**: unit testing
 
@@ -81,11 +74,16 @@ The repo contains the following folders
 
     **misc/output**: any output file that is not a .sql file -- some functions have other outputs, such as venndiagrams or lists of converted genes (can help with debugging)
 
-    **misc/queryMySQL**: place to keep files that query the mySQL database once it already exists 
-
 *Note: when running main.py, the data, output, and sql folders contain lots of data which is not included with this repo due to size restrictions.*
 
 #### Updates ####
+Update to Sqlite DB version 2.6.2 (09/01/2024):
+1. Updated data sources
+2. Updated parsing code for WikiPathways data
+3. Fixed QC checks for inconsistent molecular weights, and updated curations in "curation_mapping_issues_list.txt"
+4. Added a field for the single best common name for genes and metabolites
+
+
 The first update to the RaMP (01/24/2019):
 
 1. The major change is to adapt to the recent HMDB updates which changed the hierarchy of Ontology.
@@ -93,7 +91,7 @@ The first update to the RaMP (01/24/2019):
 3. Handled few compound mismatch that had occurred in the old version.
 
 ### Contact ###
-* John Braisted (john.braisted@nih.gov)
+* Keith Kelleher (keith.kelleher@nih.gov)
 * Ewy Mathé (ewy.mathe@nih.gov)
 
 Elizabeth Baskin, Senyang Hu, and Bofei Zhang were also involved in developing this code.

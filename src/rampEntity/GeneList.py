@@ -48,4 +48,10 @@ class GeneList(object):
     
         return self.sourceSummary
     
-    
+    def determineBestNames(self):
+        for gene in self.getUniqueGenes():
+            most_common_uniprot = gene.get_most_common_value('sourceId', 'uniprot')
+            if most_common_uniprot is not None:
+                gene.representativeName=most_common_uniprot
+            else:
+                gene.representativeName=gene.get_most_common_value('sourceId')
