@@ -8,3 +8,6 @@ sqlalchemy==1.4.52
 jproperties
 scikit-learn
 numpy
+
+pytest
+pytest-mock

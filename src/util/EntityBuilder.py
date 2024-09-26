@@ -3,6 +3,7 @@ Created on Nov 16, 2020
 
 @author: braistedjc
 '''
+import csv
 import os
 from os import path
 from os.path import exists
@@ -144,9 +145,7 @@ class EntityBuilder(object):
         
         # this counts the number of manually curated errors that are still found in the input.
         self.curationAvoidanceCount = 0
-        
-        self.hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
-        
+
         # a simple list of uniprot accessions that are secondary
         # use this for rhea export... to skip any uniprot in this list
         self.uniprotSecondaryAccessions = set()
@@ -154,7 +153,7 @@ class EntityBuilder(object):
         # suport for delivering the correct proteins for rhea
         self.rheaToSwissprotDict = dict()
         self.rheaToTremblDict = dict()
-        
+
     def fullBuild(self):
         """
         This high level method performs the entire process of entity construction
@@ -187,30 +186,25 @@ class EntityBuilder(object):
         self.addMetaboliteHMDBStatus()
         self.addMetaboliteSynonyms()
         self.buildMetaboliteToPathwayConnections()
-        
+
         self.loadOntolgies()
-        
-        self.loadMetaboliteToGene()        
+
+        self.loadMetaboliteToGene()
         self.metaboliteClassConnections()
-        
-        # Rhea reactions
-        self.processRheaReactions()
-        
+
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
-        # we have some inchikey prefix values, for those mets build an inchikey prefix to met mapping
-        self.metaboliteList.buildInchiKeyPrefixToMetaboliteMapping()
-        
-        # now build neighbor relationships recursively so that each met knows it's neighborhood (phew)
-        # then visit each neighborhood to set common rampIds
-        # there can be some very big neighborhoods. Each met should be in exactly one nieghborhood
-        # but because of id mapping and multiple inchikeys per ramp id, we cross inchi boundaries supported by ids.
-        # my brain is going to explode :) 
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
-        
+
+        # Rhea reactions # we have to handle reactions after all mergers because reactions aren't part of the metabolite class, and mergers don't work
+        self.processRheaReactions()
+
+        self.metaboliteList.determineBestNames()
+        self.geneList.determineBestNames()
+
         # loader file writes
         self.writePathways()
         self.writeAnalyteSource()
@@ -249,14 +243,14 @@ class EntityBuilder(object):
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
-         
-            for i,row in df.iterrows():
-            
-                if row[1] == "smiles":
+
+            for row in df.itertuples(index=False):
+                row = [str(element) for element in row]
+                currSourceId, type, altId = row
+
+                if type == "smiles":
                     continue
 
-                currSourceId = str(row[0])                                            
-                altId = str(row[2])
                 
                 # add the sourceId and altId to the support dictionary
                 if currSourceId not in self.sourceIdToIDDict:
@@ -266,12 +260,11 @@ class EntityBuilder(object):
                 
                 # check exclusion mapping list
                 excludeMappingConnection = self.mappingExclustionList.isMappingProblem(currSourceId, altId)
-                
+
                 # if it should be excluded, then it's ok to keep this connection
                 if not excludeMappingConnection:
                     self.sourceIdToIDDict[currSourceId].append(altId)
-                
-                if excludeMappingConnection:
+                else:
                     self.curationAvoidanceCount = self.curationAvoidanceCount + 1
                 
                 metabolite = self.metaboliteList.getMetaboliteBySourceId(currSourceId)
@@ -393,14 +386,8 @@ class EntityBuilder(object):
                     for id in idlist:
                         status = hmdbStatus.get(id,None)
                         if status is not None:
-                            self.setPriorityHMDBStatus(met, status)
-                
-    def setPriorityHMDBStatus(self, met, status):
-        if met.hmdbStatus is None:
-            met.hmdbStatus = status
-        else:
-            if self.hmdbStatusLevel[status] > self.hmdbStatusLevel[met.hmdbStatus]:
-                met.hmdbStatus = status
+                            met.setPriorityHMDBStatus(status)
+
             
            
     def addMetaboliteSynonyms(self):
@@ -408,7 +395,7 @@ class EntityBuilder(object):
         Adds all metabolite synonyms for all data sources
         """
         for src in self.sourceList:
-            print(src.sourceName);
+            print(src.sourceName)
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithSynonymsDictionary.txt"
@@ -1213,7 +1200,7 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analytesource.txt", "w+", encoding='utf-8') 
         
-        mets = self.metaboliteList.getAllMetabolites()
+        mets = self.metaboliteList.getUniqueMetabolites()
         
         print("Starting Write of metabolites: size = " + str(len(mets)))
         
@@ -1221,7 +1208,7 @@ class EntityBuilder(object):
             s = met.toSourceString()
             
             try:
-                sourcefile.write(s)
+                sourcefile.write(s + '\n')
             except:
                 print("Error writing this record:"+met.rampId)
                 print("Error writing this record:"+met.idList[0])
@@ -1237,7 +1224,7 @@ class EntityBuilder(object):
             s = gene.toSourceString()
 
             try:
-                sourcefile.write(s)
+                sourcefile.write(s + '\n')
             except Exception as err:
                 print("Error writing this record:"+gene.rampId)
                 print("Error writing this record:"+gene.idList[0])
@@ -1286,18 +1273,18 @@ class EntityBuilder(object):
         """
         sourcefile  = open("../misc/sql/analyte.txt", "w+", encoding='utf-8')
 
-        for met in self.metaboliteList.getAllMetabolites():
-            sourcefile.write(met.rampId + "\tcompound\n")
+        for met in self.metaboliteList.getUniqueMetabolites():
+            sourcefile.write(f"{met.get_insert_format()}\n")
             
         for gene in self.geneList.getUniqueGenes():
-            sourcefile.write(gene.rampId + "\tgene\n")
+            sourcefile.write(f"{gene.get_insert_format()}\n")
                         
         sourcefile.close() 
 
        
     def writeChemProps(self):
         """
-        Writes chemcial properties file for all data sources.
+        Writes chemical properties file for all data sources.
         """
         chemPropsFile  = open("../misc/sql/chemProps.txt", "w+", encoding='utf-8')
         mets = self.metaboliteList.getAllMetabolites()
@@ -1485,7 +1472,7 @@ class EntityBuilder(object):
         """
         problemMets = list()
         
-        mets = self.metaboliteList.getAllMetabolites()
+        mets = self.metaboliteList.getUniqueMetabolites()
         
         for met in mets:
             dev = met.checkMWParity(mwTolerance, pctOrAbs)
@@ -1511,8 +1498,61 @@ class EntityBuilder(object):
                 problemMets.append(met)
         
         return problemMets    
-    
-    
+
+    def download_pubchem_molecular_information(self):
+
+        file_path = '../misc/data/chemprops/pubchem/cid_to_mw.tsv'
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        pubchemMW = {}
+        if os.path.exists(file_path):
+            with open(file_path, 'r', newline='') as tsvfile:
+                lines = tsvfile.readlines()
+                for row in lines:
+                    cid, monoisotopic_mass, inchikey, formula = row.strip().split('\t')
+                    pubchemMW[cid] = [monoisotopic_mass, inchikey, formula]
+        count = len(pubchemMW)
+        print(f'preloading {count} pubchem entries from an earlier run')
+        self.loadMetaboList()
+        metabolites = self.metaboliteList.getUniqueMetabolites()
+
+        with open(file_path, 'a+') as tsvfile:
+            writer: csv = csv.writer(tsvfile, delimiter='\t')
+            for met in metabolites:
+                for id in met.idList:
+                    if id.startswith("pubchem"):
+                        if id not in pubchemMW:
+                            try:
+                                # give pubchem a rest: no more than 5 per second
+                                # https://pubchem.ncbi.nlm.nih.gov/docs/programmatic-access
+                                time.sleep(0.25)
+                                c = pcp.Compound.from_cid(id.split(":")[1])
+                            except:
+                                print("Cid lacks a record at pubchem: " + id)
+                                continue
+                            count += 1
+                            if count % 5000 == 0:
+                                print(f"Queried {count} compounds from pubchem")
+
+                            mol_info = [c.monoisotopic_mass, None, None]
+
+                            if c.inchikey is not None:
+                                mol_info[1] = c.inchikey
+                            if c.molecular_formula is not None:
+                                mol_info[2] = c.molecular_formula
+
+                            writer.writerow(
+                                [
+                                    id,
+                                    mol_info[0],
+                                    mol_info[1],
+                                    mol_info[2]
+                                ])
+                            pubchemMW[id] = mol_info
+
+
+
+
     def crossCheckMetaboliteHarmony(self, buildMetAndCompoundProps = True, criteria = "MW", tolerance = 0.1, pctOrAbs = 'pct'):
         """
         A high level utility method that checks for metabolite 'harmony' based on molecular weight or inchi-key prefix.
@@ -1524,63 +1564,29 @@ class EntityBuilder(object):
         self.loadMetaboList()
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
-        
+
+        sources = ["hmdb", "chebi", "lipidmaps"]
+        self.loadChemstry(sources)
+        self.resolveChemistry(sources)
+        self.metaboliteList.collapseMetsOnInchiKeyPrefix()
+
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
-        self.loadChemstry(["hmdb", "chebi", "kegg","pubchem", "lipidmaps"])
-        self.resolveChemistry(["hmdb", "chebi", "kegg", "pubchem", "lipidmaps"])  
+        sources = ["hmdb", "chebi", "kegg", "pubchem", "lipidmaps"]
+        self.loadChemstry(sources)
+        self.resolveChemistry(sources)
 
         problemMWMets = self.crosscheckChemPropsMW(tolerance, pctOrAbs)
 
         print("Check mw on mets, problem mets..." + str(len(problemMWMets)))
 
-        problemInchiMets = self.crosscheckChemPropsInchiBase()
-
-        print("Check inChI base on mets, problem mets..." + str(len(problemInchiMets)))
-
-        # Decided only to use MW criteria, not the more stringent inchikey prefix criteria
-        # probMets = list(set(problemMWMets + problemInchiMets))
-
-        # Note - only using molecular weight        
-        probMets = problemMWMets
-        
-        # Note - current method is only using MW criteria. InchiKey prefix is too stringent.
-        print("Union of problem mets..." + str(len(probMets)))
-        
-        moleculeCount = 0;
-        for met in probMets:
-            for source in met.chemPropsMolecules:
-                for id in met.chemPropsMolecules[source]:
-                    moleculeCount = moleculeCount + 1
-                    
-        moleculeCount = 0;
-        for met in problemMWMets:
-            for source in met.chemPropsMolecules:
-                for id in met.chemPropsMolecules[source]:
-                    moleculeCount = moleculeCount + 1
-                    
-        print("Total molecule records (only having MW issue) " + str(moleculeCount))
-        
-        metCnt = 0
         totalMismatches = list()
-        
-        if criteria == "MW":
-            badMets = problemMWMets
-        else:
-            badMets = problemInchiMets
             
-        for met in badMets:
-            
-            # s = met.toSourceString()
-            # print(s+"\n")
-            metCnt = metCnt + 1
-            
-            if(criteria == "MW"):
-                mismatchList = self.getMetaboliteIDMismatchMW(met, tolerance, pctOrAbs)                
-            else:
-                mismatchList = self.getMetaboliteIDMismatchInchiBase(met)
+        for met in problemMWMets:
+            mismatchList = self.getMetaboliteIDMismatchMW(met, tolerance, pctOrAbs)
             
             totalMismatches.extend(mismatchList)
-                  
+
+        totalMismatches.sort()
         with open("../misc/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
@@ -1641,9 +1647,46 @@ class EntityBuilder(object):
                    misMatchList.append(rampId + "\t" + hid + "\t" + hmdbIds[hid] + "\t" + cid + "\t" + chebiIds[cid] + "\t" + met.toCommonNameJoinString())
                                        
         return misMatchList
-       
-       
-       
+
+    def get_mw_for_id(self, met, id):
+        mws = []
+        for source in met.chemPropsMolecules:
+            if id in met.chemPropsMolecules[source]:
+                mol = met.chemPropsMolecules[source][id]
+                if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                    mws.append(float(mol.monoisotopicMass))
+        return mws
+
+    def get_common_name_for_id(self, met, id):
+        common_names = set()
+        for source in met.commonNameDict:
+            if id in met.commonNameDict[source]:
+                common_names.add(met.commonNameDict[source][id])
+        return list(common_names)
+
+    def write_all_ids_and_edges(self, met):
+        ids = set(met.idList)
+        nodes = []
+        relationships = []
+        for id in ids:
+            nodes.append((id, self.get_mw_for_id(met, id), self.get_common_name_for_id(met, id)))
+
+            if id in self.sourceIdToIDDict:
+                linked_ids = self.sourceIdToIDDict[id]
+                relationships.extend([(id, other_id) for other_id in linked_ids])
+
+        with open(f"problem_mets_with_no_known_source/{met.rampId}_nodes.tsv", 'w') as tsvfile:
+            writer: csv = csv.writer(tsvfile, delimiter='\t')
+            writer.writerows(nodes)
+
+        with open(f"problem_mets_with_no_known_source/{met.rampId}_relationships.tsv", 'w') as tsvfile:
+            writer: csv = csv.writer(tsvfile, delimiter='\t')
+            writer.writerows(relationships)
+
+
+
+
+    #  KJK - refactor to do an all-to-all comparison to find the ID pairs that correspond to very different molecules
     def getMetaboliteIDMismatchMW(self, met, tolerance = 0.1, pctOrAbs = 'pct'):
         """
         Supporting method that looks at all molecules contained in the input Metabolite and finds 
@@ -1651,184 +1694,52 @@ class EntityBuilder(object):
         The returned value is a string representing mismapped molecule pairs.
         The mis-mapped molecules from this method can be output to the curation file.
         """
-        chebiMW = dict()
-        hmdbMW = dict()
-        pubchemMW = dict()
-        keggMW = dict()
-        lipidmapsMW = dict()
-        
-        chebiSmiles = dict()
-        hmdbSmiles = dict()
-        pubchemSmiles = dict()
-        keggSmiles = dict()
-        lipidmapsSmiles = dict()
-        
-        myFriend = False
         
         rampId = met.rampId
-        metPathwayCount = met.getPathwayCount()
-        
-        for source in met.chemPropsMolecules:
-            for id in met.chemPropsMolecules[source]:
-                mol = met.chemPropsMolecules[source][id]
-                if mol.id.startswith("hmdb"):
-                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
-                        hmdbMW[mol.id] = float(mol.monoisotopicMass)
-                        hmdbSmiles[mol.id] = mol.smiles
-                if mol.id.startswith("chebi"):
-                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
-                        chebiMW[mol.id] = float(mol.monoisotopicMass)
-                        chebiSmiles[mol.id] = mol.smiles
-                    # special deal for kegg R group kegg ids without mass...
-                    if "R" in mol.formula:
-                        chebiMW[mol.id] = float(-1.0)
-                        chebiSmiles[mol.id] = mol.smiles   
-                if mol.id.startswith("kegg"):
-                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
-                        keggMW[mol.id] = float(mol.monoisotopicMass)
-                        keggSmiles[mol.id] = mol.smiles
-                    # special deal for kegg R group kegg ids without mass...
-                    if "R" in mol.formula:
-                        keggMW[mol.id] = float(-1.0)
-                        keggSmiles[mol.id] = mol.smiles
-                if mol.id.startswith("pubchem"):
-                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
-                        pubchemMW[mol.id] = float(mol.monoisotopicMass)
-                        pubchemSmiles[mol.id] = mol.smiles
-                if mol.id.startswith("lipidmaps"):
-                    if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
-                        lipidmapsMW[mol.id] = float(mol.monoisotopicMass)
-                        lipidmapsSmiles[mol.id] = mol.smiles
-                     
-                        
-                        
-        # a subset of molecules contain R groups.
-        # These are special generic molecules that can cause a lot of aggregation
+
+        mwDict = dict()
+        smileDict = dict()
         rgroupFormulaMolecules = dict()
         idToFormula = dict()
+
         for source in met.chemPropsMolecules:
             for id in met.chemPropsMolecules[source]:
-                
                 mol = met.chemPropsMolecules[source][id]
-                if mol.formula and "R" in mol.formula:                  
-                    rgroupFormulaMolecules[id] = mol.formula
-                        
+                smileDict[mol.id] = mol.smiles
+
+                if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
+                    mwDict[mol.id] = float(mol.monoisotopicMass)
+
                 if mol.formula:
                     idToFormula[id] = mol.formula
+                    if "R" in mol.formula:
+                        mwDict[mol.id] = float(-1)
+                        rgroupFormulaMolecules[id] = mol.formula
                 else:
                     idToFormula[id] = ""
-                    
-        
-#        12/2021 - temporary code used to evaluate pubchem cids that were associated with
-#        The code uses pubchempy and their api to pull in compound attributes used to validate pubchem mapping
-#       
-#         pubchemCidMW = [] 
-#         for id in met.idList:
-#              #this will accumulate pubchem monoisotopic masses
-#             if id.startswith("pubchem"):
-#                                               
-#                 if id not in pubchemMW:
-#                     try:
-#                         c = pcp.Compound.from_cid(id.split(":")[1])
-#                     except:
-#                         continue
-#                         print("Cid lacks a record at pubchem: " + id)
-#                       
-#                     # give pubchem a rest
-#                     time.sleep(0.75)
-#                     if c is not None and c.inchikey is not None:
-#                         pubchemMW[id] = c.monoisotopic_mass
-#                         pubchemCidMW.append([id,c.monoisotopic_mass])
-#                         if c.inchikey is not None:
-#                             print(id + "\t" + str(c.monoisotopic_mass) + "\t" + c.inchikey + "\t" + c.molecular_formula)
-#         
-#         
-#             
-#         pubchemCidMW = pd.DataFrame(pubchemCidMW)
-#         pubchemCidMW.to_csv("pubchem_cid_to_mi.txt", sep='\t')
-                   
-        # now reconcile the differences, hmdb to pubchem and chebi to pubchem, also hmdb and chebi to kegg
+
         misMatchList = list()
-        for pid in pubchemMW:
+        found_something = False
+        for index, id in enumerate(mwDict.keys()):
+            mw = mwDict[id]
+            smiles = smileDict[id]
+            for index2, id2 in enumerate(mwDict.keys()):
+                if index >= index2:
+                    continue
+                mw2 = mwDict[id2]
+                smiles2 = smileDict[id2]
+                if abs(mw-mw2)/min(mw, mw2) > tolerance or rgroupFormulaMolecules.get(id, False) or rgroupFormulaMolecules.get(id2, False):
 
-            pubchemMass = pubchemMW[pid]
-            pubchemSmile = pubchemSmiles.get(pid, "")
-            
-            for hid in hmdbMW:
-                hmdbMass = hmdbMW[hid]
-                hmdbSmile = hmdbSmiles.get(hid, "")
-                if abs(hmdbMass-pubchemMass)/min(hmdbMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(hid, False):
-                    if self.isaPrimaryIdMapping(hid, pid) or self.isaPrimaryIdMapping(pid, hid):
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(pid,"") + "\t" + hmdbSmile + "\t" + pubchemSmile)
+                    if self.isaPrimaryIdMapping(id, id2) or self.isaPrimaryIdMapping(id2, id):
+                        found_something = True
+                        misMatchList.append(
+                            f"{rampId}\t{id}\t{mw}\t{id2}\t{mw2}\t{met.toCommonNameJoinString()}\t" +
+                            f"{idToFormula.get(id,'')}\t{idToFormula.get(id2,'')}\t{smiles}\t{smiles2}")
 
-            for cid in chebiMW:
-                chebiMass = chebiMW[cid]
-                chebiSmile = chebiSmiles.get(cid, "")
-                if abs(chebiMass-pubchemMass)/min(chebiMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(cid, False):
-                    if self.isaPrimaryIdMapping(cid, pid) or self.isaPrimaryIdMapping(pid, cid):
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,"") + "\t" + chebiSmile  + "\t" + pubchemSmile)        
-            
-            for lmid in lipidmapsMW:
-                lipidMass = lipidmapsMW[lmid]
-                lipidSmile = lipidmapsSmiles.get(lmid, "")
-                if abs(lipidMass-pubchemMass)/min(lipidMass, pubchemMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
-                    if self.isaPrimaryIdMapping(lmid, pid) or self.isaPrimaryIdMapping(pid, lmid):
-                        misMatchList.append(rampId + "\t" + lmid + "\t" + str(lipidMass) + "\t" + pid + "\t" + str(pubchemMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(pid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + lipidSmile  + "\t" + pubchemSmile)        
-            
-            
-            
-            
-        # checking hmdb to chebi    
-        for hid in hmdbMW:
-            hmdbMass = hmdbMW[hid]
-            hmdbSmile = hmdbSmiles.get(hid, "")
+        if not found_something:
+            self.write_all_ids_and_edges(met)
 
-            # compare chebi to hmdb
-            for cid in chebiMW:
-                chebiMass = chebiMW[cid]
-                chebiSmile = chebiSmiles.get(cid, "")
-                if abs(chebiMass-hmdbMass)/min(chebiMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(cid, False):
-                    if self.isaPrimaryIdMapping(hid, cid) or self.isaPrimaryIdMapping(cid, hid):  
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + cid + "\t" + str(chebiMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(cid,"") + "\t" + hmdbSmile + "\t" + chebiSmile)
-            # compare kegg to hmdb         
-            for keggId in keggMW:
-                keggMass = keggMW[keggId]
-                keggSmile = keggSmiles.get(keggId, "")
-                if abs(keggMass-hmdbMass)/min(keggMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(keggId, False):
-                    if self.isaPrimaryIdMapping(hid, keggId) or self.isaPrimaryIdMapping(keggId, hid):  
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(keggId,"") + "\t" + hmdbSmile + "\t" + keggSmile)
-
-            for lmid in lipidmapsMW:
-                lipidMass = lipidmapsMW[lmid]
-                lipidSmile = lipidmapsSmiles.get(lmid, "")
-                if abs(lipidMass-hmdbMass)/min(lipidMass, hmdbMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
-                    if self.isaPrimaryIdMapping(lmid, hid) or self.isaPrimaryIdMapping(hid, lmid):
-                        misMatchList.append(rampId + "\t" + hid + "\t" + str(hmdbMass) + "\t" + lmid + "\t" + str(lipidMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(hid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + hmdbSmile  + "\t" + lipidSmile)        
-            
-
-        
-        # finish with chebi to kegg                     
-        for cid in chebiMW:
-            chebiMass = chebiMW[cid]
-            chebiSmile = chebiSmiles.get(cid, "")
-            for keggId in keggMW:
-                keggMass = keggMW[keggId]
-                keggSmile = keggSmiles.get(keggId, "")
-                if abs(keggMass-chebiMass)/min(keggMass, chebiMass) > tolerance or rgroupFormulaMolecules.get(keggId, False):
-                    if self.isaPrimaryIdMapping(cid, keggId) or self.isaPrimaryIdMapping(keggId, cid):  
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + keggId + "\t" + str(keggMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(cid, "") + "\t" + idToFormula.get(keggId,"") + "\t" + chebiSmile + "\t" + keggSmile)
-     
-            for lmid in lipidmapsMW:
-                lipidMass = lipidmapsMW[lmid]
-                lipidSmile = lipidmapsSmiles.get(lmid, "")
-                if abs(lipidMass-chebiMass)/min(lipidMass, chebiMass) > tolerance or rgroupFormulaMolecules.get(lmid, False):
-                    if self.isaPrimaryIdMapping(lmid, cid) or self.isaPrimaryIdMapping(cid, lmid):
-                        misMatchList.append(rampId + "\t" + cid + "\t" + str(chebiMass) + "\t" + lmid + "\t" + str(lipidMass) + "\t" + met.toCommonNameJoinString() + "\t" + idToFormula.get(cid, "") + "\t" + idToFormula.get(lmid,"") + "\t" + chebiSmile  + "\t" + lipidSmile)        
- 
-                          
         return misMatchList
-    
-    
     
     def utilCheckHMDBMappingValidity(self):
         '''

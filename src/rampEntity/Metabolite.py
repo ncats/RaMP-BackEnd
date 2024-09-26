@@ -5,24 +5,30 @@ Created on Nov 6, 2020
 '''
 from statistics import median
 import math
+from typing import List
 
-class Metabolite(object):
+from src.rampEntity.Analyte import Analyte, SourceData
+
+hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
+
+class Metabolite(Analyte):
     '''
     Ramp metabolite object data container. A ramp metabolite represents one or more chemical entities representing
     a metabolite or metabolite class.
     '''
-    
+
+    def get_type(self):
+        return 'compound'
+
     # Class variable to indicate the equality policy
     # 0 = ID based, 1 = full lychi-based, 2 = lychi H3 based, 3 = full InchiKey based, 4 = InchiKey prefix match
     __metaboliteEqualityMetric = 0
-    
     def __init__(self):
-        
         self.sourceId = ""
         
         self.rampId = ""
         
-        # uniuqe list of ids
+        # unique list of ids
         self.idList = list()
 
         # source: id dictionary
@@ -32,8 +38,6 @@ class Metabolite(object):
         self.commonNameDict = dict()
         
         self.synonymDict = dict()
-                
-        self.primarySource = ""
 
         # source to pathway map
         self.pathways = dict()
@@ -53,8 +57,6 @@ class Metabolite(object):
         self.hmdbStatus = None
         
         self.isCofactor = 0
-                 
-        self.inchiPrefixNeigbors = list()         
                  
     def __eq__(self, other):
         """
@@ -217,7 +219,28 @@ class Metabolite(object):
         for source in metabolite.synonymDict:
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
-    
+        for source in metabolite.chemPropsMolecules:
+            for mol in metabolite.chemPropsMolecules[source].values():
+                self.addChemProps(mol)
+
+        for source in metabolite.pathways:
+            for pway in metabolite.pathways[source]:
+                self.addPathway(pway, source)
+
+        for gene in metabolite.associatedGenes:
+            self.addAssociatedGene(gene)
+
+        for source in metabolite.metClasses:
+            for sourceId in metabolite.metClasses[source]:
+                for classLevel in metabolite.metClasses[source][sourceId]:
+                    for className in metabolite.metClasses[source][sourceId][classLevel]:
+                        self.addMetClass(source, sourceId, classLevel, className)
+
+        for ont in metabolite.ontologyTerms:
+            self.addOntologyTerm(ont)
+
+        self.setPriorityHMDBStatus(metabolite.hmdbStatus)
+
         if metabolite.isCofactor == 1:
             self.isCofactor = 1
     
@@ -287,17 +310,16 @@ class Metabolite(object):
         if ontology not in self.ontologyTerms:
             self.ontologyTerms.append(ontology)
     
-    
-    def toSourceString(self):
+    # KJK - refactor to reuse this data
+    def getSourceData(self) -> List[SourceData]:
         """
-        Utility method to return a tab delimited string suitable for source export.
+        Utility method to return a table of source information.
         """
-        lines = 0
-        s = ""
         if self.hmdbStatus is not None:
             status = self.hmdbStatus
         else:
             status = "no_HMDB_status"
+        source_data = []
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
                 idSplit = id.split(":")
@@ -305,25 +327,31 @@ class Metabolite(object):
                     idType = idSplit[0]
                 else:
                     idType = "None"
-                lines = lines + 1
+
                 currSource = source
                 if idType == 'kegg':
                     if source == 'hmdb':
                         currSource = 'hmdb_kegg'
                     if source == 'wiki':
-                        currSource = 'wikipathways_kegg'    
-                s = s + str(id) + "\t" + str(self.rampId) + "\t" + str(idType) + "\tcompound\t" + str(self.commonNameDict[source][id]) + "\t" + status + "\t" + str(currSource) + "\n"
-            #s = s.strip()
+                        currSource = 'wikipathways_kegg'
+                source_data.append(SourceData(
+                    sourceId=id,
+                    rampId=self.rampId,
+                    IDtype=str(idType),
+                    geneOrCompound='compound',
+                    commonName=self.commonNameDict[source][id],
+                    priorityHMDBStatus=status,
+                    dataSource=currSource
+                ))
+        return source_data
 
-#         for source in self.idDict:
-#             for id in self.idDict[source]:
-#                 idSplit = id.split(":")
-#                 if len(idSplit) > 1:
-#                   idType = idSplit[0]
-#                 else:
-#                     idType = "NA"
-#                 s = s + str(id) + "\t" + str(self.rampId) + "\tcompound\t" + str(idType) + "\t" + "CommonNamePlaceHolder" + "\t" + str(source) +"\n"'''
-        return s;    
+    def toSourceString(self):
+        """
+        Utility method to return a tab delimited string suitable for source export.
+        """
+        source_data = self.getSourceData()
+
+        return "\n".join([source_info.get_insert_format() for source_info in source_data])
 
     
     def toPathwayMapString(self):
@@ -442,10 +470,10 @@ class Metabolite(object):
         cname = list()
         for source in self.commonNameDict:
             for id in self.commonNameDict[source]:
-                cname.append(self.commonNameDict[source][id])
-                
-        return "; ".join(cname)        
-            
+                if self.commonNameDict[source][id] is not None:
+                    cname.append(self.commonNameDict[source][id])
+        return "; ".join(cname)
+
     # check if a pathway of a given data source and category exists.        
     def checkPathwaySourceLink(self, source, category):
         jointMembership = False
@@ -460,13 +488,13 @@ class Metabolite(object):
             
     #def setStatus(self):            
     def getInchiPrefixes(self):
-        inchiPrefixes = []
+        inchiPrefixes = set()
         for source in self.chemPropsMolecules:
             molDict = self.chemPropsMolecules[source]
             for sourceId in molDict:
                 mol = molDict[sourceId]
-                if mol.inchiKeyPrefix is not "" and mol.inchiKeyPrefix not in inchiPrefixes:
-                    inchiPrefixes.append(mol.inchiKeyPrefix)
+                if mol.inchiKeyPrefix is not "":
+                    inchiPrefixes.add(mol.inchiKeyPrefix)
         return inchiPrefixes
     
     def getInchiKeys(self):
@@ -480,49 +508,16 @@ class Metabolite(object):
         return inchiKeys
     
     def getInchiKeyDuplexes(self):
-        inchiKeyDuplexes = []
+        inchiKeyDuplexes = set()
         for source in self.chemPropsMolecules:
             molDict = self.chemPropsMolecules[source]
             for sourceId in molDict:
                 mol = molDict[sourceId]
-                if mol.inchiKeyDuplex is not "" and mol.inchiKeyDuplex not in inchiKeyDuplexes:
-                    inchiKeyDuplexes.append(mol.inchiKeyDuplex)
+                if mol.inchiKeyDuplex is not "":
+                    inchiKeyDuplexes.add(mol.inchiKeyDuplex)
         return inchiKeyDuplexes
-        
-    def addInchiNeighbor(self, otherMet):
-        if self is not otherMet:
-            if otherMet not in self.inchiPrefixNeigbors:
-                # if the other met hasn't already been added as a neighbor
-                for neighbor in self.inchiPrefixNeigbors:
-                    # add neighbors to the other met - introductions...
-                    neighbor.addInchiNeighbor(otherMet)
-                    # introduce other neighbor to existing neighbors
-                    otherMet.addInchiNeighbor(neighbor)
-                
-                # finally add the new neighbor to the neighbor list    
-                self.inchiPrefixNeigbors.append(otherMet)
-            
-    
-    def getInchiNeighborhood(self):
-        
-        neighbors = self.inchiPrefixNeigbors
-        
-        for neighbor in self.inchiPrefixNeigbors:
-            neighbor.getNeighbors(neighbors)
 
-        return neighbors
-
-    # recursive get neighbors
-    def getNeighbors(self, neighbors):
-               
-        for neighbor in self.inchiPrefixNeigbors:
-            # just work on new neighbors, add the neighbor and get their neighbors
-            if(neighbor not in neighbors):
-                neighbors.append(neighbor)
-                neighbor.getNeighbors(neighbors)
-
-     
-    def getAveMW(self):
+    def get_median_mw(self):
         mws = []
         medMw = 0.0
         for source in self.chemPropsMolecules:
@@ -539,4 +534,12 @@ class Metabolite(object):
             medMw = median(mws)
                
         return medMw
-    
+
+    def setPriorityHMDBStatus(self, status):
+        if status is None:
+            return
+        if self.hmdbStatus is None:
+            self.hmdbStatus = status
+        else:
+            if hmdbStatusLevel[status] > hmdbStatusLevel[self.hmdbStatus]:
+                self.hmdbStatus = status

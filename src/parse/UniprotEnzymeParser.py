@@ -92,9 +92,7 @@ class UniprotEnzymeParser(MetabolomicsData):
                 start = 2
                 
                 line = line.strip()
-                
-                print(line)
-                
+
                 if prefix == 'ID':
                     splitLine = line.split(" ")
                     ec = [s for s in splitLine if s][1]

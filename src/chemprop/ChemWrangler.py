@@ -228,48 +228,35 @@ class ChemWrangler(object):
         self.chemLibDict[source] = molDict
         print("Finished ChEBI chemprops: size="+str(len(molDict)))
 
-
-    def readKEGGCompound(self, source, filePath):
+    # KJK 08/24 refactored this to read from the Kegg directory, instead of a file that doesn't exist anymore
+    def readKEGGDirectory(self, source, directory):
         """
-        Utility method to read KEGG 2021 Compound file for specific data types to populate Molecule objects.
+            Utility method to read KEGG 2021 Compound directory for specific data types to populate Molecule objects.
         """
-        i = 0
-        sdfDB = open(filePath, 'r+', encoding="utf-8")
+        files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         molDict = dict()
-        mol = Molecule()
-        mol.source = source
-            
-        linekey = ""
-        while True:
-            line = sdfDB.readline()
-
-            lineToks = re.split("\s{1,}", line)
-            if(len(lineToks) > 1):
-                linekey = lineToks[0]
-                # print(linekey + ".... linekey")
-
-            if len(line) == 0:
-                print("line is none...")
-                break
-
-            line = line.strip()            
-            if line == '///':
-                i = i + 1
-                # print("processing structure " + str(i))
-                molDict[mol.id] = mol
+        for file in files:
+            file_path = os.path.join(directory, file)
+            with open(file_path, 'r') as file:
                 mol = Molecule()
                 mol.source = source
-            if linekey == 'ENTRY':
-                mol.id = "kegg:"+lineToks[1].strip()                           
-            if linekey == 'MOL_WEIGHT':
-                mol.mw = lineToks[1].strip()
-            if linekey == 'EXACT_MASS':
-                mol.monoisotopicMass = lineToks[1].strip()
-            if linekey == 'NAME':
-                name = lineToks[1].strip()
-                mol.addName(name[:-1])
-            if linekey == 'FORMULA':
-                mol.formula = lineToks[1].strip()
+                lines = file.readlines()
+                for line in lines:
+                    line_tokens = re.split("\s{1,}", line)
+                    if(len(line_tokens) > 1):
+                        linekey = line_tokens[0]
+                    if linekey == 'ENTRY':
+                        mol.id = "kegg:"+line_tokens[1].strip()
+                    if linekey == 'MOL_WEIGHT':
+                        mol.mw = line_tokens[1].strip()
+                    if linekey == 'EXACT_MASS':
+                        mol.monoisotopicMass = line_tokens[1].strip()
+                    if linekey == 'NAME':
+                        name = line_tokens[1].strip()
+                        mol.addName(name[:-1])
+                    if linekey == 'FORMULA':
+                        mol.formula = line_tokens[1].strip()
+                molDict[mol.id] = mol
 
         # add to to full dictionary
         self.chemLibDict[source] = molDict
@@ -373,9 +360,7 @@ class ChemWrangler(object):
         molDict = dict()
         mol = Molecule()
         mol.source = source
-        
-        i = 0
-        
+
         while True:
             line = sdfDB.readline()
 
@@ -386,16 +371,12 @@ class ChemWrangler(object):
             mol.source = source
         
             lineToks = line.split("\t")
-            mol.id = 'pubchem:' + lineToks[0].strip()
-            mol.monoisotopicMass = float(lineToks[2].strip())
+            mol.id = lineToks[0].strip()
+            mol.monoisotopicMass = lineToks[1].strip()
             # mol.inchiKey = lineToks[2].strip()
             # mol.inchiKeyPrefix = mol.inchiKey.split("-")[0]
         
             molDict[mol.id] = mol
-            
-            i = i + 1
-            if i % 100000000 == 0:
-                print("pubchem load progres = "+str(i))
             
         sdfDB.close()
         
@@ -411,13 +392,14 @@ class ChemWrangler(object):
             self.readHMDBSDF(source, file)
         if source == 'chebi':
             self.readChebiSDF(source, file)
-        if source == 'kegg':
-            self.readKEGGCompound(source, file)
         if source == 'pubchem':
             self.readPubchemTabIdMiInchikey(source, file)
         if source == 'lipidmaps':
             self.readLipidMapsSDF(source, file)          
-            
+
+    def readSDFdirectory(self, source, directory):
+        if source == 'kegg':
+            self.readKEGGDirectory(source, directory)
 
     def loadRampChemRecords(self, sources):
         """
@@ -442,10 +424,10 @@ class ChemWrangler(object):
                 file = sdfConfig.localDir + sdfConfig.extractFileName                
                 self.readSDF('chebi', file)
             if source == 'kegg':
-                file = "../misc/data/chemprops/kegg_compound.txt"
-                self.readSDF('kegg', file)
+                directory = '../misc/data/kegg/compounds/'
+                self.readSDFdirectory('kegg', directory)
             if source == 'pubchem':
-                file = "../misc/data/chemprops/CID-Mass"
+                file = '../misc/data/chemprops/pubchem/cid_to_mw.tsv'
                 self.readSDF('pubchem', file) 
             if source == 'lipidmaps':
                 sdfConfig = self.resourceConfig.getConfig('lipidmaps_met')

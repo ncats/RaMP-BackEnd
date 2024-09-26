@@ -15,7 +15,7 @@ import time
 
 class Main():
 
-    def runEverything(self, resourceConfigFile, getDatabaseFiles = True):
+    def runEverything(self, resourceConfigFile):
 
         start = time.time()
 

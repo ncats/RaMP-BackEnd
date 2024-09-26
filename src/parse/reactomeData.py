@@ -90,7 +90,7 @@ class reactomeData(MetabolomicsData):
         # get gene ids (NCBI GeneID) when getting gene symbol from Uniprot files.
         # self.getGenes("genes")
         
-        print("Getting common names for genes1 ...")
+        print("Getting common names for genes 1 ...")
         self.downloadCommonNameFromUniprot()
         print("Getting common names for genes 2...")
         self.getCommonNameFromUniprot()

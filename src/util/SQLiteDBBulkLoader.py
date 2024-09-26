@@ -830,20 +830,11 @@ class SQLiteDBBulkLoader(object):
     def generateAndLoadRampSupplementalData(self):
         
         dataBuilder = RampSupplementalDataBuilder(dbType = 'sqlite', sqliteCreds = self.sqliteFileName)        
-        
-        dataSources = ['reactome', 'wiki', 'kegg']
-        analyteTypes = ['metab', 'gene']
-        
+
         pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
         pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
         pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
-         
-        analyteSets = dict()
-        
-        for source in dataSources:
-            for analyteType in analyteTypes:
-                analyteSets[source + "_" + analyteType] = dataBuilder.buildAnalyteSet(dataSource=source, geneOrMet=analyteType)
-        
+
         #pwSimMat_mets.to_csv("C:/Users/braistedjc/Desktop/Analysis/Ramp/Junk_Test_Mets_Sim_Mat.txt", sep="\t")
         
         #analytesSim = pwSimMat_mets.to_csv(sep="\t")
@@ -858,11 +849,7 @@ class SQLiteDBBulkLoader(object):
         with self.engine.connect() as conn:
             if table_exists:
                 conn.execute(sqlDelete)
-            
-            #meta_data = MetaData(bind=conn)
-            #meta_data.reflect()
-            #dataObj = meta_data.tables['ramp_data_object']
-            
+
             vals = dict()
             
             vals['data_key'] = 'analyte_result'
@@ -870,14 +857,12 @@ class SQLiteDBBulkLoader(object):
             objVal = zlib.compress(objVal.encode())            
             vals['data_blob'] = objVal
             conn.execute(sql, vals)
-            #conn.execute(dataObj.insert(), vals) 
 
             vals['data_key'] = 'metabolites_result'
             objVal = pwSimMat_mets.to_csv(sep="\t")
             objVal = zlib.compress(objVal.encode())            
             vals['data_blob'] = objVal
             conn.execute(sql, vals)
-            #conn.execute(dataObj.insert(), vals) 
 
  
             vals['data_key'] = 'genes_result'
@@ -885,18 +870,6 @@ class SQLiteDBBulkLoader(object):
             objVal = zlib.compress(objVal.encode())            
             vals['data_blob'] = objVal
             conn.execute(sql, vals)
-            #conn.execute(dataObj.insert(), vals) 
-            
-            for analyteKey in analyteSets:
-
-                print("Analyte_Key: "+analyteKey)
-                vals['data_key'] = analyteKey
-                objVal = analyteSets[analyteKey]
-                objVal = objVal.to_csv(sep="\t")
-                objVal = zlib.compress(objVal.encode())
-                vals['data_blob'] = objVal
-                # conn.execute(dataObj.insert(), vals) 
-                conn.execute(sql, vals)
                 
             conn.close()            
 
