@@ -32,14 +32,14 @@ class Analyte(ABC):
     def getSourceData(self) -> List[SourceData]:
         raise NotImplementedError('derived classes must implement this method')
 
-    def get_most_common_value(self, field="commonName", prefix=None):
+    def get_most_common_value(self, field="commonName", filter_function = None):
         name_counts = {}
         source_info = self.getSourceData()
         for source_data in source_info:
             value = getattr(source_data, field)
-            if value is None or value == 'None' or value == 'NA':
+            if value is None or value == 'None' or value == 'NA' or value == '':
                 continue
-            if prefix is not None and not value.startswith(prefix):
+            if filter_function is not None and filter_function(source_data):
                 continue
             lowercase_value = value.lower()
             if lowercase_value in name_counts:
@@ -62,10 +62,10 @@ class Analyte(ABC):
                 best_names.append(value)
 
         if len(best_names) == 0:
-            if prefix is not None:
+            if filter_function is not None:
                 return None
             if field == 'commonName':
-                return self.get_most_common_value('sourceId')
+                return self.get_most_common_value(field='sourceId')
             else:
                 return self.rampId
 

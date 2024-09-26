@@ -145,9 +145,7 @@ class EntityBuilder(object):
         
         # this counts the number of manually curated errors that are still found in the input.
         self.curationAvoidanceCount = 0
-        
-        self.hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
-        
+
         # a simple list of uniprot accessions that are secondary
         # use this for rhea export... to skip any uniprot in this list
         self.uniprotSecondaryAccessions = set()
@@ -194,15 +192,15 @@ class EntityBuilder(object):
         self.loadMetaboliteToGene()
         self.metaboliteClassConnections()
 
-        # Rhea reactions
-        self.processRheaReactions()
-        
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
         self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
         self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
         
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
+
+        # Rhea reactions # we have to handle reactions after all mergers because reactions aren't part of the metabolite class, and mergers don't work
+        self.processRheaReactions()
 
         self.metaboliteList.determineBestNames()
         self.geneList.determineBestNames()
@@ -388,14 +386,8 @@ class EntityBuilder(object):
                     for id in idlist:
                         status = hmdbStatus.get(id,None)
                         if status is not None:
-                            self.setPriorityHMDBStatus(met, status)
-                
-    def setPriorityHMDBStatus(self, met, status):
-        if met.hmdbStatus is None:
-            met.hmdbStatus = status
-        else:
-            if self.hmdbStatusLevel[status] > self.hmdbStatusLevel[met.hmdbStatus]:
-                met.hmdbStatus = status
+                            met.setPriorityHMDBStatus(status)
+
             
            
     def addMetaboliteSynonyms(self):

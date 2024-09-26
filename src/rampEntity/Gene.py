@@ -39,9 +39,6 @@ class Gene(Analyte):
         
         # synonym dictionary, organized by source, id, synonym
         self.synonymDict = dict()
-               
-        # primary data source for the gene entity.        
-        self.primarySource = ""
 
         # pathway objects organized by source, [source]:list(pathway)
         self.pathways = dict()

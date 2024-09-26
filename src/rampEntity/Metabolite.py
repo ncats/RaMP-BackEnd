@@ -9,6 +9,7 @@ from typing import List
 
 from src.rampEntity.Analyte import Analyte, SourceData
 
+hmdbStatusLevel = {"predicted":1, "expected":2, "detected":3, "quantified":4}
 
 class Metabolite(Analyte):
     '''
@@ -27,7 +28,7 @@ class Metabolite(Analyte):
         
         self.rampId = ""
         
-        # uniuqe list of ids
+        # unique list of ids
         self.idList = list()
 
         # source: id dictionary
@@ -37,8 +38,6 @@ class Metabolite(Analyte):
         self.commonNameDict = dict()
         
         self.synonymDict = dict()
-                
-        self.primarySource = ""
 
         # source to pathway map
         self.pathways = dict()
@@ -58,8 +57,6 @@ class Metabolite(Analyte):
         self.hmdbStatus = None
         
         self.isCofactor = 0
-                 
-        self.inchiPrefixNeigbors = list()         
                  
     def __eq__(self, other):
         """
@@ -222,7 +219,28 @@ class Metabolite(Analyte):
         for source in metabolite.synonymDict:
             for syn in metabolite.synonymDict[source]:
                 self.addSynonym(syn, source)
-    
+        for source in metabolite.chemPropsMolecules:
+            for mol in metabolite.chemPropsMolecules[source].values():
+                self.addChemProps(mol)
+
+        for source in metabolite.pathways:
+            for pway in metabolite.pathways[source]:
+                self.addPathway(pway, source)
+
+        for gene in metabolite.associatedGenes:
+            self.addAssociatedGene(gene)
+
+        for source in metabolite.metClasses:
+            for sourceId in metabolite.metClasses[source]:
+                for classLevel in metabolite.metClasses[source][sourceId]:
+                    for className in metabolite.metClasses[source][sourceId][classLevel]:
+                        self.addMetClass(source, sourceId, classLevel, className)
+
+        for ont in metabolite.ontologyTerms:
+            self.addOntologyTerm(ont)
+
+        self.setPriorityHMDBStatus(metabolite.hmdbStatus)
+
         if metabolite.isCofactor == 1:
             self.isCofactor = 1
     
@@ -498,40 +516,7 @@ class Metabolite(Analyte):
                 if mol.inchiKeyDuplex is not "":
                     inchiKeyDuplexes.add(mol.inchiKeyDuplex)
         return inchiKeyDuplexes
-        
-    def addInchiNeighbor(self, otherMet):
-        if self is not otherMet:
-            if otherMet not in self.inchiPrefixNeigbors:
-                # if the other met hasn't already been added as a neighbor
-                for neighbor in self.inchiPrefixNeigbors:
-                    # add neighbors to the other met - introductions...
-                    neighbor.addInchiNeighbor(otherMet)
-                    # introduce other neighbor to existing neighbors
-                    otherMet.addInchiNeighbor(neighbor)
-                
-                # finally add the new neighbor to the neighbor list    
-                self.inchiPrefixNeigbors.append(otherMet)
-            
-    
-    def getInchiNeighborhood(self):
-        
-        neighbors = self.inchiPrefixNeigbors
-        
-        for neighbor in self.inchiPrefixNeigbors:
-            neighbor.getNeighbors(neighbors)
 
-        return neighbors
-
-    # recursive get neighbors
-    def getNeighbors(self, neighbors):
-               
-        for neighbor in self.inchiPrefixNeigbors:
-            # just work on new neighbors, add the neighbor and get their neighbors
-            if(neighbor not in neighbors):
-                neighbors.append(neighbor)
-                neighbor.getNeighbors(neighbors)
-
-     
     def get_median_mw(self):
         mws = []
         medMw = 0.0
@@ -549,3 +534,12 @@ class Metabolite(Analyte):
             medMw = median(mws)
                
         return medMw
+
+    def setPriorityHMDBStatus(self, status):
+        if status is None:
+            return
+        if self.hmdbStatus is None:
+            self.hmdbStatus = status
+        else:
+            if hmdbStatusLevel[status] > hmdbStatusLevel[self.hmdbStatus]:
+                self.hmdbStatus = status

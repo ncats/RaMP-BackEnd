@@ -3,6 +3,8 @@ Created on Nov 24, 2020
 
 @author: braistedjc
 '''
+from src.rampEntity.Analyte import SourceData
+
 
 class GeneList(object):
     '''
@@ -49,9 +51,19 @@ class GeneList(object):
         return self.sourceSummary
     
     def determineBestNames(self):
+        def filter_non_gene_symbols(row):
+            return row.IDtype != 'gene_symbol'
+
+        def filter_from_uniprot(row: SourceData):
+            return row.IDtype == 'uniprot'
+
         for gene in self.getUniqueGenes():
-            most_common_uniprot = gene.get_most_common_value('sourceId', 'uniprot')
-            if most_common_uniprot is not None:
-                gene.representativeName=most_common_uniprot
-            else:
-                gene.representativeName=gene.get_most_common_value('sourceId')
+            most_common_gene_symbol = gene.get_most_common_value(filter_function=filter_non_gene_symbols)
+            if most_common_gene_symbol is not None:
+                gene.representativeName = most_common_gene_symbol
+                continue
+            most_common_non_uniprot = gene.get_most_common_value(filter_function=filter_from_uniprot)
+            if most_common_non_uniprot is not None:
+                gene.representativeName = most_common_non_uniprot
+                continue
+            gene.representativeName=gene.get_most_common_value()
