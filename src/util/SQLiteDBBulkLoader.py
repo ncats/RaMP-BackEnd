@@ -247,7 +247,16 @@ class SQLiteDBBulkLoader(object):
 
         statusTable = dict()
         
-        sourceNameDict = {'hmdb':'HMDB', 'kegg':'KEGG', 'lipidmaps':'LIPIDMAPS', 'reactome':'Reactome', 'wiki':'WikiPathways', 'chebi':'ChEBI','rhea':'Rhea'}
+        sourceNameDict = {
+            'hmdb':'HMDB',
+            'kegg':'KEGG',
+            'lipidmaps':'LIPIDMAPS',
+            'reactome':'Reactome',
+            'wiki':'WikiPathways',
+            'chebi':'ChEBI',
+            'rhea':'Rhea',
+            'pfocr': "Pathway Figure OCR"
+        }
 
         inspector = inspect(self.engine)
         table_exists = "entity_status_info" in inspector.get_table_names()
@@ -835,10 +844,6 @@ class SQLiteDBBulkLoader(object):
         pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
         pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
 
-        #pwSimMat_mets.to_csv("C:/Users/braistedjc/Desktop/Analysis/Ramp/Junk_Test_Mets_Sim_Mat.txt", sep="\t")
-        
-        #analytesSim = pwSimMat_mets.to_csv(sep="\t")
-        #analytesSim = zlib.compress(analytesSim.encode())
         sqlDelete = "delete from ramp_data_object"
         
         sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_blob)"

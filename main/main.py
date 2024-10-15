@@ -7,6 +7,7 @@ from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
 from parse.KeggData import KeggData
 from parse.RheaParser import RheaParser
+from parse.PFOCRData import PFOCRData
 from util.EntityBuilder import EntityBuilder
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
@@ -31,6 +32,7 @@ class Main():
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData(resourceConf)
+        pfocr = PFOCRData(resourceConf)
         rhea = RheaParser(resourceConf)
         
         # works based on your computer, setup working directory
@@ -44,12 +46,15 @@ class Main():
         wikipathways.getEverything(True)
         print("Getting reactome...")
         reactome.getEverything(True)
-        
+        print("Getting pfocr...")
+        pfocr.getEverything()
+        pfocr.processPathways()
+
         # This parses and writes lipid maps
         # sql write will be handled by EntityBuilder
         print("Getting LipidMaps...")
         lipidmaps.getEverything(True)
-        
+
         print("Getting Rhea info...")
         rhea.processRhea()
         

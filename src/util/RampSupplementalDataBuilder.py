@@ -95,7 +95,7 @@ class RampSupplementalDataBuilder(object):
             minPathwaySize = 5
         
         sql = "select ap.pathwayRampId, ap.rampID from analytehaspathway ap, pathway p "\
-        "where p.type != 'hmdb' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + analyteKey + "'"
+        "where p.type != 'hmdb' and p.type != 'pfocr' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + analyteKey + "'"
 
         # This is how to run the pathway overlap for a single data source, e.g. wikipathways
         # sql = f"""select p.sourceId, ap.rampID

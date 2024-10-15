@@ -63,8 +63,6 @@ class EntityBuilder(object):
         Constructor
         '''
         
-        self.localPathPrefix = './'
-        
         # config for data sources
         self.resConfig = resourceConfig
         
@@ -98,7 +96,7 @@ class EntityBuilder(object):
         self.dataSource2.sourceName = 'reactome'
         self.dataSource2.filePrefix = 'reactome'
         self.dataSource2.haveChemClassInfo = False
-        self.dataSource2.sourceLocPath = self.localPathPrefix + '../misc/output/reactome/';
+        self.dataSource2.sourceLocPath = '../misc/output/reactome'
          
         self.sourceList.append(self.dataSource2)
          
@@ -106,7 +104,7 @@ class EntityBuilder(object):
         self.dataSource3.sourceName = 'wiki'
         self.dataSource3.filePrefix = 'wikipathwayRDF'
         self.dataSource3.haveChemClassInfo = False
-        self.dataSource3.sourceLocPath = self.localPathPrefix + '../misc/output/wikipathwayRDF/';        
+        self.dataSource3.sourceLocPath = '../misc/output/wikipathwayRDF'
          
         self.sourceList.append(self.dataSource3)
          
@@ -114,7 +112,7 @@ class EntityBuilder(object):
         self.dataSource4.sourceName = 'lipidmaps'
         self.dataSource4.filePrefix = 'lipidmaps'
         self.dataSource4.haveChemClassInfo = True
-        self.dataSource4.sourceLocPath = self.localPathPrefix + '../misc/output/lipidmaps/';        
+        self.dataSource4.sourceLocPath = '../misc/output/lipidmaps'
  
         self.sourceList.append(self.dataSource4)
         # End DataSource code
@@ -123,9 +121,18 @@ class EntityBuilder(object):
         self.dataSource5.sourceName = 'rhea'
         self.dataSource5.filePrefix = 'rhea'
         self.dataSource5.haveChemClassInfo = False
-        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions/';        
+        self.dataSource5.sourceLocPath = '../misc/output/rhea_reactions'
    
         self.sourceList.append(self.dataSource5)
+
+        self.dataSource6 = DataSource()
+        self.dataSource6.sourceName = 'pfocr'
+        self.dataSource6.filePrefix = 'pfocr'
+        self.dataSource6.haveChemClassInfo = False
+        self.dataSource6.sourceLocPath = '../misc/output/pfocr'
+
+        self.sourceList.append(self.dataSource6)
+
            
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
@@ -134,7 +141,7 @@ class EntityBuilder(object):
         # mapping exclusion list and population of the list
         # The population of the exclusion list should be delegated to a method
         self.mappingExclustionList = MappingExclusionList()
-        self.mappingExclustionList.populateExclusionList(self.localPathPrefix + "../config/curation_mapping_issues_list.txt")
+        self.mappingExclustionList.populateExclusionList("../config/curation_mapping_issues_list.txt")
     
         # Collection of Molecule objects holding chemical properties.
         self.chemSourceRecords = dict()
@@ -238,7 +245,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteIDDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -349,7 +356,10 @@ class EntityBuilder(object):
             
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteCommonName.txt"
-            
+
+            if not os.path.exists(file) or os.path.getsize(file) < 1:
+                continue
+
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
             df = self.remove_whitespace(df)
@@ -364,7 +374,8 @@ class EntityBuilder(object):
         for met in mets:
             met.resolveCommonNames()
     
-    def addMetaboliteHMDBStatus(self):        
+    def addMetaboliteHMDBStatus(self):
+        hmdbSrc = None
         for src in self.sourceList:
             if src.filePrefix == 'hmdb':
                 hmdbSrc = src
@@ -444,9 +455,8 @@ class EntityBuilder(object):
             #Load Pathway Dictionary First            
             source = src.sourceName
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayDictionary.txt"
-        
             if not(path.exists(file)):
-                break
+                continue
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -473,7 +483,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwayCategory.txt"
             
             if not(path.exists(file)):
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, engine='python')
 
@@ -503,7 +513,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "metabolitesWithPathwaysDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                continue
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -705,7 +715,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "biofluidLocation.txt"
             
             if not(path.exists(file)):
-                break
+                continue
 
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -722,7 +732,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "exoEndoDictionary.txt"
             
             if not(path.exists(file)):
-                break
+                continue
             
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -739,7 +749,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "cellularLocation.txt"
             
             if not(path.exists(file)):
-                break
+                continue
 
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -756,7 +766,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "tissueLocation.txt"
             
             if not(path.exists(file)):
-                break
+                continue
 
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -772,7 +782,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "organLocation.txt"
             
             if not(path.exists(file)):
-                break
+                continue
 
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -789,7 +799,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "metaboliteApplication.txt"
             
             if not(path.exists(file)):
-                break
+                continue
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -806,7 +816,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "healthCondition.txt"
             
             if not(path.exists(file)):
-                break
+                continue
         
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
@@ -899,7 +909,7 @@ class EntityBuilder(object):
             file = src.sourceLocPath + "/" + src.filePrefix + "pathwaysWithGenesDictionary.txt"
                         
             if not(path.exists(file)):
-                break
+                continue
     
             data = pd.read_csv(file, delimiter=r'\t+', header=None, index_col=None, na_filter = False, engine='python')
             df = pd.DataFrame(data)
