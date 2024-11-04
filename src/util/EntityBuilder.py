@@ -830,6 +830,8 @@ class EntityBuilder(object):
         print("ontology size="+str(len(self.ontologyList.getFullOntologyList())))
     
     def recordOntology(self, parentTerm, childTerm, metId):
+        if self.resConfig.termIsOnOntologyDenyList(parentTerm, childTerm):
+            return
         ontology = self.ontologyList.getOntologyFromParentChild(parentTerm, childTerm)
         if ontology is None:
             ontology = Ontology()

@@ -16,16 +16,15 @@ import time
 
 class Main():
 
-    def runEverything(self, resourceConfigFile):
+    def runEverything(self, resourceConfigFile, optionsFile = None):
 
         start = time.time()
 
         sql = writeToSQL()
         
         # build the ramp resource config
-        resourceConf = RampConfig()
-        resourceConf.loadConfig(resourceConfigFile)
-        
+        resourceConf = RampConfig(resourceConfigFile, optionsFile)
+
         stat = getStatistics()
         hmdb = hmdbData(resourceConf)
         wikipathways = WikipathwaysRDF(resourceConf)
@@ -72,9 +71,10 @@ class Main():
 
         # Database loading is handled as a separate, un-coupled step.
             
-resourceConfFile = "../config/external_resource_config.txt"                
+resourceConfFile = "../config/external_resource_config.txt"
+optionsFile = "../config/options.yml"
 main = Main()
-main.runEverything(resourceConfigFile = resourceConfFile)
+main.runEverything(resourceConfigFile = resourceConfFile, optionsFile = optionsFile)
 
 
 

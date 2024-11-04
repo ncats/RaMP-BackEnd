@@ -1,9 +1,6 @@
 from hmdbData import hmdbData
 
-
-from MetabolomicsData import MetabolomicsData
 import unittest
-from numpy import var
 
 class MetabolomicsDataWritenToFileTestCase(unittest.TestCase):
     def testMain(self):
@@ -12,7 +9,6 @@ class MetabolomicsDataWritenToFileTestCase(unittest.TestCase):
         
         hmdb.getPathwaysandSynonyms(tree)
         hmdb.getGenes(tree)
-        hmdb.getBiofluidCellularLocationDisease(tree)
         hmdb.getPathwaysLinkedToGene()
         
         

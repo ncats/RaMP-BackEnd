@@ -4,6 +4,6 @@ v2.6.4	10/04/2024	current	reactome	Reactome	https://reactome.org/	v89 (2024-06)
 v2.6.4	10/04/2024	current	wiki	WikiPathways	https://www.wikipathways.org/index.php/WikiPathways	v20240810 (2024-08-10)
 v2.6.4	10/04/2024	current	kegg	KEGG	https://www.genome.jp/kegg/	from HMDB (v5.0) (2021-11-17)
 v2.6.4	10/04/2024	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 236 (2024-07-27)
-v2.6.4	10/04/2024	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release 2024-08-19
+v2.6.4	10/04/2024	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release (2024-08-19)
 v2.6.4	10/04/2024	current	rhea	Rhea	https://www.rhea-db.org/	Release 134 (2024-07-24)
 v2.6.4	10/04/2024	current	pfocr	Pathway Figure OCR	https://pfocr.wikipathways.org/	v20240901 (2024-09-28)

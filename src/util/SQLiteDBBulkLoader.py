@@ -3,7 +3,6 @@ Created on Aug 25, 2020
 
 @author: braistedjc
 '''
-import sys
 import pandas as pd
 import numpy as np
 from pandas.api.types import is_string_dtype
@@ -12,11 +11,8 @@ from os import path
 from sqlalchemy import create_engine, inspect, MetaData
 import logging
 from jproperties import Properties
-from urllib.parse import quote_plus
 import itertools
-import zlib
 import time
-from datetime import date
 from datetime import datetime
 import json
 from util.RampSupplementalDataBuilder import RampSupplementalDataBuilder
@@ -41,15 +37,19 @@ class SQLiteDBBulkLoader(object):
         self.engine = self.createSQLiteEngine(sqliteFileName)
         
         self.currDBVersion = None
-        
-        self.sourceDisplayNames = {'kegg':'KEGG',
-                                   'wikipathways_kegg':'KEGG',
-                                   'hmdb_kegg':'KEGG',
-                                   'hmdb':'HMDB',
-                                   'reactome':'Reactome',
-                                   'wiki':'WikiPathways',
-                                   'lipidmaps':'LIPIDMAPS',
-                                   'rhea':'Rhea'}
+
+        self.sourceDisplayNames = {
+            'kegg':'KEGG',
+            'chebi':'ChEBI',
+            'wikipathways_kegg':'KEGG',
+            'hmdb_kegg':'KEGG',
+            'hmdb':'HMDB',
+            'reactome':'Reactome',
+            'wiki':'WikiPathways',
+            'lipidmaps':'LIPIDMAPS',
+            'rhea':'Rhea',
+            'pfocr': "PFOCR"
+        }
         
         self.keggSubSources = ['hmdb_kegg', 'wikipathways_kegg']
         
@@ -246,17 +246,6 @@ class SQLiteDBBulkLoader(object):
         sqlChemProps = "select chem_data_source, count(distinct(chem_source_id)) from chem_props group by chem_data_source"
 
         statusTable = dict()
-        
-        sourceNameDict = {
-            'hmdb':'HMDB',
-            'kegg':'KEGG',
-            'lipidmaps':'LIPIDMAPS',
-            'reactome':'Reactome',
-            'wiki':'WikiPathways',
-            'chebi':'ChEBI',
-            'rhea':'Rhea',
-            'pfocr': "Pathway Figure OCR"
-        }
 
         inspector = inspect(self.engine)
         table_exists = "entity_status_info" in inspector.get_table_names()
@@ -321,7 +310,7 @@ class SQLiteDBBulkLoader(object):
             dataList = list()
             for cat in statusTable:
                 for source in statusTable[cat]:
-                    row = [cat,source,sourceNameDict[source],statusTable[cat][source]]
+                    row = [cat,source,self.sourceDisplayNames[source],statusTable[cat][source]]
                     dataList.append(row)
              
             df = pd.DataFrame(dataList, columns=cols)        
@@ -771,9 +760,6 @@ class SQLiteDBBulkLoader(object):
             k = 0
             for i,row in df.iterrows():
                 k = k + 1
-                if k < 10:
-                    print(row)
-                    print("\n")
                 conn.execute(sql2, row)
 
             conn.close()
@@ -834,57 +820,37 @@ class SQLiteDBBulkLoader(object):
                 conn.execute("delete from " + tableName)
          
             conn.close()
-                
 
     def generateAndLoadRampSupplementalData(self):
-        
-        dataBuilder = RampSupplementalDataBuilder(dbType = 'sqlite', sqliteCreds = self.sqliteFileName)        
+        start = time.time()
 
-        pwSimMat_analytes = dataBuilder.buildSimilarityMatrix(matrixType='analytes')
-        pwSimMat_mets = dataBuilder.buildSimilarityMatrix(matrixType='mets')
-        pwSimMat_genes = dataBuilder.buildSimilarityMatrix(matrixType='genes')
+        dataBuilder = RampSupplementalDataBuilder(sqliteCreds = self.sqliteFileName)
 
-        sqlDelete = "delete from ramp_data_object"
-        
-        sql = "insert into ramp_data_object (data_key, data_blob) values (:data_key, :data_blob)"
+        merged_matrix_dictionary = dataBuilder.getMergedSimilarityMatrix()
+        duplicates = dataBuilder.getPathwaysWithSameAnalytes()
 
-        inspector = inspect(self.engine)
-        table_exists = "ramp_data_object" in inspector.get_table_names()
+        sql = "insert into pathway_similarity (pathwayRampId, metabolite_count, gene_count, analyte_blob, metabolite_blob, gene_blob) VALUES (?,?,?,?,?,?)"
+        dup_sql = "insert into pathway_duplicates (pathwayRampId1, pathwayRampId2) VALUES (?,?)"
 
         with self.engine.connect() as conn:
-            if table_exists:
-                conn.execute(sqlDelete)
+            conn.execute(sql, [
+                (
+                    key,
+                    vals['metabolite_count'],
+                    vals['gene_count'],
+                    vals['analyte_blob'],
+                    vals['metabolite_blob'],
+                    vals['gene_blob']
+                ) for key, vals in merged_matrix_dictionary.items()])
 
-            vals = dict()
-            
-            vals['data_key'] = 'analyte_result'
-            objVal = pwSimMat_analytes.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
-            conn.execute(sql, vals)
+            conn.execute(dup_sql, duplicates)
+            conn.close()
 
-            vals['data_key'] = 'metabolites_result'
-            objVal = pwSimMat_mets.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
-            conn.execute(sql, vals)
-
- 
-            vals['data_key'] = 'genes_result'
-            objVal = pwSimMat_genes.to_csv(sep="\t")
-            objVal = zlib.compress(objVal.encode())            
-            vals['data_blob'] = objVal
-            conn.execute(sql, vals)
-                
-            conn.close()            
-
-            
-                
-        
+        end = time.time()
+        elapsed_time = end - start
+        print(f'elapsed_time: {elapsed_time} seconds')
 
 
-
-            
 class dbConfig(object):
     
     def __init__(self, configFile):
@@ -926,52 +892,3 @@ class intersectNode(object):
         self.sets = list()
         self.size = 0
         self.id = ""              
-        
-#loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0.sqlite")
-#loader = SQLiteDBBulkLoader(dbPropsFile='../../config/ramp_resource_version_update.txt', sqliteFileName="/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.0_Structure.sqlite")
-#loader.generateAndLoadRampSupplementalData()
-
-
-   
-# start = time.time()
-#loader.updateVersionInfo("../config/ramp_resource_version_update.txt")       
-
-#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-      
-#sonRes = loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
-#print('have json res')
-#print(jsonRes)
-#loader.collectEntityIntersectsMappingToPathways(analyteType = 'compound', format='json')
-
-#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-#loader.truncateTables([])
-#loader.currDBVersion = "v3.0.0"
-#loader.updateVersionInfo("../../config/ramp_resource_version_update.txt")       
-
-
-#loader.updateSourcePathwayCount()
-#wloader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/36760461")
-
-# loader.currDBVersion = "v2.2.0"
-#loader.updateSourcePathwayCount()
-
-#loader.updateCurrentDBVersionDumpURL("https://figshare.com/ndownloader/files/38534654")
-
-#ei = loader.collectEntityIntersects("compound", 'json', False)
-#ei = loader.collectEntityIntersects("compound", 'json', False)
-#print(ei)
-#loader.updateEntityIntersects(filterComps=False)
-
-
-
-#loader.updateDataStatusSummary()
-# print(str(time.time()-start))
-# 
-#loader.updateDBVersion('increment_patch_release', None, "Indexing pathway columns and other table columns. Just indexing.")
-# loader.updateDBVersion('increment_minor_release', None, "Testing the increment minor release")
-#loader = rampDBBulkLoader("../../config/ramp_db_props.txt")
-
-#loader.updateDBVersion('specified', "v2.1.0", "August 2022 Update")
-
-# loader.updateDBVersion('specified', "v2.2.0", "secondary hmdb ids added, merge common inchi-key prefix")
-# loader.updateVersionInfo("../../config/ramp_resource_version_update.txt") 

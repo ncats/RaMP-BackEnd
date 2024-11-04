@@ -12,7 +12,8 @@ class PFOCRData(MetabolomicsData):
         self.metabolitesWithPathwaysDictionary: Dict[str, List[str]] = {}
         self.pathwaysWithGenesDictionary: Dict[str, List[str]] = {}
         self.pathwayCategory: Dict[str, str] = {}
-
+        self.metaboliteIDDictionary: Dict[str, Dict] = {}
+        self.geneInfoDictionary: Dict[str, Dict] = {}
 
     def getEverything(self):
 
@@ -74,12 +75,16 @@ class PFOCRData(MetabolomicsData):
 
                     if conf_string.endswith('met'):
                         for id in id_list:
+                            self.metaboliteIDDictionary[id] = {'chebi_id': id}
                             if id in self.metabolitesWithPathwaysDictionary:
                                 self.metabolitesWithPathwaysDictionary[id].append(figure_id)
                             else:
                                 self.metabolitesWithPathwaysDictionary[id] = [figure_id]
 
                     if conf_string.endswith('gene'):
+                        for id in id_list:
+                            prefixed_id = f"entrez:{id}"
+                            self.geneInfoDictionary[prefixed_id] = {"Entrez": prefixed_id}
                         if figure_id in self.pathwaysWithGenesDictionary:
                             raise Exception('i dont think this happens')
                         prefixed_id_list = [f"entrez:{id}" for id in id_list]
