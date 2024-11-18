@@ -7,6 +7,7 @@ from parse.reactomeData import reactomeData
 from parse.lipidmapsChemData import lipidmapsChemData
 from parse.KeggData import KeggData
 from parse.RheaParser import RheaParser
+from parse.PFOCRData import PFOCRData
 from util.EntityBuilder import EntityBuilder
 from getStatistics import getStatistics
 from writeToSQL import writeToSQL
@@ -15,22 +16,22 @@ import time
 
 class Main():
 
-    def runEverything(self, resourceConfigFile):
+    def runEverything(self, resourceConfigFile, optionsFile = None):
 
         start = time.time()
 
         sql = writeToSQL()
         
         # build the ramp resource config
-        resourceConf = RampConfig()
-        resourceConf.loadConfig(resourceConfigFile)
-        
+        resourceConf = RampConfig(resourceConfigFile, optionsFile)
+
         stat = getStatistics()
         hmdb = hmdbData(resourceConf)
         wikipathways = WikipathwaysRDF(resourceConf)
         reactome = reactomeData(resourceConf)
         kegg = KeggData()
         lipidmaps = lipidmapsChemData(resourceConf)
+        pfocr = PFOCRData(resourceConf)
         rhea = RheaParser(resourceConf)
         
         # works based on your computer, setup working directory
@@ -44,12 +45,15 @@ class Main():
         wikipathways.getEverything(True)
         print("Getting reactome...")
         reactome.getEverything(True)
-        
+        print("Getting pfocr...")
+        pfocr.getEverything()
+        pfocr.processPathways()
+
         # This parses and writes lipid maps
         # sql write will be handled by EntityBuilder
         print("Getting LipidMaps...")
         lipidmaps.getEverything(True)
-        
+
         print("Getting Rhea info...")
         rhea.processRhea()
         
@@ -67,9 +71,10 @@ class Main():
 
         # Database loading is handled as a separate, un-coupled step.
             
-resourceConfFile = "../config/external_resource_config.txt"                
+resourceConfFile = "../config/external_resource_config.txt"
+optionsFile = "../config/options.yml"
 main = Main()
-main.runEverything(resourceConfigFile = resourceConfFile)
+main.runEverything(resourceConfigFile = resourceConfFile, optionsFile = optionsFile)
 
 
 

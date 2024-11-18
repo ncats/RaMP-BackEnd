@@ -11,3 +11,6 @@ numpy
 
 pytest
 pytest-mock
+
+bitarray
+pyyaml

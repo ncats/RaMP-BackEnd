@@ -3,183 +3,65 @@ Created on Aug 2, 2023
 
 @author: braistedjc
 '''
-import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy import MetaData
-from sklearn.metrics.pairwise import pairwise_distances
-#from .rampDBBulkLoader import dbConfig
+from src.util.SimilarityMatrix import SimilarityMatrix, SimilarityMatrix_metabolite, SimilarityMatrix_gene
+
 
 class RampSupplementalDataBuilder(object):
     '''
     classdocs
     '''
+    analytesMatrix = None
+    metabolitesMatrix = None
+    genesMatrix = None
 
-
-    def __init__(self, dbType, sqliteCreds=None, dbConf=None):
+    def __init__(self, sqliteCreds=None):
         '''
         Constructor
         '''
-        # the type of DB, MySQL or SQLite
-        self.dbType = dbType
         
         # a MySQL RaMP db_properties file, or an SQLite DB file 
         self.credInfo = sqliteCreds
 
-        # sqlalchemy engine to provide connections to DB        
-        self.engine = None
-        
-        if self.dbType == 'sqlite':
-            self.engine = self.createSQLiteEngine(self.credInfo)
-        else:
-            self.engine = self.createMySQLEngine(dbConf)
-        
-        # all analyte pathway similarity matrix
-        self.analyteResult = None
+        self.conn = self.createSQLiteEngine(self.credInfo).connect()
 
-        # all analyte pathway similarity matrix        
-        self.metsResult = None
-        
-        # all analyte pathway similarity matrix
-        self.genesResult = None
-        
-    
+    def getPathwaysWithSameAnalytes(self):
+        if self.analytesMatrix is None:
+            self.initialize_similarity_matrices()
+        return self.analytesMatrix.getDuplicates()
+
     
     def createSQLiteEngine(self, sqliteFile=None):
         engine = create_engine('sqlite:///'+sqliteFile, echo=False)
         return engine
 
-    def createMySQLEngine(self, dbConf = None):
-        print("In ramp supplimental data builder, building mysql engine")
-        dbConf.dumpConfig()
-        print(type(dbConf.port))
-        conStr = ("mysql+pymysql://{username}:{conpass}@{host_url}/{dbname}?port={port}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname,port=dbConf.port)
-        print(conStr)
-        engine = create_engine((("mysql+pymysql://{username}:{conpass}@{host_url}:{port}/{dbname}").format(username=dbConf.username, conpass=dbConf.conpass, host_url=dbConf.host,dbname=dbConf.dbname,port=dbConf.port)), echo=False)
+    def getMergedSimilarityMatrix(self):
+        compress = True
+        if self.analytesMatrix is None:
+            self.initialize_similarity_matrices()
 
-        return engine
-    
-    
-    def listTables(self):
-        if self.dbType == 'mysql':
-            sql = 'show tables'
-        elif self.dbType == 'sqlite':
-            sql = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%%'";
-        else:
-            print("Unsupported DB Type: " + self.dbType)
-            return
-        
-        with self.engine.connect() as conn:
-            tables = conn.execute(sql).all()            
-            tables = pd.DataFrame(tables)
-            print("tables shape:" + str(tables.shape))
-            print(tables)
-            conn.close()
-            
-    def buildPathwaySimilarityMatrices(self):
-        x = None    
+        metaboliteCounts = self.metabolitesMatrix.getCounts()
+        geneCounts = self.genesMatrix.getCounts()
 
-    def buildAnalyteSetStats(self):
-        x = None
+        analyteSparseTuples = self.analytesMatrix.getSerializedSparseTuples(compress)
+        metaboliteSparseTuples = self.metabolitesMatrix.getSerializedSparseTuples(compress)
+        geneSparseTuples = self.genesMatrix.getSerializedSparseTuples(compress)
 
-    def buildSimilarityMatrix(self, matrixType):
-        df = None
-        
-        analyteKey = 'RAMP_%%'
-        minPathwaySize = 10
-        
-        if matrixType == 'mets':
-            analyteKey = 'RAMP_C%%'
-            minPathwaySize = 5
-        elif matrixType == 'genes':
-            analyteKey = 'RAMP_G%%'
-            minPathwaySize = 5
-        
-        sql = "select ap.pathwayRampId, ap.rampID from analytehaspathway ap, pathway p "\
-        "where p.type != 'hmdb' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + analyteKey + "'"
+        allKeys = sorted(set(metaboliteCounts) | set(geneCounts))
 
-        # This is how to run the pathway overlap for a single data source, e.g. wikipathways
-        # sql = f"""select p.sourceId, ap.rampID
-        # from analytehaspathway ap, pathway p
-        # where p.type == 'wiki' and
-        #       ap.pathwayRampId = p.pathwayRampId and
-        #       ap.rampId like '{analyteKey}'"""
+        merged_dict = {
+            key: {
+                "metabolite_count": metaboliteCounts.get(key),
+                "gene_count": geneCounts.get(key),
+                "analyte_blob": analyteSparseTuples.get(key),
+                "metabolite_blob": metaboliteSparseTuples.get(key),
+                "gene_blob": geneSparseTuples.get(key)
+            }
+            for key in allKeys
+        }
+        return merged_dict
 
-        with self.engine.connect() as conn:
-            df = conn.execute(sql).all()
-            df = pd.DataFrame(df)
-            df.columns = ['pathwayRampId', 'rampId']
-            print(df.shape)
-            print(list(df.columns))
-            
-            crossTab = pd.crosstab(df['rampId'], df['pathwayRampId'])
-            ctSums = crossTab.sum(axis=0)
-            pwSubset = ctSums[ctSums >= minPathwaySize]
-            
-            pwNames = pwSubset.index.values.tolist()
-            crossTab = crossTab.loc[:,pwNames]
-                        
-            dm = 1.0 - pairwise_distances(crossTab.T.to_numpy(), metric='jaccard')
-
-
-            dm = pd.DataFrame(dm)
-                 
-            dm.columns = crossTab.columns       
-            dm.index = crossTab.columns
-
-            conn.close()
-
-        return dm
-
-
-
-    def buildAnalyteSet(self, dataSource, geneOrMet):
-        
-        print("building analyte stat set")
-        
-        rampIdPrefix = "RAMP_C%%"
-        if geneOrMet == 'gene':
-            rampIdPrefix = "RAMP_G%%"
-        
-        sql = "select ap.pathwayRampId as pathwayRampId, count(distinct(ap.rampId)) as Freq, p.type as pathwaySource "\
-        "from analytehaspathway ap, pathway p "\
-        "where p.type = '" + dataSource + "' and ap.pathwayRampId = p.pathwayRampId and ap.rampId like '" + rampIdPrefix + "' group by ap.pathwayRampId"
-
-        df = None
-
-        with self.engine.connect() as conn:
-
-            df = conn.execute(sql).all()
-            df = pd.DataFrame(df)
-            
-            print("Stats shape")
-            print(df.shape)
-            print("Stats header")
-            print(df.columns)
-            print(type(df))
-
-            df.columns = ['pathwayRampID', 'Freq', 'pathwaySource']
-            print(df.columns)
-
-            
-            print(df.head(5))
-            
-            conn.close()
-
-        return df
-
-        
-#pwob = RampSupplementalDataBuilder(dbType = "sqlite", sqliteCreds = "/mnt/ncatsprod/braistedjc/tmp_work/RaMP_SQLite_v2.3.1b.sqlite")
-#pwob.listTables()
-#pwob.buildBaseMatrix(matrixType = "analytes")
-#dm = pwob.buildSimilarityMatrix(matrixType = "analytes")
-#print(str(dm.values.sum()))
-
-#pwob.buildAnalyteSet("wiki", "met")
-#pwob.buildAnalyteSet("wiki", "gene")
-
-#pwob.buildAnalyteSet("reactome", "met")
-#pwob.buildAnalyteSet("reactome", "gene")
-
-#pwob.buildAnalyteSet("hmdb", "met")
-# pwob.buildAnalyteSet("hmdb", "gene")
-#pwob.buildBaseMatrix(matrixType = "genes")
+    def initialize_similarity_matrices(self):
+        self.analytesMatrix = SimilarityMatrix(connection=self.conn)
+        self.metabolitesMatrix = SimilarityMatrix_metabolite(connection=self.conn)
+        self.genesMatrix = SimilarityMatrix_gene(connection=self.conn)

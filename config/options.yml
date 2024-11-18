@@ -1,0 +1,540 @@
+ontology:
+  denylist:
+    Biofluid and excreta:
+      - Semen
+      - Plasma
+      - Vitreous humor
+      - Aqueous humor
+      - Lymph
+      - Tear
+    Source:
+      - Food
+      - Endogenous
+      - Animal
+      - Synthetic
+      - Environmental
+      - Fungi
+      - Saccharomyces cerevisiae
+      - Exogenous
+    Subcellular:
+      - Axon
+      - Microsomes
+    Tissue and substructures:
+      - Hair
+      - Nervous tissue
+      - Cartilage
+      - Smooth muscle
+      - Cardiac muscle
+      - Connective tissue
+      - Bone
+      - Dermis
+      - Epithelium
+    Organ and components:
+      - Bone marrow
+      - Hypothalamus
+      - Small intestine
+      - Mouth
+      - Spinal cord
+      - Lymph node
+      - Ovary
+      - Uterus
+      - Tongue
+      - Tooth
+      - Artery
+      - Colon
+      - Large intestine
+      - Blood vessel
+      - Gland
+      - Pineal gland
+    Industrial application:
+      - Emulsifier
+      - Pharmaceutical industry
+      - Analgesic
+      - Laboratory chemical
+      - Dye
+      - Narcotic
+      - Chelating agent
+      - Prodrug
+      - Reverse transcriptase inhibitor
+      - Febrifuge
+      - Neuromuscular agent
+      - Acaricide
+      - Adjuvant
+      - Antitussive
+      - Antiprotozoal
+      - Contrast media
+      - Hepatoprotective
+      - Photosensitizing agent
+      - Antidiabetic
+      - Fungicide
+      - Muscle relaxant
+      - Skeletal muscle relaxant
+      - Antidote
+      - Protease inhibitor
+      - Tocolytic agent
+      - Insecticide
+      - Refrigerant
+      - Antithrombogenic
+      - Anthelmintic
+      - Ophthalmic
+      - Depressant
+      - Disinfectant
+      - Antithrombotic
+      - Stimulant
+      - Contraceptive
+      - Antitrypanosomic
+      - Hallucinogen
+      - Antimycotic
+      - Solvent
+      - Anaesthesia adjuvant
+      - Scabicide
+      - Cardiovascular agent
+      - Oxytocic agent
+      - Amebicide
+      - Laxative
+      - Hormone replacement agent
+      - Abortifacient agent
+      - Prokinetic agent
+      - Emetic agent
+      - Herbicide
+      - Nematicide
+      - Sequestrant
+      - Rodenticide
+      - Avicide
+      - Expectorant
+      - Topical anti inflammatory agent
+      - Antineoplastic
+      - Respiratory system agent
+      - Contrast agent
+      - Alcohol deterrent
+      - Protective agent
+      - Renal agent
+      - Surface-active agent
+      - Sclerosing agent
+      - Urinary antispasmodics
+      - Ultrasound contrast agent
+      - Respiratory smooth muscle relaxant
+      - Alcohol antagonists
+      - Explosive
+      - Coagulant
+      - Coloring agent
+      - Chemical warfare agent
+      - Cardioprotective
+      - Fumigant
+      - Cleaner
+      - Acidity regulator
+      - Detergent
+      - Immunological adjuvant
+      - Fuel
+      - Lachrymator
+      - Fragrance component
+      - Serum substitute
+      - Sweetener
+      - Topical antibiotic
+      - Thrombotic
+      - Vaccine
+      - Enzyme replacement agent
+      - Electrolyte replenisher
+      - Antianginal
+      - Convulsant
+      - Vasopeptidase inhibitor
+      - Cholesterol absorption inhibitor
+      - Antihelmintic
+      - Antacid
+      - Uv filter
+      - Antifoaming agent
+      - Thermogenic
+      - Fuel additive
+      - Raising agent
+      - Antiaggregant
+      - Prebiotic
+      - Agriculture
+      - Feed additive
+    Health condition:
+      - General disorders and administration site conditions
+      - Meningitis
+      - Renal failure
+      - Amphetamine psychosis
+      - Hypothyroidism
+      - Acidosis
+      - Pregnancy
+      - Peripheral neuropathy
+      - Delusions
+      - Palpitations
+      - Anorexia nervosa
+      - Very long chain acyl-coa dehydrogenase deficiency
+      - Primary biliary cirrhosis
+      - Rhabdomyolysis
+      - Celiac disease
+      - Dry skin
+      - Heart disease
+      - Aromatic l-amino acid decarboxylase deficiency
+      - Tinnitus
+      - Gangrene
+      - Anoxia
+      - Biliary atresia
+      - Subarachnoid hemorrhage
+      - Myocardial infarction
+      - Major depressive disorder
+      - Porphyria
+      - Fainting
+      - Tuberculous meningitis
+      - Aids
+      - Traumatic brain injury
+      - Hepatic encephalopathy
+      - Malaria
+      - Paraquat poisoning
+      - Cystic fibrosis
+      - Cachexia
+      - Cardiomyopathy
+      - Glutaric aciduria type 2
+      - Medium chain acyl-coa dehydrogenase deficiency
+      - Angina
+      - Urinary retention
+      - Multi-infarct dementia
+      - Pancreatitis
+      - Degenerative disc disease
+      - Hydrocephalus
+      - Dehydration
+      - Hereditary coproporphyria
+      - Hyperthyroidism
+      - Essential hypertension
+      - Respiratory arrest
+      - Hepatocellular carcinoma
+      - Blood disorders
+      - Ileostomy
+      - Hyperammonemia
+      - Growth hormone deficiency
+      - Refsum's disease
+      - Adrenoleukodystrophy
+      - Acne
+      - Autism
+      - D-2-hydroxyglutaric aciduria
+      - Olivopontocerebral atrophy
+      - Hereditary spastic paraplegia
+      - Friedreich's ataxia
+      - Lesch-nyhan syndrome
+      - Dementia
+      - Sitosterolemia
+      - Sepsis
+      - Osteoporosis
+      - Hypocalcemia
+      - Impotence
+      - Cerebral edema
+      - Reye's syndrome
+      - Intracranial hypertension
+      - Congenital adrenal hyperplasia
+      - Smith-lemli-opitz syndrome
+      - Continuous ambulatory peritoneal dialysis
+      - Dihydropyrimidine dehydrogenase deficiency
+      - Peroxisomal biogenesis defect
+      - Convulsion
+      - Galactosemia type 1
+      - Gestational diabetes
+      - Coronary artery disease
+      - Refractory localization-related epilepsy
+      - Arthritis
+      - Pellagra
+      - Prepartum depression
+      - Neuroinfection
+      - Rachialgia
+      - Amyotrophic lateral sclerosis
+      - SjГ¶gren-larsson syndrome
+      - Eczema
+      - Respiratory irritation
+      - Hyperglycemia
+      - 11-beta-hydroxylase deficiency
+      - Abetalipoproteinemia
+      - Hypobetalipoproteinemia
+      - Diabetes mellitus
+      - Kwashiorkor
+      - Rhinitis
+      - Eosinophilia
+      - Colitis
+      - Spina bifida
+      - Hyperoxalemia
+      - Short bowel syndrome
+      - 3-methyl-crotonyl-glycinuria
+      - Gallbladder disease
+      - Cerebral vasospasm
+      - Crohn's disease
+      - Cerebrotendinous xanthomatosis
+      - Acute myelogenous leukemia
+      - Pheochromocytoma
+      - Beta-ureidopropionase deficiency
+      - Vitamin b12 deficiency
+      - 2-hydroxyglutaric aciduria
+      - Primary hyperoxaluria i
+      - Primary hyperoxaluria
+      - Kidney injury
+      - Respiratory distress
+      - Juvenile myoclonic epilepsy
+      - Xanthinuria
+      - Viral infection
+      - Dengue fever
+      - Peritoneal dialysis
+      - Hyperdibasic aminoaciduria i
+      - 2-ketoadipic acidemia
+      - Cns infection
+      - Cns tumor
+      - Proteinuria
+      - Gout
+      - Glutaric aciduria type 1
+      - Sudden death
+      - Hyperargininemia
+      - Methylenetetrahydrofolate reductase deficiency
+      - Homocystinuria
+      - D, l-2-hydroxygluraric aciduria
+      - Short chain acyl-coa dehydrogenase deficiency
+      - Nephrotic syndrome
+      - Polyuria
+      - Hypercalcemia
+      - Congestive heart failure
+      - Immune system disorders
+      - Allergy
+      - Cholestasis
+      - Muscle stiffness
+      - Dystonia
+      - Gastritis
+      - Pyruvate dehydrogenase deficiency
+      - Septic shock
+      - Hyperornithinemia
+      - Failure to thrive
+      - Homocitrullinuria
+      - Cushing's syndrome
+      - Polycystic ovary syndrome
+      - Hyper beta-alaninemia
+      - Bipolar disorder
+      - Benign gynecological disease
+      - Hyperlipidemia
+      - Stomach cancer
+      - Addison's disease
+      - Vitiligo
+      - Benign prostatic hyperplasia
+      - Infertility
+      - Cystathioninuria
+      - Folate deficiency
+      - Chronic pancreatitis
+      - Malnutrition
+      - Febrile seizures
+      - Transurethral resection of the prostate
+      - Panic disorder
+      - Ketoacidosis
+      - Peripheral vascular disease
+      - Diabetic ketoacidosis
+      - Vascular disease
+      - D-glyceric acidemia
+      - Wilson's disease
+      - Glycogen storage disease
+      - Methanol poisoning
+      - Rett syndrome
+      - Idiopathic oro-facial pain
+      - Urolithiasis
+      - Tyrosinemia
+      - Cytochrome c oxidase deficiency
+      - Irritable bowel syndrome
+      - Hartnup disease
+      - Cobalamin malabsorption
+      - N-acetylglutamate synthetase deficiency
+      - Intraventricular hemorrhage
+      - Homozygous sickle cell disease
+      - Premenstrual dysphoric disorder
+      - Hydrogen sulfide poisoning
+      - Thymidine treatment
+      - Menkes disease
+      - 21-hydroxylase deficiency
+      - Ovarian cancer
+      - Primary hypomagnesemia
+      - Supradiaphragmatic malignancy
+      - Intestinal failure
+      - 3-methylglutaconic aciduria
+      - Aminoacylase i deficiency
+      - Hypothermia
+      - Urinary incontinence
+      - Brain tumor
+      - Tyrosinemia i
+      - L-2-hydroxyglutaric aciduria
+      - Sickle cell anemia
+      - Atic deficiency
+      - Mastocytosis
+      - Trimethylaminuria
+      - Neurodegenerative disease
+      - Beta-thalassemia
+      - Neuroborreliosis
+      - Mild cognitive impairment
+      - Demyelinating polyneuropathy
+      - Hypophosphatemia
+      - Coronary heart disease
+      - Depersonalization disorder
+      - Angina pectoris
+      - Hepatic failure
+      - Migraine
+      - Neuroblastoma
+      - Cresol poisoning ibs
+      - Adrenomyeloneuropathy
+      - Skin burns
+      - Motor neuron disease
+      - Emphysema
+      - Multiple system atrophy
+      - Hemolytic uremic syndrome
+      - Sinus tachycardia
+      - Dysuria
+      - Lactic acidosis
+      - Schistosomicides
+      - Hirsutism
+      - Prolactinoma
+      - Athyreosis
+      - Metachromatic leukodystrophy
+      - Carnosinuria
+      - Crigler-najjar syndrome type i
+      - Hypoxic-ischemic encephalopathy
+      - Idiopathic polyneuritis
+      - Ketosis
+      - Glucose transporter type 1 deficiency syndrome
+      - Tic disorder
+      - Adrenal hypoplasia
+      - Functional hypothalamic amenorrhea
+      - Cholelithiasis
+      - Cystinosis
+      - Hypocholesterolemia
+      - Infantile refsum's disease
+      - Small intestinal malabsorption
+      - Small bowel bacterial overgrowth syndrome
+      - Cervical myelopathy
+      - Ethylene glycol poisoning
+      - Narcolepsy
+      - Glucagon deficiency
+      - Hyperbilirubinemia
+      - Hyperglycinemia
+      - Acute liver failure
+      - Intrahepatic biliary hypoplasia
+      - Portal vein obstruction
+      - Alpha-1-antitrypsin deficiency
+      - Choledochal cyst
+      - Neonatal hepatitis
+      - Chronic active hepatitis
+      - Hepatobiliary disease
+      - Primary hyperoxaluria ii
+      - Formic acid intoxication
+      - Galactose-1-phosphate uridyltransferase deficiency
+      - Bacterial infection
+      - Guanosine triphosphate cyclohydrolase deficiency
+      - Intellectual disability
+      - Diabetes mellitus type 1
+      - Ethanol intoxication
+      - Chronic progressive external ophthalmoplegia and kearns-sayre syndrome
+      - Hepatic and biliary malignancies
+      - Critical illnesse
+      - Appendicitis
+      - Transcobalamin ii deficiency
+      - Ornithine transcarbamylase deficiency
+      - Heat stress
+      - Orotic aciduria i
+      - Sodium nitrate consumption
+      - Hepatic coma
+      - Hypogonadism
+      - Organic acidemia
+      - 3-methylglutaconic aciduria type ii, x-linked
+      - Tetrahydrofuran exposure
+      - Postpartum depression
+      - Bacterial meningitis
+      - Impaired glucose tolerance
+      - Corticosterone methyl oxidase i deficiency
+      - Corticosterone methyl oxidase ii deficiency
+      - Aldosterone biosynthesis defects
+      - Fatty acid oxidation disorder
+      - Glutaryl-coa dehydrogenase deficiency (gdhd)
+      - Aspartylglucosaminuria
+      - Familial mediterranean fever
+      - Hyperchloremia
+      - Alpha-aminoadipic aciduria
+      - 2-aminoadipic aciduria
+      - Multiple acyl-coa dehydrogenase deficiency
+      - Long-chain-3-hydroxyacyl coa dehydrogenase deficiency
+      - Invasive candidiasis
+      - Multiple myeloma
+      - Methylmalonic acidemia
+      - Paget's disease
+      - Spondyloenchondrodysplasia
+      - Insulin resistance
+      - Prolidase deficiency
+      - Hydroxyprolinemia
+      - Creutzfeldt-jakob disease
+      - Hyperhomocysteinemia
+      - Leukoencephalopathy
+      - Salla disease
+      - Isopropyl alcohol poisoning
+      - Albuminuria
+      - Kynureninase deficiency
+      - Hypervalinemia
+      - Dermal fibroproliferative disorder
+      - Aldehyde dehydrogenase deficiency
+      - Acute liver disease
+      - Fanconi syndrome
+      - Cardiopulmonary bypass
+      - Mucopolysaccharidosis iva
+      - Glycerol intolerance syndrome
+      - Encephalitis
+      - Cerebrocortical degeneration
+      - Autism spectrum disorder
+      - Cortical myoclonus
+      - Cognitive disorder
+      - Spinal stenosis
+      - Spinal disc herniation
+      - Pentosuria
+      - Pregnene hydroxylation deficiency
+      - Hepatic necrosis
+      - Acute leukemia
+      - Hypochloremia
+      - Vessel occlusion
+      - Atrophic gastritis
+      - Ileocystoplasty
+      - Diverticular disease
+      - Meckels diverticulum
+      - Bladder infection
+      - Dimethyl sulfide poisoning
+      - Cardiopulmonary resuscitation
+      - Herpes zoster
+      - Sarcoma
+      - Ischemic heart disease
+      - Colorectal cancer
+      - Cholangiocarcinoma
+      - Cervical cancer
+      - Hyperlysinemia
+      - Saccharopinuria
+      - Idiopathic intracranial hypertension
+      - Macular degeneration
+      - Kidney transplantation
+      - Kidney cancer
+      - Testicular adrenal rest tumors
+      - Pneumoconiosis
+      - Schistosomiasis
+      - Glycolic aciduria
+      - Acute promyelocytic leukemia
+      - Glaucoma
+      - Molybedum cofactor deficiency
+      - Hemoglobinuria
+      - Febrile neutropenia
+      - Ischemia
+      - Sinusitis
+      - Propofol infusion syndrome
+      - Back pain
+      - Hyperuricemia
+      - Lithiasis
+      - Lymphocytosis
+      - Influenza
+      - Gastric ulcer
+      - Cataract
+      - Hyperzincaemia and hypercalprotectinaemia
+      - Cardiac arrhythmia
+      - Anuria
+      - Apathy
+      - Porphyria cutanea tarda
+      - Glucose intolerance
+      - Eosinopenia
+      - Lymphoma
+      - Eosinophilic esophagitis
+      - Multiple carboxylase deficiency
+      - Lymphosarcomatosis
+      - Refractory anemia
+      - Non-hodgkin's lymphoma

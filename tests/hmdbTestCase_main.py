@@ -31,11 +31,7 @@ class TestHMDBMain(unittest.TestCase):
         #print(str(len(hmdb.metabolitesWithPathwaysDictionary)))
         print("Getting HMDB genes...")
         
-        
         hmdb.getGenes(tree)
-
-        print("Getting HMDB biofluid and cellular locations...")
-        hmdb.getBiofluidCellularLocationDisease(tree)
         
         hmdb.getPathwaysLinkedToGene()
         print("Writing to files...")

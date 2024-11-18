@@ -1,8 +1,9 @@
 ramp_db_version	db_mod_date	status	data_source_id	data_source_name	data_source_url	data_source_version
-v2.5.0	03/06/2024	current	hmdb	HMDB	https://hmdb.ca/	v5.0 (2021-11-17)
-v2.5.0	03/06/2024	current	reactome	Reactome	https://reactome.org/	v87 (Dec 2023)
-v2.5.0	03/06/2024	current	wiki	WikiPathways	https://www.wikipathways.org/index.php/WikiPathways	v20240210 (2024-02-10)
-v2.5.0	03/06/2024	current	kegg	KEGG	https://www.genome.jp/kegg/	from HMDB (v5.0) (2021-11-17) 
-v2.5.0	03/06/2024	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 231 (2024-03-01)
-v2.5.0	03/06/2024	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release 2024-03-06
-v2.5.0	03/06/2024	current	rhea	Rhea	https://www.rhea-db.org/	Release 131 (2024-01-)
+v2.6.4	10/04/2024	current	hmdb	HMDB	https://hmdb.ca/	v5.0 (2021-11-17)
+v2.6.4	10/04/2024	current	reactome	Reactome	https://reactome.org/	v89 (2024-06)
+v2.6.4	10/04/2024	current	wiki	WikiPathways	https://www.wikipathways.org/index.php/WikiPathways	v20240810 (2024-08-10)
+v2.6.4	10/04/2024	current	kegg	KEGG	https://www.genome.jp/kegg/	from HMDB (v5.0) (2021-11-17)
+v2.6.4	10/04/2024	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 236 (2024-07-27)
+v2.6.4	10/04/2024	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release (2024-08-19)
+v2.6.4	10/04/2024	current	rhea	Rhea	https://www.rhea-db.org/	Release 134 (2024-07-24)
+v2.6.4	10/04/2024	current	pfocr	Pathway Figure OCR	https://pfocr.wikipathways.org/	v20240901 (2024-09-28)

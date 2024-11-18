@@ -3,19 +3,48 @@ Created on Oct 8, 2021
 
 @author: braistedjc
 '''
+from dataclasses import field
+
 import pandas as pd
+import yaml
 from rampConfig.SourceConfig import SourceConfig
 
 class RampConfig(object):
     '''
     RampConfig manages a collection of sourceConfig objects holding information for local and remote file resources
     '''
-    def __init__(self):
+    configDict: dict = {}
+    optionsDict: dict = {}
+
+    def __init__(self, configFilePath, optionsFile = None):
         '''
         Constructor
         '''
-        self.configDict = dict()
-        
+        self.loadConfig(configFilePath=configFilePath)
+        self.loadOptions(optionsFile=optionsFile)
+
+    def loadOptions(self, optionsFile):
+        if optionsFile is None:
+            self.optionsDict = {}
+        else:
+            with open(optionsFile, "r") as file:
+                self.optionsDict = yaml.safe_load(file)
+
+    def getOptions(self, *args):
+        configTree = self.optionsDict
+        for arg in args:
+            if arg in configTree:
+                configTree = configTree[arg]
+            else:
+                return None
+        return configTree
+
+    def termIsOnOntologyDenyList(self, ontology, term):
+        if not self.optionsDict:
+            return False
+        denyList = self.getOptions('ontology', 'denylist', ontology)
+        return denyList is not None and term in denyList
+
     def loadConfig(self, configFilePath):
         
         config = pd.read_table(configFilePath)
@@ -29,7 +58,7 @@ class RampConfig(object):
         print("finished loading resource config")
         
     def getConfig(self, configKey):
-        return self.configDict.get(configKey, None)    
+        return self.configDict.get(configKey, None)
 
 
 

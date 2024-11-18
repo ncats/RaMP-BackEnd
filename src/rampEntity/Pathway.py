@@ -55,7 +55,10 @@ class Pathway(object):
         returns a tab-delimited string representing the pathway.
         The format is suitable for loading into the pathway table and is exported to a file.
         """
-        s = self.pathRampId + "\t" + self.pathSourceId + "\t" + self.pathSource + "\t" + str(self.pathCategory) + "\t" + self.pathName + "\n"
+        escaped_path_name = self.pathName.replace('"', '\\"')
+        if self.pathName != escaped_path_name:
+            print(f"updated path name - {escaped_path_name}")
+        s = self.pathRampId + "\t" + self.pathSourceId + "\t" + self.pathSource + "\t" + str(self.pathCategory) + "\t" + escaped_path_name + "\n"
         return s
     
     def checkPathwaySourceAndCategory(self, source, cat):
