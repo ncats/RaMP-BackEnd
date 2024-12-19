@@ -245,6 +245,12 @@ class SQLiteDBBulkLoader(object):
 
         sqlChemProps = "select chem_data_source, count(distinct(chem_source_id)) from chem_props group by chem_data_source"
 
+        sqlReactAssocMets = "select count(*) from reaction2met"
+        sqlReactAssocGenes = "select count(*) from reaction2protein"
+
+        sqlHMDBGeneMetAssoc = "select count(*) from (select distinct rampCompoundId, rampGeneId from catalyzed)"
+        sqlRheaGeneMetAssoc = "select count(*) from (select distinct rm.ramp_cmpd_id, rp.ramp_gene_id from reaction2met rm, reaction2protein rp where rm.ramp_rxn_id = rp.ramp_rxn_id)"
+
         statusTable = dict()
 
         inspector = inspect(self.engine)
@@ -253,6 +259,26 @@ class SQLiteDBBulkLoader(object):
         with self.engine.connect() as conn:
             if table_exists:
                 conn.execute("delete from entity_status_info")
+
+            rs = conn.execute(sqlReactAssocMets)
+            statusTable["Metabolite-Reaction Associations"] = dict()
+            for row in rs:
+                statusTable["Metabolite-Reaction Associations"]['rhea'] = row[0]
+
+            rs = conn.execute(sqlReactAssocGenes)
+            statusTable["Gene-Reaction Associations"] = dict()
+            for row in rs:
+                statusTable["Gene-Reaction Associations"]['rhea'] = row[0]
+
+            rs = conn.execute(sqlHMDBGeneMetAssoc)
+            statusTable["Metabolite-Gene Associations"] = dict()
+            for row in rs:
+                statusTable["Metabolite-Gene Associations"]['hmdb'] = row[0]
+
+            rs = conn.execute(sqlRheaGeneMetAssoc)
+            for row in rs:
+                statusTable["Metabolite-Gene Associations"]['rhea'] = row[0]
+
 
             rs = conn.execute(sqlMets)
             statusTable["Metabolites"] = dict()
