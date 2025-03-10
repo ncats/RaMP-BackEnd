@@ -20,3 +20,4 @@ expasy_ec2class	ftp	https://ftp.expasy.org/databases/enzyme/enzclass.txt	enzclas
 expasy_enzyme_dat	ftp	https://ftp.expasy.org/databases/enzyme/enzyme.dat	enzyme.dat	enzyme.dat	../misc/data/rhea	none	expasy_enzyme_dat
 pfocr_gene	http	https://data.wikipathways.org/pfocr/current/pfocr-20240901-gmt-Homo_sapiens.gmt	pfocr-20240901-gmt-Homo_sapiens.gmt	pfocr-20240901-gmt-Homo_sapiens.gmt	../misc/data/pfocr/	none	pathways_genes
 pfocr_met	http	https://data.wikipathways.org/pfocr/current/pfocr-20240901-chemical-gmt-Homo_sapiens.gmt	pfocr-20240901-chemical-gmt-Homo_sapiens.gmt	pfocr-20240901-chemical-gmt-Homo_sapiens.gmt	../misc/data/pfocr/	none	pathways_mets
+refmet_met	http	https://www.metabolomicsworkbench.org/databases/refmet/refmet_download.php	refmet.csv	refmet.csv	../misc/data/refmet/	none	metabolites

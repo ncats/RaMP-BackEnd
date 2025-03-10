@@ -133,6 +133,13 @@ class EntityBuilder(object):
 
         self.sourceList.append(self.dataSource6)
 
+        self.dataSource7 = DataSource()
+        self.dataSource7.sourceName = 'refmet'
+        self.dataSource7.filePrefix = 'refmet'
+        self.dataSource7.haveChemClassInfo = False
+        self.dataSource7.sourceLocPath = '../misc/output/refmet'
+
+        self.sourceList.append(self.dataSource7)
            
         # dictionary that holds data statistics
         self.geneToPathAssocSourceTallies = dict()
@@ -1163,49 +1170,6 @@ class EntityBuilder(object):
         #print(list(self.reactionDict.keys())[0:4])
 
 
-#     def fullBuild(self):
-#         """
-#         This high level method performs the entire process of entity construction
-#         associations and writing. The stages of construction are:
-#         1.) Constructing pathways and pathway category
-#         2.) Constructing genes, gene common names, synonyms.
-#         3.) Building gene/pathway edges.
-#         4.) Constructing/harmonizing metabolites.
-#         5.) Adding metabolites common names and synonyms.
-#         6.) Building metabolite/pathway edges.
-#         7.) Load chemical properties - currently (1/2021), HMDB and ChEBI
-#         8.) Associate chemical properties (molecules) with with ramp metabolites
-#         9.) Write methods: pathways, analyte-source info, synonyms, analyte to pathways, analyte registry, chemical properties.
-#         """
-#         # load pathways
-#         self.loadPathways()
-#         self.addPathwayCategory()
-# 
-#         # load genes
-#         self.loadGeneList()
-#         self.addGeneCommonNameAndSynonyms()
-#         self.buildGeneToPathwayConnections()
-# 
-#         # load metabolite list, over all sources and hamonization during build
-#         self.loadMetaboList()
-#         self.addMetaboliteCommonName()
-#         self.addMetaboliteSynonyms()
-#         self.buildMetaboliteToPathwayConnections()
-#         
-#         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
-#         self.loadChemstry()
-#         self.resolveChemistry(["hmdb", "chebi"])      
-#         
-#         # loader file writes
-#         self.writePathways()
-#         self.writeAnalyteSource()
-#         self.writeAnalyteSynonyms()
-#         self.writeAnalyteToPathway()
-#         self.writeAnalyte()
-#         self.writeChemProps()
-            
-
-
     def writeAnalyteSource(self):
         """
         Write final files for analyte source
@@ -1602,63 +1566,7 @@ class EntityBuilder(object):
         with open("../misc/metaboliteMappingIssues.txt", "w", encoding='utf-8') as outfile:
             outfile.write("\n".join(totalMismatches))
         outfile.close()
-    
-    
-    
-        
-    def getMetaboliteIDMismatchInchiBase(self, met):
-        """
-        Returns problem metabolites having compounds with differnt inchikey bases.
-        """
-        chebiIds = dict()
-        hmdbIds = dict()
-        pubchemIds = dict()
-        rampId = met.rampId
-        
-        for source in met.chemPropsMolecules:
-            for id in met.chemPropsMolecules[source]:
-                mol = met.chemPropsMolecules[source][id]
-                if mol.id.startswith("hmdb"):
-                    if mol.inchiKey and len(mol.inchiKey) > 10:
-                        hmdbIds[mol.id] = mol.inchiKey.split("-")[0]
-                if mol.id.startswith("chebi"):
-                    if mol.inchiKey and len(mol.inchiKey) > 10:
-                        chebiIds[mol.id] = mol.inchiKey.split("-")[0]
 
-        for id in met.idList:
-            if id.startswith("pubchem"):
-                
-                if id not in pubchemIds:
-                    try:
-                        c = pcp.Compound.from_cid(id.split(":")[1])
-                    except:
-                        continue
-                        print("Cid lacks a record at pubchem: " + id)
-                    
-                    # give pubchem a rest
-                    time.sleep(0.5)
-                    if c is not None and c.inchikey is not None:
-                        pubchemIds[id] = c.inchikey.split("-")[0]
-                        print("Retrieved inchikey for pubchem id: " + id)
-                
-    
-        # now reconcile the differences, hmdb to pubchem cid, and chebi to pubchem, and hmdb to chebi 
-        misMatchList = list()
-        for pid in pubchemIds:
-            for hid in hmdbIds:
-                if pubchemIds[pid] != hmdbIds[hid]:
-                    misMatchList.append(rampId + "\t" + hid + "\t" + hmdbIds[hid] + "\t" + pid + "\t" + pubchemIds[pid] + "\t" + met.toCommonNameJoinString())
-            for cid in chebiIds:
-                if pubchemIds[pid] != chebiIds[cid]:
-                    misMatchList.append(rampId + "\t" + cid + "\t" + chebiIds[cid] + "\t" + pid + "\t" + pubchemIds[pid] + "\t" + met.toCommonNameJoinString())        
-        
-        # check hmdb to chebi
-        for hid in hmdbIds:
-            for cid in chebiIds:
-                if hmdbIds[hid] != chebiIds[cid]:
-                   misMatchList.append(rampId + "\t" + hid + "\t" + hmdbIds[hid] + "\t" + cid + "\t" + chebiIds[cid] + "\t" + met.toCommonNameJoinString())
-                                       
-        return misMatchList
 
     def get_mw_for_id(self, met, id):
         mws = []
@@ -1752,94 +1660,7 @@ class EntityBuilder(object):
             self.write_all_ids_and_edges(met)
 
         return misMatchList
-    
-    def utilCheckHMDBMappingValidity(self):
-        '''
-        This method checks all mappings from HMDB ids to KEGG and ChEBI Ids.
-        In this method to report is meant to capture the number of HMDB IDs that map to old/stale KEGG or ChEBI ids.
-        The precondition is that we have loaded metabolites from all sources AND we have loaded chemistry from all sources.
-        Each HMDB ID to alternate ID is checked to verify that the ID is valid, in particular against chebi and kegg where
-        we have complete records for chemistry.
-        '''
-        keggTotalMappings = 0
-        keggBadMappings = 0
-        uniqueBadKegg = dict()
 
-        chebiTotalMappings = 0
-        chebiBadMappings = 0
-        uniqueBadChebi = dict()
-        
-        allChebiIds = dict()
-        allstarChebiIds = dict()
-        uniqueInvalidChebi = dict()
-        
-        uniqueKegg = dict()
-        uniqueChebi = dict()
-        
-        allChebiFile = "C:\\Tools\\git_projects\\ramp\\RaMP-BackEnd\\misc\\data\\chemprops\\compounds_3star.tsv"
-        with open(allChebiFile, "r", encoding='utf-8') as chebiFile:
-            for line in chebiFile:
-                chebiId = line.split("\t")[0]
-                chebiId = chebiId.strip()
-                chebiId = "chebi:"+chebiId
-                allChebiIds[chebiId] = chebiId
-                                
-        chebiFile.close()
-        
-        allChebiFile = "C:\\Tools\\git_projects\\ramp\\RaMP-BackEnd\\misc\\data\\chemprops\\compounds_allstar.tsv"
-        with open(allChebiFile, "r", encoding='utf-8') as chebiFile:
-            for line in chebiFile:
-                chebiId = line.split("\t")[0]
-                chebiId = chebiId.strip()
-                chebiId = "chebi:"+chebiId
-                allstarChebiIds[chebiId] = chebiId
-                                
-        chebiFile.close()
-        
-        for id in self.sourceIdToIDDict:
-            if id.startswith("hmdb:"):
-                for altId in self.sourceIdToIDDict[id]:
-                    
-                    if altId.startswith("kegg"):
-                        keggTotalMappings = keggTotalMappings + 1
-                        uniqueKegg[altId] = altId
-                        if altId not in self.chemSourceRecords["kegg"]:
-                            keggBadMappings = keggBadMappings + 1
-                            uniqueBadKegg[altId] = altId
-                            # print("bad kegg..." + altId)
- 
-                    if altId.startswith("chebi"):
-                        chebiTotalMappings = chebiTotalMappings + 1
-                        uniqueChebi[altId] = altId
-                        if altId not in self.chemSourceRecords["chebi"]:                            
-                            # check that the chebi isn't just a chebi that lacks a structure in sdf
-                            if altId not in allChebiIds:
-                                chebiBadMappings = chebiBadMappings + 1
-                                uniqueBadChebi[altId] = altId
-                                
-                                
-                            if altId not in allstarChebiIds:
-                                uniqueInvalidChebi[altId] = altId    
-                                # print("bad chebi..." + altId)
-                              
-                    # Consider adding pubchem -                 
-
-
-                                
-        print("\n\nCheck of HMDB to KEGG and CHEBI, are the alt ids valid?")
-        print("Total mappings to KEGG IDs: " + str(keggTotalMappings))
-        print("Unique KEGG ids:" + str(len(uniqueKegg)))
-        print("Total mapping to invalid KEGG IDs: "+str(keggBadMappings))
-        print("Unique invalid KEGG IDs: "+str(len(uniqueBadKegg)))
-
-        print("\nTotal mappings to ChEBI IDs: " + str(chebiTotalMappings))
-        print("Unique Chebi IDs: "+ str(len(uniqueChebi)))
-        print("Total mapping to non-3-star ChEBI IDs: "+str(chebiBadMappings))
-        print("Unique non-3-star ChEBI IDs: "+str(len(uniqueBadChebi)))
-        print("Unique invalid ChEBI IDs: "+str(len(uniqueInvalidChebi)))
-
-
-                        
     
 class DataSource(object):
     """
