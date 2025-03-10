@@ -7,3 +7,4 @@ v2.6.4	10/04/2024	current	chebi	ChEBI	https://www.ebi.ac.uk/chebi/	Release 236 (
 v2.6.4	10/04/2024	current	lipidmaps	Lipid Maps	https://www.lipidmaps.org/	Release (2024-08-19)
 v2.6.4	10/04/2024	current	rhea	Rhea	https://www.rhea-db.org/	Release 134 (2024-07-24)
 v2.6.4	10/04/2024	current	pfocr	Pathway Figure OCR	https://pfocr.wikipathways.org/	v20240901 (2024-09-28)
+v2.6.4	03/05/2025	current	refmet	RefMet	https://www.metabolomicsworkbench.org/databases/refmet/browse.php	v20250305 (2025-03-05)

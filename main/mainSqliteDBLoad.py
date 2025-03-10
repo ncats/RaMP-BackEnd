@@ -68,6 +68,6 @@ loader = mainSQLiteDBLoad()
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
 loader.loadDBAfterTruncatingTables(incrementLevel = 'specified',
-       optionalVersionOveride = "3.0.6",
-       optionalVersionNote = "20240822 data update, new datasource for pathways from PFOCR, updated MW check for mismerged metabolites, added field for best analyte name",
+       optionalVersionOveride = "3.0.7",
+       optionalVersionNote = "20240822 data update, new metabolite data from refmet, new datasource for pathways from PFOCR, updated MW check for mismerged metabolites, added field for best analyte name",
        truncateTables=True)
