@@ -68,6 +68,6 @@ loader = mainSQLiteDBLoad()
 # increment level 'increment_patch_release', 'increment_minor_release', 
 # or 'specified' (new version, perhaps major release)
 loader.loadDBAfterTruncatingTables(incrementLevel = 'specified',
-       optionalVersionOveride = "3.0.11",
-       optionalVersionNote = "added pubchem IDs, 20250624 data update for Reactome, WikiPathways, ChEBI, Lipid Maps, Rhea, RefMet, and a fix to only include RefMet data with cross-references",
+       optionalVersionOveride = "3.0.12",
+       optionalVersionNote = "20251202 data update for Reactome, WikiPathways, ChEBI, Lipid Maps, Rhea, RefMet",
        truncateTables=True)

@@ -1577,6 +1577,8 @@ class EntityBuilder(object):
                 mol = met.chemPropsMolecules[source][id]
                 if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                     mws.append(float(mol.monoisotopicMass))
+                elif mol.mw and len(mol.mw) > 0:
+                    mws.append(float(mol.mw))
         return mws
 
     def get_common_name_for_id(self, met, id):
@@ -1631,6 +1633,8 @@ class EntityBuilder(object):
 
                 if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                     mwDict[mol.id] = float(mol.monoisotopicMass)
+                elif mol.mw and len(mol.mw) > 0:
+                    mwDict[mol.id] = float(mol.mw)
 
                 if mol.formula:
                     idToFormula[id] = mol.formula
