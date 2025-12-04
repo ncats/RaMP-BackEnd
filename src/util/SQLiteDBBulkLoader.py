@@ -49,7 +49,8 @@ class SQLiteDBBulkLoader(object):
             'lipidmaps':'LIPIDMAPS',
             'rhea':'Rhea',
             'pfocr': "PFOCR",
-            'refmet': 'RefMet'
+            'refmet': 'RefMet',
+            'pubchem': 'PubChem'
         }
         
         self.keggSubSources = ['hmdb_kegg', 'wikipathways_kegg']

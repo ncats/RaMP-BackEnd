@@ -14,6 +14,24 @@ import shutil
 from parse.MetabolomicsData import MetabolomicsData
 from rampConfig.RampConfig import RampConfig
 
+type_has_functional_parent = '1'
+type_has_parent_hydride = '2'
+type_has_part = '3'
+type_has_role = '4'
+type_is_a = '5'
+type_is_conjugate_acid_of = '6'
+type_is_conjugate_base_of = '7'
+type_is_enantiomer_of = '8'
+type_is_part_of = '9'
+type_is_substituent_group_from = '10'
+type_is_tautomer_of = '11'
+
+chebi_compound_column = 2
+chebi_role_column = 3
+
+chebi_role_id = '50906'
+chebi_chemical_entity_id = '24431'
+
 class ChebiOwlParser(MetabolomicsData):
     '''
     classdocs
@@ -107,9 +125,14 @@ class ChebiOwlParser(MetabolomicsData):
             print(relUrl)
             print(relRemoteFile)
             print(localDir)
-            self.download_files(relUrl, self.relDir + localDir + relRemoteFile) 
-            
-            
+            self.download_files(relUrl, self.relDir + localDir + relRemoteFile)
+
+            # gunzip the file...
+            with gzip.open(self.relDir + localDir + relRemoteFile, 'rb') as f_in:
+                with open(self.relDir + localDir + relLocalFile, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+
     def buildGraph(self):
         print("building graph")
 
@@ -148,18 +171,18 @@ class ChebiOwlParser(MetabolomicsData):
                 if line is not None and line != "":
                     terms = line.split("\t")
                     
-                    if len(terms) == 5 and (terms[1] == 'is_a' or terms[1] == 'has_functional_parent'):
-                        relSet = self.relations.get(terms[2], None)
+                    if len(terms) == 5 and (terms[1] == type_is_a or terms[1] == type_has_functional_parent):
+                        relSet = self.relations.get(terms[chebi_role_column], None)
                         if relSet is None:
-                            relSet = [terms[3]]                        
-                            self.relations[terms[2]] = relSet
+                            relSet = [terms[chebi_compound_column]]
+                            self.relations[terms[chebi_role_column]] = relSet
                         else:
-                            relSet.append(terms[3])
+                            relSet.append(terms[chebi_compound_column])
              
-        # now lets build a dictionary starting with role 50906 on down.
+        # now lets build a dictionary starting with role chebi_role_id on down.
         newRelations = dict()
-        newRelations['50906'] = []
-        self.getChildRoles('50906', self.relations, newRelations)
+        newRelations[chebi_role_id] = []
+        self.getChildRoles(chebi_role_id, self.relations, newRelations)
         
         termsSet = set()
         
@@ -198,18 +221,18 @@ class ChebiOwlParser(MetabolomicsData):
                 if line is not None and line != "":
                     terms = line.split("\t")
                     
-                    if len(terms) == 5 and (terms[1] == 'is_a' or terms[1] == 'has_functional_parent'):
-                        relSet = self.chemEntityRelations.get(terms[2], None)
+                    if len(terms) == 5 and (terms[1] == type_is_a or terms[1] == type_has_functional_parent):
+                        relSet = self.chemEntityRelations.get(terms[chebi_role_column], None)
                         if relSet is None:
-                            relSet = [terms[3]]                        
-                            self.chemEntityRelations[terms[2]] = relSet
+                            relSet = [terms[chebi_compound_column]]
+                            self.chemEntityRelations[terms[chebi_role_column]] = relSet
                         else:
-                            relSet.append(terms[3])
+                            relSet.append(terms[chebi_compound_column])
              
-        # now lets build a dictionary starting with role 50906 on down.
+        # now lets build a dictionary starting with role chebi_role_id on down.
         newRelations = dict()
-        newRelations['24431'] = []
-        self.getChildRoles('24431', self.chemEntityRelations, newRelations)
+        newRelations[chebi_chemical_entity_id] = []
+        self.getChildRoles(chebi_chemical_entity_id, self.chemEntityRelations, newRelations)
         
         termsSet = set()
         
@@ -233,10 +256,10 @@ class ChebiOwlParser(MetabolomicsData):
     
     
     def extractCofactorStatus(self, chebiRoleId):
-        cofactorData = self.collectMolecularEntitiesUnderRole(chebiRoleId, exportFileName = None, exportFile = False, relationTypes=['is_a', 'has_role'])
+        cofactorData = self.collectMolecularEntitiesUnderRole(chebiRoleId, exportFileName = None, exportFile = False, relationTypes=[type_is_a, type_has_role])
         return cofactorData[0]
     
-    def collectMolecularEntitiesUnderRole(self, chebiRoleId, exportFileName, exportFile = False, relationTypes = ['is_a', 'has_role', 'has_functional_parent']):
+    def collectMolecularEntitiesUnderRole(self, chebiRoleId, exportFileName, exportFile = False, relationTypes = [type_is_a, type_has_role, type_has_functional_parent]):
         chemEntityRelations = dict()
         members = set()
         
@@ -247,17 +270,15 @@ class ChebiOwlParser(MetabolomicsData):
                 if line is not None and line != "":
                     terms = line.split("\t")
                     
-#                    if len(terms) == 5 and (terms[1] == 'is_a' or terms[1] == 'has_functional_parent' or terms[1] == 'has_role'):
-                    if len(terms) == 5 and (terms[1] in relationTypes):
-                        
-                        relSet = chemEntityRelations.get(terms[2], None)                                                        
+                    if len(terms) == 7 and (terms[1] in relationTypes):
+                        relSet = chemEntityRelations.get(terms[chebi_role_column], None)
                         if relSet is None:
-                            relSet = [terms[3]]                        
-                            chemEntityRelations[terms[2]] = relSet
+                            relSet = [terms[chebi_compound_column]]
+                            chemEntityRelations[terms[chebi_role_column]] = relSet
                         else:
-                            relSet.append(terms[3])
+                            relSet.append(terms[chebi_compound_column])
              
-        # now lets build a dictionary starting with role 50906 on down.
+        # now lets build a dictionary starting with role chebi_role_id on down.
         newRelations = dict()
         newRelations[chebiRoleId] = []
         self.getChildRoles(chebiRoleId, chemEntityRelations, newRelations)

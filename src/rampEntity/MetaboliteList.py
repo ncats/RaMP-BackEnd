@@ -172,6 +172,14 @@ class MetaboliteList(object):
                     final_met_map[updated_id] = met
         print(f"merged {count} metabolites based on common inchikeys")
 
+    def scrubMetabolitesOfRefMetOrphans(self):
+        print("scrubbing database of metabolites that only exist in refmet")
+        self.metaboliteSourceIdList = {
+            k: met for k, met in self.metaboliteSourceIdList.items()
+            if not (
+                    len(met.sources) == 1 and met.sources[0] == 'refmet'
+            )}
+
     def determineBestNames(self):
         for met in self.getUniqueMetabolites():
             met.representativeName = met.get_most_common_value()

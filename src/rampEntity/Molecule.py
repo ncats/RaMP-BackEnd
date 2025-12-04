@@ -52,6 +52,9 @@ class Molecule(object):
         """
         if len(self.names) > 0:
             name = self.names[0]
+        else:
+            name = ''
+
         s =  self.source + "\t" + self.id + "\t" + self.smiles + "\t" + self.inchiKeyPrefix + "\t" + self.inchiKey + "\t" + self.inchi + "\t" 
 
         mw = self.mw

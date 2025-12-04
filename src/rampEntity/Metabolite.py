@@ -427,7 +427,9 @@ class Metabolite(Analyte):
         for source in self.chemPropsMolecules:
             for id in self.chemPropsMolecules[source]:
                 mol = self.chemPropsMolecules[source][id]
-                if mol.mw is not None and len(mol.mw) > 0:
+                if mol.monoisotopicMass is not None and len(mol.monoisotopicMass) > 0:
+                    mwList.append(float(mol.monoisotopicMass))
+                elif mol.mw is not None and len(mol.mw) > 0:
                     mwList.append(float(mol.mw))
         
         if len(mwList) < 2:

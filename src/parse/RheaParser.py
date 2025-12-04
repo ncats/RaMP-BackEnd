@@ -136,10 +136,10 @@ class RheaParser(MetabolomicsData):
         self.humanSecondaryUniprotRecordDict = threadedSecondaryUniprotDict
     
         print("in rhea uniprot build")
-        print("length of the primary dict"+str(len(self.humanPrimaryUniprotRecordDict.keys())))
-        print("length of the primary set"+str(len(self.humanPrimaryUniprotAccSet)))
-        print("length of the secondary dict"+str(len(self.humanSecondaryUniprotRecordDict.keys())))
-        print("length of the secondary set"+str(len(self.humanSecondaryUniprotAccSet)))
+        print("length of the primary dict "+str(len(self.humanPrimaryUniprotRecordDict.keys())))
+        print("length of the primary set "+str(len(self.humanPrimaryUniprotAccSet)))
+        print("length of the secondary dict "+str(len(self.humanSecondaryUniprotRecordDict.keys())))
+        print("length of the secondary set "+str(len(self.humanSecondaryUniprotAccSet)))
 
     def buildSupportingChebiData(self):
         print("building chebi data store")

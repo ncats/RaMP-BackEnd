@@ -208,10 +208,12 @@ class EntityBuilder(object):
 
         # load chemistry based on sources, resolveChemistry will attach chem props to metabolites and rampids
         # 1/2021 - currently hmdb and chebi sources
-        self.loadChemstry(["hmdb", "chebi", "lipidmaps"])
-        self.resolveChemistry(["hmdb", "chebi", "lipidmaps"])      
-        
+        self.loadChemstry(["hmdb", "chebi", "lipidmaps", "pubchem"])
+        self.resolveChemistry(["hmdb", "chebi", "lipidmaps", "pubchem"])
+
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
+
+        self.metaboliteList.scrubMetabolitesOfRefMetOrphans()
 
         # Rhea reactions # we have to handle reactions after all mergers because reactions aren't part of the metabolite class, and mergers don't work
         self.processRheaReactions()
@@ -1541,7 +1543,7 @@ class EntityBuilder(object):
         self.addMetaboliteCommonName()
         self.addMetaboliteSynonyms()
 
-        sources = ["hmdb", "chebi", "lipidmaps"]
+        sources = ["hmdb", "chebi", "lipidmaps", "pubchem"]
         self.loadChemstry(sources)
         self.resolveChemistry(sources)
         self.metaboliteList.collapseMetsOnInchiKeyPrefix()
@@ -1575,6 +1577,8 @@ class EntityBuilder(object):
                 mol = met.chemPropsMolecules[source][id]
                 if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                     mws.append(float(mol.monoisotopicMass))
+                elif mol.mw and len(mol.mw) > 0:
+                    mws.append(float(mol.mw))
         return mws
 
     def get_common_name_for_id(self, met, id):
@@ -1629,6 +1633,8 @@ class EntityBuilder(object):
 
                 if mol.monoisotopicMass and len(mol.monoisotopicMass) > 0:
                     mwDict[mol.id] = float(mol.monoisotopicMass)
+                elif mol.mw and len(mol.mw) > 0:
+                    mwDict[mol.id] = float(mol.mw)
 
                 if mol.formula:
                     idToFormula[id] = mol.formula

@@ -2,7 +2,7 @@ from src.rampConfig.RampConfig import RampConfig
 from src.util.EntityBuilder import EntityBuilder
 
 resourceConfFile = "../config/external_resource_config.txt"
-resourceConf = RampConfig()
+resourceConf = RampConfig(resourceConfFile)
 resourceConf.loadConfig(resourceConfFile)
 
 builder = EntityBuilder(resourceConf)

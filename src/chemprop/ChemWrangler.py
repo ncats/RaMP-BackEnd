@@ -59,7 +59,7 @@ class ChemWrangler(object):
                 with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
                     zip_ref.extractall(localDir)
             else:
-                print("HMDB SDF extists. Using cached copy of SDF.")
+                print("HMDB SDF exists. Using cached copy of SDF.")
 
             
         if "chebi" in sources:
@@ -81,7 +81,7 @@ class ChemWrangler(object):
                     with open(localDir+extractFile, 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
             else:
-                print("Chebi SDF extists. Using cached copy of SDF.")
+                print("Chebi SDF exists. Using cached copy of SDF.")
                 
                 
         if "lipidmaps" in sources:        
@@ -101,7 +101,7 @@ class ChemWrangler(object):
                 with zipfile.ZipFile(localDir+remoteFile,"r") as zip_ref:
                     zip_ref.extractall(localDir)
             else:
-                print("LipidMaps SDF extists. Using cached copy of SDF.")                
+                print("LipidMaps SDF exists. Using cached copy of SDF.")
     
 #     """
 #     Fetch compound properties

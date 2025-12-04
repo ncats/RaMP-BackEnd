@@ -11,7 +11,7 @@ class TestWikipathwaysMain(unittest.TestCase):
         '''
         wp.getDatabaseFile()
         #wp.displayRDFfile(3)
-        wp.getIDMapingWithPathways()
+        wp.getIDMappingWithPathways()
         wp.write_myself_files('wikipathwayRDF')
         sql.createRampCompoundID(wp.metaboliteIDDictionary, 'wiki', 0)
         sql.createRampGeneID(wp.geneInfoDictionary, 'wiki', 0)
