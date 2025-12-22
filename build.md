@@ -1,3 +1,10 @@
+## Workflow for Building the RaMP Database
+Highlights
+* Build CSVs
+* Check Metabolite Harmony (MW consistency)
+* Update curation list if needed
+* Repeat until no MW mismatches remain
+
 ```mermaid
 graph TD
     Build_RaMP_DB(
@@ -10,20 +17,20 @@ graph TD
     run `src/ad_hoc_cross_check_met_harmony.py`
     ]
     Direct_Mismatched_MW{
-    <b style="font-size:larger">Are there direct links with different MW?</b>
-    Review the curation list at misc/metaboliteMappingIssues.txt
+    <b style="font-size:larger">Are there <em>DIRECT</em> links with different MW?</b>
+    Review the mismatched IDs saved to misc/metaboliteMappingIssues.txt
     }
     Indirect_Mismatched_MW{
-    <b style="font-size:larger">Are there indirect links with different MW?</b>
+    <b style="font-size:larger">Are there <em>INDIRECT</em> links with different MW?</b>
     Review nodes and edges in src/problem_mets_with_no_known_source
-    Determine which link between IDs is merging cliques incorrectly
+    Determine which link between IDs is responsible for merging cliques incorrectly
     }
     
     Direct_Mismatched_MW -->|No|Indirect_Mismatched_MW
     Direct_Mismatched_MW -->|Yes|Review_and_Update_Curation_List
     
     Review_and_Update_Curation_List[
-    <b style="font-size:larger">Review and Update Curation List</b>
+    <b style="font-size:larger">Update Curation List</b>
     Add bad mappings to config/curation_mapping_issues_list.txt
     ]
     Indirect_Mismatched_MW -->|Yes|Review_and_Update_Curation_List
@@ -35,7 +42,15 @@ graph TD
     Review_and_Update_Curation_List --> Build_RaMP_DB
 ```
 
-
+## Overall Workflow for Building the RaMP Database
+Highlights
+  * merge metabolites
+    * create RaMP IDs
+    * disallow bad mappings based on curation list
+  * load associated data
+  * load chemical properties
+  * merge metabolites based on InchiKey
+  * write CSV files
 ```mermaid
 graph TD
     Download_Data(
@@ -113,6 +128,14 @@ Load_Pathways --> Load_Metabolite_Data
 %%        ]
 
 ```
+
+## Workflow for Merging Metabolites
+Highlights
+* For each data source, load equivalent IDs
+  * For each pair of equivalent IDs
+    * check curation list for prohibited mappings
+    * if mapping is allowed
+      * create or update Ramp ID
 ```mermaid
 flowchart TD
     Start_Merge(Merge Metabolites) -->  DS_Loop{For each data source}
